@@ -1,0 +1,369 @@
+/* ----------------------------------------- */
+/* BUYER PROFILE PAGE STYLES                 */
+/* ----------------------------------------- */
+
+/* Basic page background & font */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Bengali font when lang is bn */
+body.lang-bn {
+  font-family: "Noto Sans Bengali", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Use landing page header, just minor tweaks */
+#site-header {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+
+body.theme-dark #site-header {
+  background-color: rgba(15, 23, 42, 0.95);
+}
+
+/* Header spacing */
+.header-container {
+  padding: 0.75rem 1.5rem;
+}
+
+/* Main layout wrapper */
+main.profile-page {
+  padding: 1.8rem 1.5rem 3rem;
+}
+
+/* Wallet summary at top */
+.wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.08),
+    rgba(34, 197, 94, 0.02)
+  );
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+  margin: 0 auto 1.5rem auto;
+  max-width: 920px;
+}
+
+body.theme-dark .wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.22),
+    rgba(15, 23, 42, 0.9)
+  );
+}
+
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.wallet-item {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 0.7rem;
+  padding: 0.75rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--border);
+}
+
+.wallet-label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.wallet-value {
+  margin-top: 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Profile grid layout */
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(290px, 0.9fr);
+  gap: 1.25rem;
+}
+
+.profile-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.sidebar-right {
+  align-self: flex-start;
+}
+
+/* Card base style (same feel as register/dashboard) */
+.card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 0.9rem;
+  border: 1px solid var(--border);
+  padding: 0.9rem 0.95rem;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.55rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Card body */
+.card-body {
+  padding: 0.25rem 0.1rem 0.15rem;
+}
+
+/* Form rows */
+.form-row {
+  margin-bottom: 0.55rem;
+}
+
+.form-row label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  margin-bottom: 0.3rem;
+}
+
+.form-row input,
+.form-row select {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--border);
+  background: var(--input-background, var(--muted-bg));
+  color: var(--foreground);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+/* Two-column rows */
+.two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+/* Locked inputs (phone, role) */
+.input-locked {
+  background: var(--muted-bg);
+  cursor: not-allowed;
+}
+
+/* Buttons */
+.btn-outline,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  gap: 0.25rem;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--foreground);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(34, 197, 94, 0.55);
+}
+
+.btn-edit {
+  padding: 0.45rem 0.85rem;
+}
+
+/* Form action row */
+.form-actions {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+/* Checkbox row in business details */
+.checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.checkbox-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+}
+
+/* Crops checklist */
+.crops-checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.crops-checklist label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 999px;
+  background: var(--muted-bg);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.crops-checklist input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+}
+
+/* Subcategories */
+.subcategories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.subcategory-group {
+  padding: 0.55rem;
+  border-radius: 0.6rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.subcategory-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.subcategory-empty {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+}
+
+/* Photo card */
+.photo-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 180px;
+  border-radius: 0.7rem;
+  background: var(--muted-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.photo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.6rem;
+}
+
+.photo-empty {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.photo-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Sidebar account info */
+.card-info p {
+  margin: 0.3rem 0;
+  font-size: 0.87rem;
+  color: var(--muted-foreground);
+}
+
+.card-info strong {
+  color: var(--card-foreground);
+}
+
+/* Responsive tweaks */
+@media (max-width: 1000px) {
+  .wallet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  main.profile-page {
+    padding-inline: 1rem;
+  }
+
+  .wallet-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .two-cols {
+    grid-template-columns: 1fr;
+  }
+}
