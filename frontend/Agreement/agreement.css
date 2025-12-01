@@ -1,0 +1,153 @@
+/* Agreement specific styles - small, compatible with landing/ dashboard theme */
+
+:root {
+	--agreement-card: var(--card, #ffffff);
+}
+
+.agreement-shell {
+	padding-top: 72px; /* keep under header */
+	background: var(--background);
+	min-height: 100vh;
+}
+
+/* Typography polish */
+body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: var(--foreground); }
+
+.agreement-container { font-size: 14px; }
+
+.agreement-container {
+	max-width: 1100px;
+	margin: 1.25rem auto;
+	padding: 1rem;
+}
+
+.agreement-meta {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 1rem;
+	background: var(--card);
+	border: 1px solid var(--border);
+	padding: 1rem;
+	border-radius: 0.8rem;
+	box-shadow: 0 8px 24px rgba(15,23,42,0.06);
+}
+
+.meta-sub { color: var(--muted-foreground); font-size:0.95rem }
+
+.agreement-meta .meta-left {
+    display:flex;
+    flex-direction:column;
+    gap:0.25rem;
+}
+
+.agreement-meta .meta-right {
+    text-align:right;
+    display:flex;
+    flex-direction:column;
+    gap:0.2rem;
+    min-width:180px;
+}
+
+.agreement-meta .meta-right div { color:var(--muted-foreground); font-size:0.95rem }
+.agreement-meta .meta-right strong { color:var(--foreground); font-weight:700 }
+
+.agreement-meta .meta-left h1 { margin:0; font-size:1.15rem; font-weight:700 }
+.agreement-meta .meta-sub { color:var(--muted-foreground); }
+
+
+.agreement-body { margin-top: 1rem; display:flex; flex-direction:column; gap:1rem; counter-reset:section }
+
+
+.comparison-grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
+.comparison-grid .column { background:var(--card); padding:0.9rem; border-radius:0.6rem; border:1px solid var(--border); box-shadow: 0 6px 18px rgba(15,23,42,0.03); }
+.comparison-grid label { display:block; margin:0.6rem 0 }
+.comparison-grid input, .comparison-grid select { width:100%; padding:0.45rem 0.6rem; border-radius:0.45rem; border:1px solid var(--border); background:var(--input-background); color:var(--foreground) }
+
+
+.mutual-grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
+.mutual-column { background:var(--card); padding:0.9rem; border-radius:0.6rem; border:1px solid var(--border); box-shadow: 0 6px 14px rgba(15,23,42,0.03); }
+.mutual-column h4 { margin:0 0 0.5rem }
+
+.quality-finance { display:flex; gap:1rem }
+.quality-finance > div { flex:1; background:var(--card); padding:0.9rem; border-radius:0.6rem; border:1px solid var(--border) }
+
+.problems-section { background: #fff7ed; border:1px solid #ffd7b5; padding:0.8rem; border-radius:0.6rem }
+.problems-section h4 { margin:0 0 0.4rem; color: #92400e }
+#problemsList { min-height:46px; color:#92400e }
+.problem-actions { margin-top:0.6rem; display:flex; gap:0.6rem; flex-wrap:wrap }
+.problem-actions button { padding:0.5rem 0.75rem; border-radius:0.5rem; border:1px solid rgba(15,23,42,0.06); background:var(--primary); color:var(--primary-foreground); cursor:pointer }
+
+.btn-secondary { background: transparent; color: var(--foreground); border:1px solid rgba(15,23,42,0.06); padding:0.45rem 0.65rem; border-radius:0.45rem }
+
+.signing-section { display:flex; gap:1rem; justify-content:space-between; align-items:center }
+.sign-left, .sign-right { background:var(--card); padding:0.8rem; border:1px solid var(--border); border-radius:0.6rem; flex:1; box-shadow: 0 6px 14px rgba(15,23,42,0.03); }
+.sign-left label, .sign-right label { display:block; margin-bottom:0.6rem }
+.signing-section button { padding:0.6rem 0.9rem; border-radius:0.6rem; border:none; background:var(--primary); color:var(--primary-foreground); cursor:pointer }
+.signing-section button[disabled] { opacity:0.6; cursor:not-allowed }
+
+
+.finalize { background: rgba(236,253,245,0.8); border:1px solid rgba(16,185,129,0.2); padding:0.9rem; border-radius:0.6rem }
+
+/* unify section card sizing */
+.section { width:100%; box-sizing:border-box }
+
+@media (max-width: 900px) {
+	.comparison-grid, .mutual-grid { grid-template-columns: 1fr }
+	.quality-finance { flex-direction:column }
+}
+
+/* small util */
+.locked { background: linear-gradient(90deg, rgba(220,252,231,0.6), rgba(240,253,249,0.5)); border-color: rgba(34,197,94,0.25) }
+
+/* Section styles */
+.section { background: var(--card); border:1px solid var(--border); padding:1.1rem; border-radius:0.7rem; position:relative; padding-left:56px }
+.section h2 { margin:0 0 0.6rem; font-size:1.05rem; font-weight:700 }
+.section::before { content: counter(section); counter-increment: section; position:absolute; left:18px; top:14px; width:36px; height:36px; border-radius:999px; background:var(--primary); color:var(--primary-foreground); display:flex; align-items:center; justify-content:center; font-weight:700 }
+.two-col { display:flex; gap:1rem; align-items:flex-start }
+.two-col > div { flex:1 }
+.two-col label, .section label { display:block; margin:0.4rem 0 }
+.subsection { margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed var(--border) }
+.system-rule { margin-top:0.6rem; color:var(--muted-foreground); font-style: italic }
+
+/* Form control styling */
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+	width:100%;
+	padding:0.6rem 0.7rem;
+	border-radius:0.6rem;
+	border:1px solid rgba(15,23,42,0.06);
+	background: var(--input-background);
+	color: var(--foreground);
+	box-sizing:border-box;
+	transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+	outline:none;
+	border-color: var(--primary);
+	box-shadow: 0 6px 20px rgba(34,197,94,0.06);
+}
+
+label { font-weight:600; color:var(--muted-foreground); display:block; margin-bottom:0.35rem }
+.section p { color:var(--muted-foreground); margin:0.4rem 0 }
+
+/* button styles */
+.btn-primary { background:var(--primary); color:var(--primary-foreground); border:none; padding:0.6rem 0.9rem; border-radius:0.6rem; font-weight:700; cursor:pointer }
+.btn-primary[disabled] { opacity:0.6; cursor:not-allowed }
+
+/* sticky signing bar on small screens */
+@media (max-width:900px) {
+	.signing-section { position: sticky; bottom:0; padding:0.6rem; background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.95)); z-index:60 }
+	.sign-left, .sign-right { padding:0.6rem }
+}
+
+@media (max-width:900px) {
+	.two-col { flex-direction:column }
+}
+
+/* Responsive tweak for the section badge to avoid overlap on small screens */
+@media (max-width:600px) {
+	.section { padding-left:48px }
+	/* lift the badge a bit on small screens as well */
+	.section::before { left:12px; top:8px; width:30px; height:30px; font-size:0.95rem }
+}

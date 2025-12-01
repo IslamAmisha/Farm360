@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farm360 — Digital Crop Agreement</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Shared Themes -->
+    <link rel="stylesheet" href="../Landing-page/landing-page.css" />
+    <link
+      rel="stylesheet"
+      href="../Farmer/Farmer-Dashboard/farmer-dashboard.css"
+    />
+    <link rel="stylesheet" href="agreement.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span>Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../Landing-page/landing-page.html#hero" class="nav-item"
+            >Home</a
+          >
+          <a href="../Landing-page/landing-page.html#modules" class="nav-item"
+            >Modules</a
+          >
+          <a href="../Landing-page/landing-page.html#about" class="nav-item"
+            >About</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a href="../Landing-page/landing-page.html#hero" class="mobile-item"
+          >Home</a
+        >
+        <a href="#agreement" class="mobile-item">Agreement</a>
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- AGREEMENT MAIN -->
+    <main class="agreement-shell" id="agreement">
+      <div class="agreement-container">
+        <!-- HEADER BOX -->
+        <div class="agreement-meta">
+          <div class="meta-left">
+            <h1>Farm360 — Digital Crop Agreement</h1>
+            <div class="meta-sub">
+              System-Generated · Modular · Escrow Enabled
+            </div>
+          </div>
+
+          <div class="meta-right">
+            <div>
+              <strong>Agreement ID:</strong> <span id="agreementId">—</span>
+            </div>
+            <div><strong>Version:</strong> v3.2</div>
+            <div><strong>Date:</strong> <span id="agreementDate">—</span></div>
+            <div><strong>Signing Validity:</strong> 48 hours</div>
+          </div>
+        </div>
+
+        <!-- SECTIONS START -->
+        <div class="agreement-body">
+          <!-- SECTION 1 -->
+          <section class="section">
+            <h2>Parties & Meta</h2>
+
+            <div class="two-col">
+              <!-- FARMER -->
+              <div>
+                <h3>Farmer (First Party)</h3>
+
+                <label
+                  >Name
+                  <input id="farmerName" type="text" placeholder="Farmer Name"
+                /></label>
+                <label
+                  >Farmer ID
+                  <input id="farmerId" type="text" placeholder="Farmer-ID"
+                /></label>
+                <label
+                  >Phone <input id="farmerPhone" type="text" placeholder="+91-"
+                /></label>
+                <label
+                  >Village / Address <input id="farmerAddress" type="text"
+                /></label>
+                <label
+                  >Land Size
+                  <input
+                    id="farmerLandSize"
+                    type="text"
+                    placeholder="e.g. 1 acre"
+                /></label>
+
+                <label
+                  >Land Ownership
+                  <select id="farmerLandOwnership" class="mutual-field">
+                    <option value="">Select</option>
+                    <option value="own">Own</option>
+                    <option value="lease">Lease</option>
+                  </select>
+                </label>
+              </div>
+
+              <!-- BUYER -->
+              <div>
+                <h3>Buyer (Second Party)</h3>
+
+                <label
+                  >Name / Business
+                  <input
+                    id="buyerName"
+                    type="text"
+                    placeholder="Buyer / Business Name"
+                /></label>
+                <label
+                  >Buyer ID
+                  <input id="buyerId" type="text" placeholder="Buyer-ID"
+                /></label>
+                <label
+                  >Phone <input id="buyerPhone" type="text" placeholder="+91-"
+                /></label>
+                <label>Address <input id="buyerAddress" type="text" /></label>
+                <label
+                  >Registration ID
+                  <input id="buyerReg" type="text" placeholder="GST / PAN"
+                /></label>
+              </div>
+            </div>
+
+            <div class="region">
+              <label>State <input id="regionState" type="text" /></label>
+              <label>District <input id="regionDistrict" type="text" /></label>
+              <label
+                >Block / Tehsil <input id="regionBlock" type="text"
+              /></label>
+
+              <label
+                >Region Module
+                <select id="regionModule" class="mutual-field">
+                  <option value="default">Default</option>
+                  <option value="wb">West Bengal</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <!-- SECTION 2 -->
+          <section class="section">
+            <h2>Core Definitions & Timeline</h2>
+
+            <label
+              >Agreement Start Date <input id="startDate" type="date"
+            /></label>
+            <label>Agreement End Date <input id="endDate" type="date" /></label>
+
+            <div class="stages">
+              <label
+                >Escrow Stage 1 (%)
+                <input
+                  id="farmerEscrow1"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="30"
+                  class="mutual-field"
+              /></label>
+              <label
+                >Escrow Stage 2 (%)
+                <input
+                  id="farmerEscrow2"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="30"
+                  class="mutual-field"
+              /></label>
+              <label
+                >Escrow Stage 3 (%)
+                <input
+                  id="farmerEscrow3"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="40"
+                  class="mutual-field"
+              /></label>
+            </div>
+
+            <div class="proof-types">
+              <label
+                ><input type="checkbox" class="proof" value="geo" checked />
+                Geo-tagged photos</label
+              >
+              <label
+                ><input type="checkbox" class="proof" value="qr" /> QR pickup
+                scan</label
+              >
+              <label
+                ><input type="checkbox" class="proof" value="weigh" />
+                Weighbridge slip</label
+              >
+              <label
+                ><input type="checkbox" class="proof" value="sat" /> Satellite
+                indices</label
+              >
+              <label
+                ><input type="checkbox" class="proof" value="lab" /> Third-party
+                lab report</label
+              >
+              <label
+                ><input type="checkbox" class="proof" value="visit" />
+                Supervisor visit report</label
+              >
+            </div>
+          </section>
+
+          <!-- SECTION 3 -->
+          <section class="section">
+            <h2>Base Purpose & Relationship</h2>
+            <p>
+              The Farmer agrees to cultivate the agreed crop on the specified
+              land and sell the harvest only to the Buyer under the terms
+              written here.
+            </p>
+            <p>
+              The Buyer agrees to support the Farmer through inputs, services,
+              guidance, or funds, and to purchase the agreed produce subject to
+              quality and conditions.
+            </p>
+          </section>
+
+          <!-- SECTION 4 -->
+          <section class="section">
+            <h2>Base Commitments</h2>
+
+            <div class="commitments two-col">
+              <div>
+                <h4>Buyer Commitments</h4>
+
+                <label
+                  ><input type="checkbox" id="buyer_commit_seeds" /> Provide
+                  certified seeds as per crop module.</label
+                >
+                <label
+                  ><input type="checkbox" id="buyer_commit_inputs" /> Provide or
+                  fund fertilizers and agrochemicals.</label
+                >
+                <label
+                  ><input type="checkbox" id="buyer_commit_transport_inputs" />
+                  Provide or fund transport for input delivery.</label
+                >
+                <label
+                  ><input type="checkbox" id="buyer_commit_escrow" /> Deposit
+                  the contract value in escrow before sowing.</label
+                >
+                <label
+                  ><input type="checkbox" id="buyer_commit_cold" /> Arrange cold
+                  storage if required.</label
+                >
+                <label
+                  ><input type="checkbox" id="buyer_commit_guidance" /> Provide
+                  basic cultivation guidance.</label
+                >
+              </div>
+
+              <div>
+                <h4>Farmer Commitments</h4>
+
+                <label
+                  ><input type="checkbox" id="farmer_commit_use_land" /> Use the
+                  land only for the agreed crop.</label
+                >
+                <label
+                  ><input type="checkbox" id="farmer_commit_prepare_land" />
+                  Prepare land as per requirements.</label
+                >
+                <label
+                  ><input type="checkbox" id="farmer_commit_upload_photos" />
+                  Upload geo-tagged photos regularly.</label
+                >
+                <label
+                  ><input type="checkbox" id="farmer_commit_irrigation" />
+                  Follow the irrigation schedule.</label
+                >
+                <label
+                  ><input type="checkbox" id="farmer_commit_delivery" /> Deliver
+                  produce to the agreed point on time.</label
+                >
+              </div>
+            </div>
+
+            <p class="system-rule">
+              <em>System Rule:</em> If any required checkbox is not ticked, the
+              Agreement cannot be signed.
+            </p>
+          </section>
+
+          <!-- SECTION 5 -->
+          <section class="section">
+            <h2>Land, Crop & Process Checklist</h2>
+
+            <label>Land Location <input id="landLocation" type="text" /></label>
+            <label>Total Land Area <input id="landArea" type="text" /></label>
+
+            <label
+              >Primary Crop
+              <select id="farmerCrop" class="mutual-field">
+                <option value="">Select</option>
+                <option value="potato">Potato</option>
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="tomato">Tomato</option>
+                <option value="onion">Onion</option>
+              </select>
+            </label>
+
+            <label>Crop Variety <input id="cropVariety" type="text" /></label>
+            <label
+              >Crop Season
+              <input id="cropSeason" type="text" placeholder="e.g. Kharif"
+            /></label>
+
+            <div class="subsection">
+              <h4>Pre-sowing Inputs</h4>
+
+              <label>Seed Variety <input id="seedVariety" type="text" /></label>
+
+              <label
+                >Seed Grade
+                <select id="seedGrade" class="mutual-field">
+                  <option value="">Select</option>
+                  <option>G1</option>
+                  <option>G2</option>
+                  <option>G3</option>
+                </select>
+              </label>
+
+              <label
+                >Seed Source
+                <select id="seedSource" class="mutual-field">
+                  <option value="">Select</option>
+                  <option>Govt Certified</option>
+                  <option>Local Dealer</option>
+                  <option>Buyer Supplied</option>
+                  <option>Farmer Supplied</option>
+                </select>
+              </label>
+
+              <label
+                >Certification Proof Required?
+                <select id="certProof" class="mutual-field">
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <!-- SECTION 6 -->
+          <section class="section" id="potatoModule" style="display: none">
+            <h2>Crop-Specific Module: Potato</h2>
+
+            <label
+              >Farmer Seed Variety <input id="farmerPotatoSeed" type="text"
+            /></label>
+            <label
+              >Buyer Seed Variety <input id="buyerPotatoSeed" type="text"
+            /></label>
+
+            <label
+              >Raised Beds?
+              <select id="potatoRaisedBeds" class="mutual-field">
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </label>
+
+            <label
+              >Bed Spacing (cm) <input id="potatoBedSpacing" type="number"
+            /></label>
+            <label
+              >Min Soil Depth (cm) <input id="potatoSoilDepth" type="number"
+            /></label>
+            <label
+              >Blight Alert Threshold (%)
+              <input id="potatoBlightThreshold" type="number"
+            /></label>
+          </section>
+
+          <!-- SECTION 7 -->
+          <section class="section">
+            <h2>Financial / Escrow / Payment Terms</h2>
+
+            <label
+              >Estimated Contract Value (₹)
+              <input id="contractValue" type="number"
+            /></label>
+
+            <label
+              >Escrow Mode
+              <select id="escrowMode" class="mutual-field">
+                <option value="full">Full amount before sowing</option>
+                <option value="stages">Stage-wise funding</option>
+              </select>
+            </label>
+
+            <div class="stages">
+              <label
+                >Stage 1 (%)
+                <input id="buyerEscrow1" type="number" class="mutual-field"
+              /></label>
+              <label
+                >Stage 2 (%)
+                <input id="buyerEscrow2" type="number" class="mutual-field"
+              /></label>
+              <label
+                >Stage 3 (%)
+                <input id="buyerEscrow3" type="number" class="mutual-field"
+              /></label>
+            </div>
+
+            <label
+              >Advance Paid (₹) <input id="advancePaid" type="number"
+            /></label>
+          </section>
+
+          <!-- SECTION 8 -->
+          <section class="section">
+            <h2>Quality / Grading / Pricing</h2>
+
+            <label
+              >Measurement Method
+              <select id="measurementMethod" class="mutual-field">
+                <option value="weighbridge">Digital weighbridge</option>
+                <option value="manual">Manual with photo proof</option>
+                <option value="warehouse">Buyer warehouse weighment</option>
+              </select>
+            </label>
+
+            <label
+              >Acceptable Weight Variance (%)
+              <input id="weightVariance" type="number"
+            /></label>
+
+            <label
+              >Sample Testing?
+              <select id="sampleTesting" class="mutual-field">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </label>
+          </section>
+
+          <!-- SECTION 9 -->
+          <section class="section">
+            <h2>Logistics / Storage / Packaging</h2>
+
+            <label
+              >Delivery Point <input id="deliveryPoint" type="text"
+            /></label>
+            <label>Delivery From <input id="deliveryFrom" type="date" /></label>
+            <label>Delivery To <input id="deliveryTo" type="date" /></label>
+
+            <label
+              >Transport Responsibility
+              <select id="transportResponsibility" class="mutual-field">
+                <option value="farmer">Farmer</option>
+                <option value="buyer">Buyer</option>
+                <option value="shared">Shared</option>
+              </select>
+            </label>
+          </section>
+
+          <!-- SECTION 10 -->
+          <section class="section">
+            <h2>Monitoring & Evidence</h2>
+            <p>
+              Supported evidence includes photos, satellite indices, weather
+              API, QR scans, weighbridge slips, and supervisor reports.
+            </p>
+
+            <label
+              >Evidence Submission Window (hours)
+              <input id="evidenceHours" type="number" value="48" />
+            </label>
+          </section>
+
+          <!-- SECTION 11 -->
+          <section class="section">
+            <h2>Disputes & Re-negotiation</h2>
+            <p>
+              Any disagreement must first be raised in the Problem Section along
+              with supporting evidence.
+            </p>
+          </section>
+
+          <!-- SECTION 12 -->
+          <section class="section">
+            <h2>Force Majeure</h2>
+            <p>
+              In case of natural calamity, the agreement may enter Pause Mode.
+              The farmer is not penalized for verified losses.
+            </p>
+          </section>
+
+          <!-- SECTION 13 -->
+          <section class="section">
+            <h2>Reliability & Penalties</h2>
+            <p>
+              System automatically updates reliability score. Red flags include
+              fake photos, non-payment, or repeated non-delivery.
+            </p>
+          </section>
+
+          <!-- SECTION 14 -->
+          <section class="section">
+            <h2>Signature & Execution Rules</h2>
+            <p>
+              All required fields must match. After both parties sign, the
+              agreement becomes Final and Locked.
+            </p>
+          </section>
+
+          <!-- SECTION 15 -->
+          <section class="section">
+            <h2>Final System Actions</h2>
+            <p>
+              Once signed: Agreement ACTIVE, escrow created, monitoring enabled,
+              audit trail stored.
+            </p>
+          </section>
+
+          <!-- PROBLEM SECTION -->
+          <section class="problems-section">
+            <h4>Problem Section / Mismatches</h4>
+
+            <div id="problemsList">No problems detected.</div>
+
+            <div class="problem-actions">
+              <button id="resolveToFarmer">Copy Buyer → Farmer</button>
+              <button id="resolveToBuyer">Copy Farmer → Buyer</button>
+            </div>
+          </section>
+
+          <!-- SIGNING -->
+          <section class="signing-section">
+            <div class="sign-left">
+              <label
+                ><input type="checkbox" id="farmerConfirmRequired" /> I (Farmer)
+                confirm all required fields</label
+              >
+              <button id="farmerSign" class="btn-primary" disabled>
+                Farmer: Accept & Sign
+              </button>
+            </div>
+
+            <div class="sign-right">
+              <label
+                ><input type="checkbox" id="buyerConfirmRequired" /> I (Buyer)
+                confirm all required fields</label
+              >
+              <button id="buyerSign" class="btn-primary" disabled>
+                Buyer: Accept & Sign
+              </button>
+            </div>
+          </section>
+
+          <!-- FINALIZED -->
+          <section class="finalize" id="finalizeArea" style="display: none">
+            <h3>Agreement Finalized</h3>
+            <div id="auditTrail"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../Landing-page/landing-page.js"></script>
+    <script src="../Farmer/Farmer-Dashboard/farmer-dashboard.js"></script>
+    <script src="agreement.js"></script>
+  </body>
+</html>

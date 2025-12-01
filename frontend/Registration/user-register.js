@@ -67,6 +67,20 @@ const phoneErr = document.getElementById("phoneErr");
 const roleErr = document.getElementById("roleErr");
 const msg = document.getElementById("msg");
 
+/* CLEAR BUTTON ------------------------------ */
+const clearBtn = document.getElementById("clearBtn");
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    // Reset the form and clear UI messages
+    form.reset();
+    phoneErr.textContent = "";
+    roleErr.textContent = "";
+    msg.textContent = "";
+    // Focus the phone field for convenience
+    try { phone.focus(); } catch (e) {}
+  });
+}
+
 form.addEventListener("submit", function (e) {
   e.preventDefault();
 

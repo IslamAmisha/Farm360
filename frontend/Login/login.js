@@ -79,6 +79,22 @@ const phoneErr = document.getElementById("phoneErr");
 const captchaErr = document.getElementById("captchaErr");
 const msg = document.getElementById("msg");
 
+/* CLEAR BUTTON ------------------------------ */
+const clearBtn = document.getElementById("clearBtn");
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    // reset the form and clear UI messages
+    form.reset();
+    phoneErr.textContent = "";
+    captchaErr.textContent = "";
+    msg.textContent = "";
+    // generate a fresh captcha
+    refreshCaptcha();
+    // focus phone field for convenience
+    try { phone.focus(); } catch (e) {}
+  });
+}
+
 form.addEventListener("submit", function (e) {
   e.preventDefault();
 
