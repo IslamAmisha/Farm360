@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Farm360 – Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="login.css" />
+  </head>
+
+  <body>
+    <div class="page-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="left">
+          <span class="logo-icon">🌿</span>
+          <span class="logo-text">Farm360</span>
+        </div>
+
+        <div class="controls">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+        </div>
+      </header>
+
+      <!-- LOGIN CARD -->
+      <main class="container">
+        <div class="register-card card">
+          <a
+            href="../Landing-page/landing-page.html"
+            data-text="backBtn"
+            class="back-btn-card"
+            >‹ Back</a
+          >
+
+          <h2 class="register-title" data-text="loginTitle">Login</h2>
+          <p class="register-subtitle" data-text="loginSubtitle">
+            Access your Farm360 account.
+          </p>
+
+          <form id="loginForm" novalidate>
+            <div class="form-group">
+              <label data-text="labelPhone">Phone Number</label>
+              <input
+                id="phone"
+                type="tel"
+                placeholder="+8801XXXXXXXXX"
+                required
+              />
+              <div id="phoneErr" class="error"></div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="labelCaptcha">Captcha</label>
+
+              <div class="captcha-box">
+                <span id="captchaText"></span>
+                <button
+                  type="button"
+                  id="refreshCaptcha"
+                  class="captcha-refresh"
+                >
+                  ⟳
+                </button>
+              </div>
+
+              <input
+                id="captchaInput"
+                type="text"
+                placeholder="Enter captcha"
+                required
+              />
+              <div id="captchaErr" class="error"></div>
+            </div>
+
+            <div class="form-buttons">
+              <button type="submit" class="btn-primary" data-text="btnLogin">
+                Login
+              </button>
+              <button
+                type="button"
+                id="clearBtn"
+                class="btn-outline"
+                data-text="btnClear"
+              >
+                Clear
+              </button>
+            </div>
+
+            <div id="msg" class="form-message"></div>
+
+            <p class="form-hint">
+              <span data-text="goRegisterText">Don’t have an account?</span>
+              <a
+                href="../Registration/user-register.html"
+                class="link"
+                id="regLink"
+              >
+                Register Here
+              </a>
+            </p>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <script src="login.js"></script>
+  </body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-text="dashboardTitle">Farmer Dashboard</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared Landing Page Theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- Farmer Dashboard Styles -->
+    <link rel="stylesheet" href="farmer-dashboard.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a
+            href="../../Landing-page/landing-page.html#hero"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#modules"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#data-insights"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#multilingual-support"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html#hero"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a href="#dashboard" class="mobile-item" data-text="sidebarDashboard"
+          >Dashboard</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard-shell" id="dashboard">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title" data-text="dashboard">Dashboard</div>
+          <button id="sidebarToggle" class="sidebar-toggle">
+            <span class="material-icons">menu_open</span>
+          </button>
+        </div>
+
+        <nav class="sidebar-menu">
+          <a class="menu-item active">
+            <span class="material-icons">dashboard</span>
+            <span data-text="sidebarDashboard">Dashboard</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">person</span>
+            <span data-text="sidebarProfile">My Profile</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">agriculture</span>
+            <span data-text="sidebarLand">My Land</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">description</span>
+            <span data-text="sidebarProposals">Proposals</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">handshake</span>
+            <span data-text="sidebarAgreements">Agreements</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">trending_up</span>
+            <span data-text="sidebarCultivation">Cultivation Progress</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">payments</span>
+            <span data-text="sidebarPayments">Payments</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">notifications</span>
+            <span data-text="sidebarNotifications">Notifications</span>
+          </a>
+
+          <a class="menu-item">
+            <span class="material-icons">settings</span>
+            <span data-text="sidebarSettings">Settings</span>
+          </a>
+
+          <a class="menu-item logout">
+            <span class="material-icons">logout</span>
+            <span data-text="sidebarLogout">Logout</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="dashboard-content">
+        <div class="page-header">
+          <h1 data-text="dashboardTitle">Farmer Dashboard</h1>
+          <p class="page-subtitle" data-text="dashboardSubtitle">
+            View your agreements, proposals and connect with trusted buyers.
+          </p>
+        </div>
+
+        <!-- SEARCH & FILTERS -->
+        <section class="search-filter-panel">
+          <div class="search-row">
+            <div class="search-group">
+              <label
+                for="buyerSearch"
+                class="field-label"
+                data-text="searchLabel"
+              >
+                Search buyers
+              </label>
+
+              <div class="search-input-wrapper">
+                <span class="material-icons search-icon">search</span>
+
+                <input
+                  type="text"
+                  id="buyerSearch"
+                  class="search-input"
+                  data-placeholder="searchPlaceholder"
+                  placeholder="Search buyers..."
+                />
+              </div>
+            </div>
+
+            <button
+              class="btn-primary apply-btn"
+              id="applyFiltersBtn"
+              data-text="filterApply"
+            >
+              Apply
+            </button>
+          </div>
+
+          <div class="filters-row">
+            <div class="filter-item">
+              <label data-text="filterSeason">Season</label>
+              <select id="seasonFilter" class="filter-select">
+                <option value="" data-text="seasonAll">All Seasons</option>
+                <option value="kharif" data-text="season_kharif">Kharif</option>
+                <option value="rabi" data-text="season_rabi">Rabi</option>
+                <option value="summer" data-text="season_summer">Summer</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label data-text="filterCropType">Crop</label>
+              <select id="cropFilter" class="filter-select">
+                <option value="" data-text="cropAll">All Crops</option>
+                <option value="rice" data-text="crop_rice">Rice</option>
+                <option value="wheat" data-text="crop_wheat">Wheat</option>
+                <option value="potato" data-text="crop_potato">Potato</option>
+                <option value="tomato" data-text="crop_tomato">Tomato</option>
+                <option value="corn" data-text="crop_corn">Corn</option>
+                <option value="onion" data-text="crop_onion">Onion</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- SUMMARY -->
+        <section class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-icon summary-icon-green">📄</div>
+            <div class="summary-content">
+              <div class="summary-label" data-text="summaryAgreements">
+                Agreements
+              </div>
+              <div class="summary-value">4</div>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-icon summary-icon-blue">📨</div>
+            <div class="summary-content">
+              <div class="summary-label" data-text="summaryProposals">
+                Proposals
+              </div>
+              <div class="summary-value">2</div>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-icon summary-icon-orange">💰</div>
+            <div class="summary-content">
+              <div class="summary-label" data-text="summaryPayments">
+                Payments
+              </div>
+              <div class="summary-value">₹68,000</div>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-icon summary-icon-purple">📈</div>
+            <div class="summary-content">
+              <div class="summary-label" data-text="summaryProgress">
+                Progress
+              </div>
+              <div class="summary-value">65%</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BUYER CARDS -->
+        <section class="buyers-section">
+          <div class="section-header">
+            <h2 data-text="buyerProfiles">Available Buyers</h2>
+            <p class="section-subtitle" data-text="buyerProfilesSubtitle">
+              Connect with buyers interested in your crops.
+            </p>
+          </div>
+
+          <div class="buyers-grid" id="buyersGrid">
+            <div class="buyer-card loading-card">
+              <div class="loader"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Script -->
+    <script src="../../Landing-page/landing-page.js"></script>
+    <script src="farmer-dashboard.js"></script>
+  </body>
+</html>

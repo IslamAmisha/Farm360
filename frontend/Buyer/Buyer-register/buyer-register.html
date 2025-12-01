@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Farm360 — Buyer Registration</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="buyer-register.css" />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- HEADER (same vibe as dashboard / farmer) -->
+      <header class="top-header">
+        <div class="left">
+          <span class="logo-icon">🌿</span>
+          <span class="logo-text">Farm360</span>
+        </div>
+
+        <div class="controls">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+        </div>
+      </header>
+
+      <!-- MAIN -->
+      <main class="container">
+        <!-- PAGE TITLE -->
+        <div class="title-row">
+          <h1 class="page-title" data-text="pageTitle">Buyer Registration</h1>
+
+          <a
+            href="../../Registration/user-register.html"
+            class="back-btn-card"
+            data-text="backBtn"
+          >
+            ‹ Back
+          </a>
+        </div>
+
+        <p class="page-subtitle" data-text="pageSubtitle">
+          Provide your details to complete your Farm360 buyer profile.
+        </p>
+
+        <form id="buyerForm" novalidate>
+          <!-- CARD 1 – BASIC DETAILS -->
+          <section class="card">
+            <h2 class="card-title" data-text="basicTitle">
+              Basic Details — মৌলিক বিবরণ
+            </h2>
+
+            <div class="form-group">
+              <label for="fullName" data-text="fullNameLabel">Full Name</label>
+              <input
+                type="text"
+                id="fullName"
+                placeholder="Enter full name — পূর্ণ নাম লিখুন"
+                required
+              />
+              <div class="error" id="fullNameErr"></div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="aadhar" data-text="aadharLabel">Aadhaar No</label>
+                <input
+                  type="text"
+                  id="aadhar"
+                  maxlength="12"
+                  placeholder="12-digit Aadhaar — ১২ সংখ্যার আধার"
+                />
+
+                <div class="aadhaar-actions">
+                  <button
+                    type="button"
+                    class="btn-outline"
+                    id="verifyAadhaarBtn"
+                  >
+                    <span data-text="verifyBtnText">Verify</span>
+                  </button>
+                  <div id="aadharStatus" class="hint"></div>
+                </div>
+
+                <div class="error" id="aadharErr"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="aadharPhoto" data-text="aadharPhotoLabel">
+                  Aadhaar Photo
+                </label>
+                <input type="file" id="aadharPhoto" accept="image/*" />
+                <div class="hint" data-text="aadharPhotoHint">
+                  Upload a clear Aadhaar image (optional) — পরিষ্কার আধারের ছবি
+                  দিন (ঐচ্ছিক)
+                </div>
+                <img
+                  id="aadharPreview"
+                  class="preview-img hidden"
+                  alt="Aadhaar preview"
+                />
+                <div class="error" id="aadharPhotoErr"></div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="district" data-text="districtLabel">
+                  District (West Bengal)
+                </label>
+                <select id="district">
+                  <option value="">Select district — জেলা নির্বাচন করুন</option>
+                </select>
+                <div class="error" id="districtErr"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="block" data-text="blockLabel">Block</label>
+                <select id="block" disabled>
+                  <option value="">Select block — ব্লক নির্বাচন করুন</option>
+                </select>
+                <div class="error" id="blockErr"></div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="city" data-text="cityLabel">City / Town</label>
+                <select id="city">
+                  <option value="">Select city — শহর নির্বাচন করুন</option>
+                  <option value="Kolkata">Kolkata</option>
+                  <option value="Howrah">Howrah</option>
+                  <option value="Haldia">Haldia</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="village" data-text="villageLabel">
+                  Village / Area
+                </label>
+                <input
+                  type="text"
+                  id="village"
+                  placeholder="Village or area — গ্রাম/এলাকা"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="pin" data-text="pinLabel">PIN Code</label>
+              <input
+                type="text"
+                id="pin"
+                maxlength="6"
+                placeholder="e.g., 700001"
+              />
+              <div class="error" id="pinErr"></div>
+            </div>
+          </section>
+
+          <!-- CARD 2 – BUSINESS DETAILS -->
+          <section class="card">
+            <h2 class="card-title" data-text="businessTitle">
+              Business Details — ব্যবসার বিবরণ
+            </h2>
+
+            <div class="form-group">
+              <label for="businessName" data-text="businessNameLabel">
+                Business Name
+              </label>
+              <input
+                type="text"
+                id="businessName"
+                placeholder="Business / Shop name"
+              />
+              <div class="error" id="businessNameErr"></div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="businessType" data-text="businessTypeLabel">
+                  Business Type
+                </label>
+                <select id="businessType">
+                  <option value="">Select type — ধরন নির্বাচন করুন</option>
+                  <option value="individual">Individual — ব্যক্তি</option>
+                  <option value="company">Company — কোম্পানি</option>
+                  <option value="exporter">Exporter — রপ্তানিকারক</option>
+                  <option value="wholesaler">Wholesaler — পাইকারি</option>
+                  <option value="retailer">Retailer — খুচরা বিক্রেতা</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="businessScale" data-text="businessScaleLabel">
+                  Business Scale
+                </label>
+                <select id="businessScale">
+                  <option value="">Select scale — পরিধি নির্বাচন করুন</option>
+                  <option value="small">Small — ক্ষুদ্র</option>
+                  <option value="medium">Medium — মাঝারি</option>
+                  <option value="large">Large — বড়</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="govtApprovalLabel">
+                Government Approvals
+              </label>
+              <div class="checkbox-row">
+                <label>
+                  <input type="checkbox" id="payTax" />
+                  <span data-text="payTaxLabel">Pay Tax — কর প্রদান করে</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="gstRegistered" />
+                  <span data-text="gstLabel">
+                    GST Registered — জিএসটি নিবন্ধিত
+                  </span>
+                </label>
+                <label>
+                  <input type="checkbox" id="licence" />
+                  <span data-text="licenceLabel">
+                    Has Licence — লাইসেন্স আছে
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="businessAge" data-text="businessAgeLabel">
+                  Business Age
+                </label>
+                <select id="businessAge">
+                  <option value="">Select — নির্বাচন করুন</option>
+                  <option value="lt1">Less than 1 year — ১ বছরের কম</option>
+                  <option value="1to5">1 to 5 years — ১-৫ বছর</option>
+                  <option value="gt5">More than 5 years — ৫ বছরের বেশি</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wareName" data-text="warehouseNameLabel">
+                  Warehouse Name
+                </label>
+                <input type="text" id="wareName" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="wareLocation" data-text="warehouseLocationLabel">
+                Warehouse Location
+              </label>
+              <input type="text" id="wareLocation" />
+            </div>
+
+            <div class="form-group">
+              <label for="annualPurchase" data-text="annualPurchaseLabel">
+                Annual Purchase (approx.)
+              </label>
+              <select id="annualPurchase">
+                <option value="">Select</option>
+                <option value="lt10">Less than 10 tons — ১০ টনের কম</option>
+                <option value="10to100">10 to 100 tons — ১০-১০০ টন</option>
+                <option value="gt100">
+                  More than 100 tons — ১০০ টনের বেশি
+                </option>
+              </select>
+            </div>
+          </section>
+
+          <!-- CARD 3 – CROPS DEALT WITH -->
+          <section class="card">
+            <h2 class="card-title" data-text="cropsTitle">Crops Dealt With</h2>
+
+            <div class="form-group">
+              <label data-text="buyerCropsLabel">Crops</label>
+
+              <!-- UPDATED CLASS -->
+              <div id="buyerCropsContainer" class="crop-grid"></div>
+
+              <div class="error" id="buyerCropsErr"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="buyerCropSub" data-text="buyerCropSubLabel">
+                Crop Subcategories
+              </label>
+              <select id="buyerCropSub" multiple size="6" disabled></select>
+              <div class="hint" data-text="multiSelectHint">
+                Hold Ctrl/Cmd to select multiple
+              </div>
+            </div>
+          </section>
+
+          <!-- CARD 4 – BUYER WALLET INFO -->
+          <section class="card wallet-card">
+            <h2 class="card-title" data-text="walletTitle">
+              Buyer Wallet & Escrow (Auto-Created)
+            </h2>
+            <p class="wallet-text" data-text="walletText1">
+              After registration, a Farm360 Buyer Wallet will be created for
+              you. You can add funds into this wallet to pay farmers securely.
+            </p>
+            <div class="wallet-info">
+              <p data-text="walletText2">
+                Payments are released to farmers in 3 stages under the demo
+                30–30–40 escrow system:
+              </p>
+              <ul>
+                <li data-text="walletStage1">
+                  <strong>30%</strong> — Resource Stage (seed, fertilizer, etc.)
+                </li>
+                <li data-text="walletStage2">
+                  <strong>30%</strong> — Cultivation Progress
+                </li>
+                <li data-text="walletStage3">
+                  <strong>40%</strong> — Harvest Completion & delivery
+                </li>
+              </ul>
+              <p class="hint" data-text="walletNote">
+                This is a simulated wallet for project/demo purpose only — no
+                real banking.
+              </p>
+            </div>
+          </section>
+
+          <!-- SUBMIT -->
+          <div class="submit-container">
+            <button
+              type="submit"
+              class="btn-primary"
+              id="submitBtn"
+              data-text="submitBtn"
+            >
+              Submit Profile
+            </button>
+          </div>
+
+          <div id="formMsg" class="success-msg"></div>
+        </form>
+      </main>
+    </div>
+
+    <script src="buyer-register.js"></script>
+  </body>
+</html>

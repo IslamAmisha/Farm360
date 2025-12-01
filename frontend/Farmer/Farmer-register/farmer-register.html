@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farm360 — Farmer Registration</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="farmer-register.css" />
+  </head>
+
+  <body>
+    <!-- Wrapper -->
+    <div class="page-wrapper">
+      <!-- HEADER -->
+      <header class="top-header">
+        <div class="left">
+          <span class="logo-icon">🌿</span>
+          <span class="logo-text">Farm360</span>
+        </div>
+
+        <div class="controls">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+        </div>
+      </header>
+
+      <!-- Main Container -->
+      <main class="container">
+        <!-- PAGE TITLE -->
+        <div class="title-row">
+          <h1 class="page-title" data-text="pageTitle">Farmer Registration</h1>
+
+          <a
+            href="../../Registration/user-register.html"
+            class="back-btn-card"
+            data-text="backBtn"
+          >
+            ‹ Back
+          </a>
+        </div>
+        <p class="page-subtitle" data-text="pageSubtitle">
+          Provide your farming details to complete your Farm360 profile.
+        </p>
+
+        <!-- CARD 1 — BASIC DETAILS -->
+        <section class="card">
+          <h2 class="card-title" data-text="basicTitle">Basic Details</h2>
+
+          <div class="form-group">
+            <label data-text="nameLabel">Farmer Name</label>
+            <input
+              id="farmerName"
+              type="text"
+              placeholder="Enter full name"
+              required
+            />
+            <div class="error" id="nameErr"></div>
+          </div>
+
+          <div class="row">
+            <div class="form-group">
+              <label data-text="districtLabel">District</label>
+              <select id="district" required>
+                <option value="">Select district</option>
+              </select>
+              <div class="error" id="districtErr"></div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="blockLabel">Block</label>
+              <select id="block" disabled required>
+                <option value="">Select block</option>
+              </select>
+              <div class="error" id="blockErr"></div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="form-group">
+              <label data-text="villageLabel">Village</label>
+              <input
+                id="village"
+                type="text"
+                placeholder="Village name"
+                required
+              />
+              <div class="error" id="villageErr"></div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="pinLabel">PIN Code</label>
+              <input
+                id="pin"
+                type="text"
+                maxlength="6"
+                placeholder="6-digit PIN"
+                required
+              />
+              <div class="error" id="pinErr"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CARD 2 — LAND DETAILS -->
+        <section class="card">
+          <h2 class="card-title" data-text="landTitle">Land Details</h2>
+
+          <div class="row">
+            <div class="form-group">
+              <label data-text="landSizeLabel">Land Size (in acres)</label>
+              <input
+                id="landSize"
+                type="number"
+                step="0.1"
+                placeholder="e.g., 2.0"
+                required
+              />
+              <div class="error" id="landSizeErr"></div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="croppingLabel">Cropping Pattern</label>
+              <select id="croppingPattern" required>
+                <option value="">Select</option>
+                <option value="single">Single Cropped</option>
+                <option value="double">Double Cropped</option>
+                <option value="triple">Triple Cropped</option>
+              </select>
+              <div class="error" id="croppingErr"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CARD 3 — CROPS -->
+        <section class="card">
+          <h2 class="card-title" data-text="cropsTitle">Crops</h2>
+
+          <div id="cropsContainer" class="multi-select"></div>
+          <div id="selectedCrops" class="selected-items"></div>
+          <div class="error" id="cropsErr"></div>
+
+          <div class="form-group">
+            <label data-text="subcategoryLabel">Crop Subcategories</label>
+            <select id="cropSubcategory" multiple size="5" disabled></select>
+            <div class="error" id="subcategoryErr"></div>
+          </div>
+        </section>
+
+        <!-- CARD 4 — PHOTO -->
+        <section class="card">
+          <h2 class="card-title" data-text="photoTitle">Land Photo</h2>
+
+          <div class="form-group">
+            <input id="landPhoto" type="file" accept="image/*" />
+            <div class="hint">Upload a clear photo of your land (optional)</div>
+          </div>
+
+          <div id="photoPreviewWrap" class="photo-preview hidden">
+            <img id="photoPreview" src="" alt="Preview" />
+            <button class="btn-outline" onclick="removePhoto()">Remove</button>
+          </div>
+        </section>
+
+        <!-- CARD 5 — WALLET (ESCROW) -->
+        <section class="card wallet-card">
+          <h2 class="card-title" data-text="walletTitle">
+            Escrow Wallet (Auto-Created)
+          </h2>
+
+          <p class="wallet-text">
+            Your Farm360 wallet will be created automatically after
+            registration.
+          </p>
+
+          <div class="wallet-info">
+            <p>Funds will be released in 3 stages:</p>
+            <ul>
+              <li><strong>30%</strong> — Resource Stage</li>
+              <li><strong>30%</strong> — Cultivation Stage</li>
+              <li><strong>40%</strong> — Harvest Completion</li>
+            </ul>
+            <p>This wallet allows buyers to release funds securely.</p>
+          </div>
+        </section>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="submit-container">
+          <button class="btn-primary" id="submitBtn" data-text="submitBtn">
+            Submit Profile
+          </button>
+        </div>
+
+        <div id="successMsg" class="success-msg"></div>
+      </main>
+    </div>
+
+    <!-- JS -->
+    <script src="farmer-register.js"></script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Farm360 – Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="user-register.css" />
+  </head>
+
+  <body>
+    <div class="page-wrapper">
+      <!-- TOP HEADER (same as login) -->
+      <header class="top-header">
+        <div class="left">
+          <span class="logo-icon">🌿</span>
+          <span class="logo-text">Farm360</span>
+        </div>
+
+        <div class="controls">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+        </div>
+      </header>
+
+      <!-- REGISTRATION CARD -->
+      <main class="container">
+        <div class="register-card card">
+          <a
+            href="../Landing-page/landing-page.html"
+            data-text="backBtn"
+            class="back-btn-card"
+            >‹ Back</a
+          >
+
+          <h2 class="register-title" data-text="regTitle">
+            Create Your Account
+          </h2>
+          <p class="register-subtitle" data-text="regSubtitle">
+            Register to buy or sell agricultural products.
+          </p>
+
+          <form id="registerForm" novalidate>
+            <div class="form-group">
+              <label data-text="labelPhone">Phone Number</label>
+              <input
+                id="phone"
+                type="tel"
+                placeholder="+8801XXXXXXXXX"
+                required
+              />
+              <div id="phoneErr" class="error"></div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="labelRole">Role</label>
+              <select id="role" required>
+                <option value="" data-text="roleSelect">
+                  Select your role
+                </option>
+                <option value="farmer" data-text="roleFarmer">Farmer</option>
+                <option value="buyer" data-text="roleBuyer">Buyer</option>
+              </select>
+              <div id="roleErr" class="error"></div>
+            </div>
+
+            <div class="form-buttons">
+              <button type="submit" class="btn-primary" data-text="btnRegister">
+                Register
+              </button>
+              <button
+                type="button"
+                id="clearBtn"
+                class="btn-outline"
+                data-text="btnClear"
+              >
+                Clear
+              </button>
+            </div>
+
+            <div id="msg" class="form-message"></div>
+
+            <p class="form-hint" data-text="termsHint">
+              By registering you agree to our terms.
+            </p>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <script src="user-register.js"></script>
+  </body>
+</html>

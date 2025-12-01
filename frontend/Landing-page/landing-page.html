@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Farm360 – Farmer–Buyer Partnership Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fonts (similar feel to your React app) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="landing-page.css" />
+
+    <!-- Chart.js for all the charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <!-- default: light theme + English -->
+  <body class="theme-light lang-en">
+    <!-- Header will go here in STEP 2 -->
+    <header id="site-header">
+      <!-- === HEADER START === -->
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="#hero" class="nav-item" data-text="navHome">Home</a>
+          <a href="#modules" class="nav-item" data-text="navModules">Modules</a>
+          <a href="#about" class="nav-item" data-text="navAbout">About</a>
+          <a href="#data-insights" class="nav-item" data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="#multilingual-support"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <!-- Theme Toggle -->
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+
+          <!-- Language Toggle -->
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+
+          <!-- Mobile Menu Button -->
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <!-- Mobile Dropdown Menu -->
+      <div id="mobileMenu" class="mobile-menu">
+        <a href="#hero" class="mobile-item" data-text="navHome">Home</a>
+        <a href="#modules" class="mobile-item" data-text="navModules"
+          >Modules</a
+        >
+        <a href="#about" class="mobile-item" data-text="navAbout">About</a>
+        <a href="#data-insights" class="mobile-item" data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="#multilingual-support"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+      <!-- === HEADER END === -->
+    </header>
+
+    <main>
+      <!-- HERO SECTION (STEP 3) -->
+      <section id="hero">
+        <div class="hero-container">
+          <div class="hero-left">
+            <h1 class="hero-heading" data-text="heroHeading">
+              Connecting Farmers & Buyers for Smart Agriculture
+            </h1>
+
+            <p class="hero-subtitle" data-text="heroSubtitle">
+              চাষী ও ব্যবসায়ীদের জন্য একটি স্মার্ট প্ল্যাটফর্ম
+            </p>
+
+            <p class="hero-description" data-text="heroDescription">
+              A transparent platform enabling direct collaboration between
+              farmers and buyers with secure agreements, fair pricing, and
+              streamlined logistics.
+            </p>
+
+            <div class="hero-buttons">
+              <a
+                href="../Registration/user-register.html"
+                class="btn-primary"
+                data-text="heroRegister"
+              >
+                Register Now
+              </a>
+              <a
+                href="../Login/login.html"
+                class="btn-outline"
+                data-text="heroLogin"
+              >
+                Login
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <img
+              src="https://images.unsplash.com/photo-1585428311604-98738fc5687a?q=80&w=1080"
+              alt="Farm Image"
+              class="hero-image"
+            />
+            <div class="hero-blur"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATISTICS SECTION (STEP 4) -->
+      <section id="statistics">
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-icon green">👨‍🌾</div>
+            <div class="stat-value">12,450</div>
+            <div class="stat-label" data-text="totalFarmers">Total Farmers</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon blue">🛒</div>
+            <div class="stat-value">3,280</div>
+            <div class="stat-label" data-text="totalBuyers">Total Buyers</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon yellow">🌾</div>
+            <div class="stat-value">45</div>
+            <div class="stat-label" data-text="totalCrops">Total Crops</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon purple">📄</div>
+            <div class="stat-value">892</div>
+            <div class="stat-label" data-text="activeProposals">
+              Active Proposals
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon green">✔️</div>
+            <div class="stat-value">5,670</div>
+            <div class="stat-label" data-text="signedAgreements">
+              Agreements Signed
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon green">🏁</div>
+            <div class="stat-value">4,230</div>
+            <div class="stat-label" data-text="completedContracts">
+              Completed Contracts
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon orange">⚠️</div>
+            <div class="stat-value">96.8%</div>
+            <div class="stat-label" data-text="trustScore">
+              Trust Score System
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon orange">🔁</div>
+            <div class="stat-value">1,440</div>
+            <div class="stat-label" data-text="farmingCycles">
+              Ongoing Farming Cycles
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT SECTION (STEP 5) -->
+      <section id="about">
+        <div class="about-container">
+          <!-- Heading & Description -->
+          <div class="about-header">
+            <h2 class="about-title" data-text="aboutTitle">About Farm360</h2>
+
+            <p class="about-description" data-text="aboutDescription">
+              Farm360 is an innovative agricultural partnership platform
+              designed specifically for farmers and buyers in West Bengal. Our
+              platform bridges the gap between agricultural producers and market
+              buyers, creating transparent, secure, and mutually beneficial
+              relationships.
+            </p>
+          </div>
+
+          <!-- Mission & Vision -->
+          <div class="about-grid">
+            <div class="about-card">
+              <h3 class="about-card-title" data-text="missionTitle">
+                Our Mission
+              </h3>
+              <p class="about-card-text" data-text="missionText">
+                To empower farmers with direct market access and fair pricing
+                while providing buyers with quality agricultural products
+                through transparent and secure digital agreements.
+              </p>
+            </div>
+
+            <div class="about-card">
+              <h3 class="about-card-title" data-text="visionTitle">
+                Our Vision
+              </h3>
+              <p class="about-card-text" data-text="visionText">
+                Creating a sustainable agricultural ecosystem where technology
+                ensures fairness, transparency, and prosperity for all
+                stakeholders in the farming community.
+              </p>
+            </div>
+          </div>
+
+          <!-- Why Farm360 -->
+          <div class="about-highlight">
+            <h3 class="about-card-title" data-text="whyUsefulTitle">
+              Why Farm360?
+            </h3>
+            <p class="about-card-text" data-text="whyUsefulText">
+              Farm360 eliminates middlemen, reduces transaction costs, ensures
+              fair pricing, provides secure escrow systems, and maintains
+              complete transparency throughout the farming cycle.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE FLOW (STEP 6) -->
+      <section id="modules">
+        <div class="moduleflow-container">
+          <div class="mf-header">
+            <h2 class="mf-title" data-text="mfTitle">
+              Farm360 Platform Modules
+            </h2>
+            <p class="mf-subtitle" data-text="mfSubtitle">
+              Complete workflow from registration to delivery
+            </p>
+          </div>
+
+          <div class="mf-grid">
+            <!-- MODULE 0 -->
+            <div class="mf-card">
+              <div class="mf-number">0</div>
+              <div class="mf-icon">📝</div>
+              <h3 class="mf-name" data-text="mf0title">Registration</h3>
+              <p class="mf-desc" data-text="mf0desc">
+                Create account as Farmer or Buyer
+              </p>
+            </div>
+
+            <!-- MODULE 1 -->
+            <div class="mf-card">
+              <div class="mf-number">1</div>
+              <div class="mf-icon">👤</div>
+              <h3 class="mf-name" data-text="mf1title">Profile Setup</h3>
+              <p class="mf-desc" data-text="mf1desc">
+                Complete your profile details
+              </p>
+            </div>
+
+            <!-- MODULE 2 -->
+            <div class="mf-card">
+              <div class="mf-number">2</div>
+              <div class="mf-icon">📨</div>
+              <h3 class="mf-name" data-text="mf2title">Proposal</h3>
+              <p class="mf-desc" data-text="mf2desc">
+                Submit or view farming proposals
+              </p>
+            </div>
+
+            <!-- MODULE 3 -->
+            <div class="mf-card">
+              <div class="mf-number">3</div>
+              <div class="mf-icon">💬</div>
+              <h3 class="mf-name" data-text="mf3title">
+                Problem / Negotiation
+              </h3>
+              <p class="mf-desc" data-text="mf3desc">
+                Discuss and negotiate terms
+              </p>
+            </div>
+
+            <!-- MODULE 4 -->
+            <div class="mf-card">
+              <div class="mf-number">4</div>
+              <div class="mf-icon">📝</div>
+              <h3 class="mf-name" data-text="mf4title">Digital Agreement</h3>
+              <p class="mf-desc" data-text="mf4desc">
+                Sign secure digital contract
+              </p>
+            </div>
+
+            <!-- MODULE 5 -->
+            <div class="mf-card">
+              <div class="mf-number">5</div>
+              <div class="mf-icon">💰</div>
+              <h3 class="mf-name" data-text="mf5title">Resource Allocation</h3>
+              <p class="mf-desc" data-text="mf5desc">Initial funding (30%)</p>
+            </div>
+
+            <!-- MODULE 6 -->
+            <div class="mf-card">
+              <div class="mf-number">6</div>
+              <div class="mf-icon">🌱</div>
+              <h3 class="mf-name" data-text="mf6title">Cultivation Progress</h3>
+              <p class="mf-desc" data-text="mf6desc">Mid-cycle payment (30%)</p>
+            </div>
+
+            <!-- MODULE 7 -->
+            <div class="mf-card">
+              <div class="mf-number">7</div>
+              <div class="mf-icon">📦</div>
+              <h3 class="mf-name" data-text="mf7title">Harvest & Payment</h3>
+              <p class="mf-desc" data-text="mf7desc">Final settlement (40%)</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RELATIONSHIP PANEL (STEP 7) -->
+      <section id="relationship">
+        <div class="rp-container">
+          <div class="rp-header">
+            <h2 class="rp-title" data-text="rpTitle">
+              Create Farmer-Buyer Contract
+            </h2>
+            <p class="rp-subtitle" data-text="rpSubtitle">
+              Simple workflow to establish partnership
+            </p>
+
+            <button class="btn-primary rp-btn" data-text="rpCreateBtn">
+              Create New Contract
+            </button>
+          </div>
+
+          <!-- WORKFLOW -->
+          <div class="rp-flow">
+            <div class="rp-step">
+              <div class="rp-circle">👨‍🌾</div>
+              <p class="rp-step-text" data-text="rpStepFarmer">Farmer</p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">📨</div>
+              <p class="rp-step-text" data-text="rpStepProposal">Proposal</p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">💬</div>
+              <p class="rp-step-text" data-text="rpStepNegotiation">
+                Negotiation
+              </p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">📝</div>
+              <p class="rp-step-text" data-text="rpStepAgreement">Agreement</p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">🌱</div>
+              <p class="rp-step-text" data-text="rpStepFarming">Farming</p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">🌾</div>
+              <p class="rp-step-text" data-text="rpStepHarvest">Harvest</p>
+            </div>
+
+            <div class="rp-arrow">➜</div>
+
+            <div class="rp-step">
+              <div class="rp-circle">🚚</div>
+              <p class="rp-step-text" data-text="rpStepDelivery">Delivery</p>
+            </div>
+          </div>
+
+          <!-- 30 / 30 / 40 Cards -->
+          <div class="rp-payment-cards">
+            <div class="rp-payment-card">
+              <div class="rp-payment-value">30%</div>
+              <p class="rp-payment-label" data-text="rpPay1">
+                Initial Resource Funding
+              </p>
+            </div>
+
+            <div class="rp-payment-card">
+              <div class="rp-payment-value">30%</div>
+              <p class="rp-payment-label" data-text="rpPay2">
+                Mid-Cultivation Payment
+              </p>
+            </div>
+
+            <div class="rp-payment-card">
+              <div class="rp-payment-value">40%</div>
+              <p class="rp-payment-label" data-text="rpPay3">
+                Final Harvest Settlement
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="data-insights">
+        <div class="insights-container">
+          <h2 class="insights-title" data-text="insightsTitle">
+            Project Records &amp; Data Insights
+          </h2>
+          <p class="insights-subtitle" data-text="insightsSubtitle">
+            Quick overview of platform usage
+          </p>
+
+          <div class="insights-charts-grid">
+            <!-- Crop Distribution (Pie) -->
+            <div class="chart-card">
+              <h3 class="chart-title" data-text="chartCropDistribution">
+                Crop Distribution
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="cropDistributionChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Farmers Growth (Line) -->
+            <div class="chart-card">
+              <h3 class="chart-title" data-text="chartFarmersGrowth">
+                Farmers Growth Over Time
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="farmersGrowthChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Popular Crops (Bar) -->
+            <div class="chart-card">
+              <h3 class="chart-title" data-text="chartPopularCrops">
+                Most Popular Crops
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="popularCropsChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Regional Contribution (Horizontal Bar) -->
+            <div class="chart-card">
+              <h3 class="chart-title" data-text="chartRegionalContribution">
+                Regional Contribution
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="regionalContributionChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MULTILINGUAL SUPPORT (STEP 9) -->
+      <section id="multilingual-support"></section>
+    </main>
+
+    <!-- FOOTER (STEP 10) -->
+    <footer id="site-footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- BRAND -->
+          <div class="footer-box">
+            <div class="footer-brand">
+              <div class="footer-logo">🌿</div>
+              <h3 class="footer-brand-name">Farm360</h3>
+            </div>
+            <p class="footer-text" data-text="footerDesc">
+              Connecting farmers and buyers for smart agriculture.
+            </p>
+
+            <button id="footerLangToggle" class="footer-lang-btn">বাংলা</button>
+          </div>
+
+          <!-- QUICK LINKS -->
+          <div class="footer-box">
+            <h3 class="footer-title" data-text="footerQuick">Quick Links</h3>
+            <ul class="footer-list">
+              <li><a href="#home" data-text="footerHome">Home</a></li>
+              <li><a href="#modules" data-text="footerModules">Modules</a></li>
+              <li><a href="#about" data-text="footerAbout">About</a></li>
+              <li><a href="#contact" data-text="footerContact">Contact</a></li>
+              <li><a href="#" data-text="footerTerms">Terms of Service</a></li>
+              <li><a href="#" data-text="footerPrivacy">Privacy Policy</a></li>
+            </ul>
+          </div>
+
+          <!-- CONTACT INFO -->
+          <div class="footer-box">
+            <h3 class="footer-title" data-text="footerInfo">Contact Info</h3>
+            <ul class="footer-list">
+              <li>📧 info@farm360.com</li>
+              <li>📞 +91 98765 43210</li>
+              <li data-text="footerAddress">Kolkata, West Bengal, India</li>
+            </ul>
+          </div>
+
+          <!-- SOCIAL ICONS -->
+          <div class="footer-box">
+            <h3 class="footer-title" data-text="footerFollow">Follow Us</h3>
+            <div class="footer-social">
+              <a href="#" aria-label="FB">👍</a>
+              <a href="#" aria-label="TW">🐦</a>
+              <a href="#" aria-label="LN">💼</a>
+              <a href="#" aria-label="IG">📸</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p data-text="footerCopy">© 2025 Farm360. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Main script -->
+    <script src="landing-page.js"></script>
+  </body>
+</html>
