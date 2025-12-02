@@ -1,55 +1,34 @@
 package com.Farm360.model;
 
+import com.Farm360.model.audit.AuditTable;
 import com.Farm360.utils.Role;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-public class UserEntity{
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserEntity extends AuditTable<String> {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Integer Id;
-        private Long phoneNumber;
+        private Long id;
+
+        @Column(name="Phone_no", nullable = false, length = 10)
+        private String phoneNumber;
+
         @Enumerated(EnumType.STRING)
+        @Column(nullable = false, length = 20)
         private Role role;
 
-        public UserEntity() {
-        }
+        @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+        private FarmerEntity farmer;
 
-        public UserEntity(Integer id, Long phoneNumber, Role role) {
-            Id = id;
-            this.phoneNumber = phoneNumber;
-            this.role = role;
-        }
-
-        public UserEntity(Long phoneNumber, Role role) {
-            this.phoneNumber = phoneNumber;
-            this.role = role;
-        }
-
-        public Integer getId() {
-            return Id;
-        }
-
-        public void setId(Integer id) {
-            Id = id;
-        }
-
-        public Long getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public void setPhoneNumber(Long phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
-
-        public Role getRole() {
-            return role;
-        }
-
-        public void setRole(Role role) {
-            this.role = role;
-        }
+        @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+        private BuyerEntity buyer;
 
 
 }

@@ -1,0 +1,90 @@
+package com.Farm360.service.implementation;
+
+import com.Farm360.dto.request.BuyerRegisterRQ;
+import com.Farm360.dto.request.FarmerRegisterRQ;
+import com.Farm360.dto.request.UserRegisterRQ;
+import com.Farm360.dto.response.BuyerRS;
+import com.Farm360.dto.response.FarmerRS;
+import com.Farm360.dto.response.UserRS;
+import com.Farm360.mapper.BuyerMapper;
+import com.Farm360.mapper.FarmerMapper;
+import com.Farm360.mapper.UserMapper;
+import com.Farm360.model.BuyerEntity;
+import com.Farm360.model.FarmerEntity;
+import com.Farm360.model.UserEntity;
+import com.Farm360.repository.BuyerRepo;
+import com.Farm360.repository.FarmerRepo;
+import com.Farm360.repository.UserRepo;
+import com.Farm360.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired
+    private UserEntity userEntity;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private FarmerMapper farmerMapper;
+
+    @Autowired
+    private FarmerRepo farmerRepo;
+
+    @Autowired
+    private BuyerMapper buyerMapper;
+
+    @Autowired
+    private BuyerRepo buyerRepo;
+
+
+    @Override
+    public UserRS createUser(UserRegisterRQ rq) {
+        if (userRepo.existsByPhoneNumber(rq.getPhoneNumber())) {
+            throw new RuntimeException("Phone number already registered");
+        }
+
+        UserEntity entity = userMapper.mapToEntity(rq);
+        UserEntity saved = userRepo.save(entity);
+
+        return userMapper.mapEntityToRS(saved);
+    }
+
+    @Override
+    public FarmerRS registerFarmer(FarmerRegisterRQ rq) {
+        UserEntity user = userRepo.findById(rq.getUserId())
+                .orElseThrow(() -> new RuntimeException("Invalid user ID"));
+
+        FarmerEntity farmer = farmerMapper.mapToEntity(rq);
+        farmer.setUser(user);
+        user.setFarmer(farmer);
+
+        farmerRepo.save(farmer);
+        return farmerMapper.mapEntityToRS(farmer);
+    }
+
+    @Override
+    public BuyerRS registerBuyer(BuyerRegisterRQ rq) {
+        UserEntity user = userRepo.findById(rq.getUserId())
+                .orElseThrow(() -> new RuntimeException("Invalid user ID"));
+
+        BuyerEntity buyer = buyerMapper.mapToEntity(rq);
+        buyer.setUser(user);
+        user.setBuyer(buyer);
+
+        buyerRepo.save(buyer);
+        return buyerMapper.mapEntityToRS(buyer);
+    }
+
+    @Override
+    public UserRS getUserById(Long id) {
+        UserEntity user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return userMapper.mapEntityToRS(user);
+    }
+}
