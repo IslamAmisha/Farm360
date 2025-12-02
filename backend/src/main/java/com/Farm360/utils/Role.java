@@ -1,4 +1,4 @@
-package com.Farm360.util;
+package com.Farm360.utils;
 
 public enum Role {
 

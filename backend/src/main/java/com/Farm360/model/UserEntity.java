@@ -1,10 +1,10 @@
 package com.Farm360.model;
 
-import com.Farm360.util.Role;
+import com.Farm360.utils.Role;
 import jakarta.persistence.*;
 
 @Entity
-public class Registration {
+public class UserEntity{
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,16 +13,16 @@ public class Registration {
         @Enumerated(EnumType.STRING)
         private Role role;
 
-        public Registration() {
+        public UserEntity() {
         }
 
-        public Registration(Integer id, Long phoneNumber, Role role) {
+        public UserEntity(Integer id, Long phoneNumber, Role role) {
             Id = id;
             this.phoneNumber = phoneNumber;
             this.role = role;
         }
 
-        public Registration(Long phoneNumber, Role role) {
+        public UserEntity(Long phoneNumber, Role role) {
             this.phoneNumber = phoneNumber;
             this.role = role;
         }
