@@ -1,5 +1,7 @@
 package com.Farm360.security.jwt;
 
+import com.Farm360.security.UserDetailsImpl;
+import com.Farm360.security.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +22,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private com.Farm360.security.jwt.UserDetailsServiceImpl userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,29 +30,34 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+        try {
+            String headerAuth = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+                String jwt = headerAuth.substring(7);
 
-            String token = header.substring(7);
+                if (jwtUtils.validateJwtToken(jwt)) {
+                    String phone = jwtUtils.getPhoneNumberFromJwt(jwt);
 
-            if (jwtUtils.validateJwtToken(token)) {
-                String phoneNumber = jwtUtils.getPhoneNumberFromJwt(token);
+                    UserDetailsImpl userDetails =
+                            (UserDetailsImpl) userDetailsService.loadUserByUsername(phone);
 
-                com.Farm360.security.jwt.UserDetailsImpl userDetails = (com.Farm360.security.jwt.UserDetailsImpl) userDetailsService
-                        .loadUserByUsername(phoneNumber);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
+        } catch (Exception e) {
+            // optional: log error
         }
 
         filterChain.doFilter(request, response);

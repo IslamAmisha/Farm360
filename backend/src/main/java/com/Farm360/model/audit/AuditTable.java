@@ -14,7 +14,6 @@ import java.util.Date;
 @Data
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Table(name="audit_table")
 public class AuditTable<U> {
 
     @CreatedBy

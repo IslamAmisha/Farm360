@@ -27,17 +27,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private FarmerMapper farmerMapper;
-
-    @Autowired
-    private FarmerRepo farmerRepo;
-
-    @Autowired
-    private BuyerMapper buyerMapper;
-
-    @Autowired
-    private BuyerRepo buyerRepo;
 
     @Override
     public UserRS createUser(UserRQ rq) {

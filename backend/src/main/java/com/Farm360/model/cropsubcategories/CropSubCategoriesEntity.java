@@ -21,7 +21,6 @@ public class CropSubCategoriesEntity {
     private Long id;
 
     private String name;
-    private String localName;
 
     @ManyToOne
     @JoinColumn(name = "crop_id")

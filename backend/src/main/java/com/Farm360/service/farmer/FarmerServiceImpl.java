@@ -9,70 +9,69 @@ import com.Farm360.model.block.BlockEntity;
 import com.Farm360.model.crop.CropEntity;
 import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
 import com.Farm360.model.district.DistrictEntity;
+import com.Farm360.model.payment.FarmerWallet;
 import com.Farm360.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 @Service
-public class FarmerServiceImpl implements FarmerService{
-
-        @Autowired
-        private UserRepo userRepo;
-
-        @Autowired
-        private FarmerRepo farmerRepo;
-
-        @Autowired
-        private CropRepo cropRepo;
-
-        @Autowired
-        private CropSubCategoriesRepo subCategoryRepo;
-
-        @Autowired
-        private FarmerMapper farmerMapper;
+public class FarmerServiceImpl implements FarmerService {
 
     @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private FarmerRepo farmerRepo;
+    @Autowired
+    private CropRepo cropRepo;
+    @Autowired
+    private CropSubCategoriesRepo subCategoryRepo;
+    @Autowired
+    private FarmerMapper farmerMapper;
+    @Autowired
     private DistrictRepo districtRepo;
-
     @Autowired
     private BlockRepo blockRepo;
 
-        @Override
-        public FarmerRS register(FarmerRegisterRQ rq) {
+    @Override
+    public FarmerRS register(Long userId, FarmerRegisterRQ rq) {
 
-            UserEntity user = userRepo.findById(rq.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Invalid userId"));
+        UserEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Invalid userId"));
 
-            FarmerEntity farmer = farmerMapper.mapToEntity(rq);
+        FarmerEntity farmer = farmerMapper.mapToEntity(rq);
 
-            farmer.setUser(user);
-            user.setFarmer(farmer);
+        farmer.setUser(user);
+        user.setFarmer(farmer);   // bidirectional fix
 
+        farmer.setDistrict(
+                districtRepo.findById(rq.getDistrictId())
+                        .orElseThrow(() -> new RuntimeException("Invalid district"))
+        );
+        farmer.setBlock(
+                blockRepo.findById(rq.getBlockId())
+                        .orElseThrow(() -> new RuntimeException("Invalid block"))
+        );
 
-            DistrictEntity district = districtRepo.findById(rq.getDistrictId())
-                    .orElseThrow(() -> new RuntimeException("Invalid district"));
-            farmer.setDistrict(district);
+        farmer.setCrops(
+                rq.getCropIds() == null ? List.of() : cropRepo.findAllById(rq.getCropIds())
+        );
 
-            BlockEntity block = blockRepo.findById(rq.getBlockId())
-                    .orElseThrow(() -> new RuntimeException("Invalid block"));
-            farmer.setBlock(block);
-
-            if (rq.getCropIds() != null) {
-                List<CropEntity> crops = cropRepo.findAllById(rq.getCropIds());
-                farmer.setCrops(crops);
-            }
-
-            if (rq.getSubCategoryIds() != null) {
-                List<CropSubCategoriesEntity> subCats = subCategoryRepo.findAllById(rq.getSubCategoryIds());
-                farmer.setCropSubcategories(subCats);
-            }
+        farmer.setCropSubcategories(
+                rq.getSubCategoryIds() == null ? List.of() : subCategoryRepo.findAllById(rq.getSubCategoryIds())
+        );
 
 
-            FarmerEntity saved = farmerRepo.save(farmer);
-            return farmerMapper.mapEntityToRS(saved);
-        }
+        FarmerWallet wallet = new FarmerWallet();
+        wallet.setFarmer(farmer);
+        farmer.setWallet(wallet);
+
+        FarmerEntity saved = farmerRepo.save(farmer);
+
+        saved.getCrops().size();
+        saved.getCropSubcategories().size();
+
+        return farmerMapper.mapEntityToRS(saved);
+    }
 
 }
-

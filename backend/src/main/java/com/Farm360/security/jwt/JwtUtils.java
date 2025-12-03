@@ -53,4 +53,9 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token);
     }
+
+    public String generateJwt(String phone, Role role) {
+
+        return generateToken(phone, role);
+    }
 }

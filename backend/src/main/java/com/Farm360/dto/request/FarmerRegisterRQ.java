@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FarmerRegisterRQ {
-    private Long userId;
 
     private String farmerName;
     private Long districtId;

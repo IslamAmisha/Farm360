@@ -1,4 +1,4 @@
-package com.Farm360.security.jwt;
+package com.Farm360.security;
 
 import com.Farm360.model.UserEntity;
 import com.Farm360.utils.Role;
@@ -11,22 +11,43 @@ import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
 
+    private Long id;
     private String phoneNumber;
     private Role role;
+    private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(UserEntity user) {
-        this.phoneNumber = user.getPhoneNumber();
-        this.role = user.getRole();
+    public UserDetailsImpl(Long id, String phoneNumber, Role role) {
+        this.id = id;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    public static UserDetailsImpl build(UserEntity user) {
+        return new UserDetailsImpl(
+                user.getId(),
+                user.getPhoneNumber(),
+                user.getRole()
+        );
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return authorities;
     }
 
+    // We don’t use password for OTP login
     @Override
     public String getPassword() {
-        return ""; // No password, OTP login
+        return null;
     }
 
     @Override

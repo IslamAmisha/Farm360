@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "user_table")
 public class UserEntity extends AuditTable<String> {
 
         @Id

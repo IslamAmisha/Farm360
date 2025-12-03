@@ -23,7 +23,6 @@ public class CropEntity {
     private Long id;
 
     private String name;
-    private String localName;
 
     @OneToMany(mappedBy = "crop", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CropSubCategoriesEntity> subcategories;

@@ -1,4 +1,4 @@
-package com.Farm360.security.jwt;
+package com.Farm360.security;
 
 import com.Farm360.model.UserEntity;
 import com.Farm360.repository.UserRepo;
@@ -16,10 +16,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
-
         UserEntity user = userRepo.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + phoneNumber));
-
-        return new com.Farm360.security.jwt.UserDetailsImpl(user);
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with phone: " + phoneNumber));
+        return UserDetailsImpl.build(user);
     }
 }

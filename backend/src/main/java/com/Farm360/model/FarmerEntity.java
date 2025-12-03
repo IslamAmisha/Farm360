@@ -1,10 +1,11 @@
 package com.Farm360.model;
 
-import com.Farm360.model.Payment.EscrowWallet;
+
 import com.Farm360.model.block.BlockEntity;
 import com.Farm360.model.crop.CropEntity;
 import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
 import com.Farm360.model.district.DistrictEntity;
+import com.Farm360.model.payment.FarmerWallet;
 import com.Farm360.utils.CroppingPattern;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name="farmer_table")
 public class FarmerEntity {
 
     @Id
@@ -56,7 +58,7 @@ public class FarmerEntity {
     private String landPhoto;   // stored filename or full path
 
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)
-    private EscrowWallet wallet;
+    private FarmerWallet wallet;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

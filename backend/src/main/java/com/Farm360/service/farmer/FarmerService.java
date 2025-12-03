@@ -5,5 +5,6 @@ import com.Farm360.dto.response.FarmerRS;
 
 public interface FarmerService {
 
-    FarmerRS register(FarmerRegisterRQ rq);
+    public FarmerRS register(Long userId, FarmerRegisterRQ rq);
+
 }
