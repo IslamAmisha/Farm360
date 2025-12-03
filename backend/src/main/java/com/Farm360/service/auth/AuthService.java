@@ -1,4 +1,4 @@
-package com.Farm360.service;
+package com.Farm360.service.auth;
 
 public interface AuthService {
 }

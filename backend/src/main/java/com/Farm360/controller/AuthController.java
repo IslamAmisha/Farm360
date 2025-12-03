@@ -18,22 +18,23 @@ public class AuthController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
     @Autowired
     private UserRepo userRepo;
 
     @PostMapping("/otp/login")
     public ResponseEntity<?> loginWithOtp(@RequestBody Map<String, String> body) throws Exception {
 
-        String firebaseToken = body.get("idToken");
+        String idToken = body.get("idToken");
 
-        FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(firebaseToken);
+        FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(idToken);
 
         String phone = decoded.getPhoneNumber().substring(3);
 
         UserEntity user = userRepo.findByPhoneNumber(phone)
                 .orElseThrow(() -> new RuntimeException("User not registered"));
 
-        String jwt = jwtUtils.generateJwt(phone);
+        String jwt = jwtUtils.generateToken(user.getPhoneNumber(), user.getRole());
 
         return ResponseEntity.ok(Map.of(
                 "jwt", jwt,

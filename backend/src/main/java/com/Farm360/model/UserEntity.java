@@ -17,7 +17,7 @@ public class UserEntity extends AuditTable<String> {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
-        @Column(name="Phone_no", nullable = false, length = 10)
+        @Column(name="Phone_no", nullable = false, length = 10,unique = true)
         private String phoneNumber;
 
         @Enumerated(EnumType.STRING)

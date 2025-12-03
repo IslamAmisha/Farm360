@@ -1,54 +1,56 @@
 package com.Farm360.security.jwt;
 
+import com.Farm360.utils.Role;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
-import java.security.SignatureException;
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtils {
-    // Change to a strong secret before production
-    private final String jwtSecret = "FARM360_SECRET_KEY_123456789";
 
-    private final int jwtExpirationMs = 86400000; // 24 Hours
+    private final String jwtSecret = "FARM360_SECRET_KEY_FOR_JWT_MUST_BE_MIN_32_CHARS_LONG";
+    private final int jwtExpirationMs = 86400000; // 1 day
 
-    // Create JWT using phoneNumber as subject
-    public String generateJwt(String phoneNumber) {
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
+    // Generate JWT for OTP login
+    public String generateToken(String phoneNumber, Role role) {
+
         return Jwts.builder()
                 .setSubject(phoneNumber)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Extract phone number from token
-    public String getPhoneFromJwt(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public String getPhoneNumberFromJwt(String token) {
+        return parseClaims(token).getBody().getSubject();
     }
 
-    // Validate token
+    public String getRoleFromJwt(String token) {
+        return parseClaims(token).getBody().get("role", String.class);
+    }
+
     public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            parseClaims(token);
             return true;
-        } catch (SignatureException e) {
-            System.out.println("Invalid JWT signature: " + e.getMessage());
-        } catch (MalformedJwtException e) {
-            System.out.println("Invalid JWT token: " + e.getMessage());
-        } catch (ExpiredJwtException e) {
-            System.out.println("JWT expired: " + e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            System.out.println("Unsupported JWT: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println("JWT claims string empty: " + e.getMessage());
+        } catch (Exception e) {
+            return false;
         }
+    }
 
-        return false;
+    private Jws<Claims> parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token);
     }
 }

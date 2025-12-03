@@ -1,4 +1,4 @@
-package com.Farm360.config;
+package com.Farm360.security;
 
 import com.Farm360.security.jwt.AuthEntryPointJwt;
 import com.Farm360.security.jwt.AuthTokenFilter;
