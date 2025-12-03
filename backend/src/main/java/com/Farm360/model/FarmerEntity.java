@@ -1,8 +1,10 @@
 package com.Farm360.model;
 
 import com.Farm360.model.Payment.EscrowWallet;
+import com.Farm360.model.block.BlockEntity;
 import com.Farm360.model.crop.CropEntity;
 import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
+import com.Farm360.model.district.DistrictEntity;
 import com.Farm360.utils.CroppingPattern;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,9 +25,13 @@ public class FarmerEntity {
 
     private String farmerName;
 
-    private String district;
+    @ManyToOne
+    @JoinColumn(name = "district_id")
+    private DistrictEntity district;
 
-    private String block;
+    @ManyToOne
+    @JoinColumn(name = "block_id")
+    private BlockEntity block;
 
     private String village;
 
@@ -51,4 +57,8 @@ public class FarmerEntity {
 
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)
     private EscrowWallet wallet;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }

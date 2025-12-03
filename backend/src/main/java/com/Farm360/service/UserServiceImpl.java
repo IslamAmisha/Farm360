@@ -53,35 +53,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.mapEntityToRS(saved);
     }
 
-    @Override
-    public FarmerRS registerFarmer(FarmerRegisterRQ rq) {
-
-        UserEntity user = userRepo.findById(rq.getUserId())
-                .orElseThrow(() -> new RuntimeException("Invalid user ID"));
-
-        FarmerEntity farmer = farmerMapper.mapToEntity(rq);
-        farmer.setUser(user);
-        user.setFarmer(farmer);
-
-        farmerRepo.save(farmer);
-
-        return farmerMapper.mapEntityToRS(farmer);
-    }
-
-    @Override
-    public BuyerRS registerBuyer(BuyerRegisterRQ rq) {
-
-        UserEntity user = userRepo.findById(rq.getUserId())
-                .orElseThrow(() -> new RuntimeException("Invalid user ID"));
-
-        BuyerEntity buyer = buyerMapper.mapToEntity(rq);
-        buyer.setUser(user);
-        user.setBuyer(buyer);
-
-        buyerRepo.save(buyer);
-
-        return buyerMapper.mapEntityToRS(buyer);
-    }
 
     @Override
     public UserRS getUserById(Long id) {

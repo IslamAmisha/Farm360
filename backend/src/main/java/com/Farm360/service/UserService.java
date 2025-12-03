@@ -11,9 +11,5 @@ public interface UserService {
 
     UserRS createUser(UserRQ rq);
 
-    FarmerRS registerFarmer(FarmerRegisterRQ rq);
-
-    BuyerRS registerBuyer(BuyerRegisterRQ rq);
-
     UserRS getUserById(Long id);
 }
