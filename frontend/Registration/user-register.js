@@ -10,11 +10,12 @@ const text = {
     roleSelect: "Select your role",
     roleFarmer: "Farmer",
     roleBuyer: "Buyer",
-    btnRegister: "Register",
+    btnNext: "Next",
+    btnVerify: "Verify OTP",
+    labelOtp: "OTP",
     btnClear: "Clear",
     termsHint: "By registering you agree to our terms.",
     backBtn: "‹ Back",
-
   },
   bn: {
     regTitle: "আপনার অ্যাকাউন্ট তৈরি করুন",
@@ -24,11 +25,12 @@ const text = {
     roleSelect: "ভূমিকা নির্বাচন করুন",
     roleFarmer: "কৃষক",
     roleBuyer: "ক্রেতা",
-    btnRegister: "নিবন্ধন",
+    btnNext: "পরবর্তী",
+    btnVerify: "ওটিপি যাচাই",
+    labelOtp: "ওটিপি",
     btnClear: "মুছে ফেলুন",
     termsHint: "নিবন্ধন করে আপনি আমাদের শর্তাবলীতে সম্মত হচ্ছেন।",
     backBtn: "‹ ফিরে যান",
-
   }
 };
 
@@ -41,87 +43,173 @@ function updateText() {
 document.getElementById("langToggle").onclick = () => {
   currentLanguage = currentLanguage === "en" ? "bn" : "en";
   document.body.classList.toggle("lang-bn");
-
   document.getElementById("langToggle").textContent =
     currentLanguage === "en" ? "বাংলা" : "English";
-
   updateText();
 };
 
 updateText();
 
 /* THEME SWITCH ------------------------------ */
-let theme = "light";
-
 document.getElementById("themeToggle").onclick = () => {
   document.body.classList.toggle("theme-dark");
-
-  theme = theme === "light" ? "dark" : "light";
 };
 
-/* FORM VALIDATION ------------------------------ */
+/* BACKEND API URL */
+/* ----------------------------------
+   CONFIG
+---------------------------------- */
+const BASE_URL = "http://localhost:8080";   // change if needed
+
+/* ELEMENTS */
 const form = document.getElementById("registerForm");
 const phone = document.getElementById("phone");
+const otp = document.getElementById("otp");
 const role = document.getElementById("role");
+
 const phoneErr = document.getElementById("phoneErr");
+const otpErr = document.getElementById("otpErr");
 const roleErr = document.getElementById("roleErr");
+
+const verifyBtn = document.getElementById("verifyBtn");
 const msg = document.getElementById("msg");
 
-/* CLEAR BUTTON ------------------------------ */
-const clearBtn = document.getElementById("clearBtn");
-if (clearBtn) {
-  clearBtn.addEventListener("click", () => {
-    // Reset the form and clear UI messages
-    form.reset();
-    phoneErr.textContent = "";
-    roleErr.textContent = "";
-    msg.textContent = "";
-    // Focus the phone field for convenience
-    try { phone.focus(); } catch (e) {}
-  });
-}
+let sessionId = null;
 
-form.addEventListener("submit", function (e) {
+/* ----------------------------------
+   SEND OTP
+---------------------------------- */
+verifyBtn.addEventListener("click", async () => {
+  phoneErr.textContent = "";
+  msg.textContent = "";
+
+  const phoneNumber = phone.value.trim();
+
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    phoneErr.textContent = "Enter valid 10-digit phone number";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${BASE_URL}/auth/otp/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phoneNumber })
+    });
+
+    const data = await res.json();
+
+    if (data.status !== "Success") {
+      msg.style.color = "red";
+      msg.textContent = "OTP sending failed";
+      return;
+    }
+
+    sessionId = data.sessionId;
+
+    msg.style.color = "green";
+    msg.textContent = "OTP sent successfully!";
+    otp.focus();
+
+  } catch (err) {
+    msg.style.color = "red";
+    msg.textContent = "Network error: " + err.message;
+  }
+});
+
+/* ----------------------------------
+   VERIFY OTP + ROLE + REGISTER
+---------------------------------- */
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   phoneErr.textContent = "";
+  otpErr.textContent = "";
   roleErr.textContent = "";
   msg.textContent = "";
 
-  let valid = true;
+  const phoneNumber = phone.value.trim();
+  const otpValue = otp.value.trim();
+  const roleValue = role.value.trim();
 
-  if (!/^\+?\d{7,15}$/.test(phone.value.trim())) {
-    phoneErr.textContent = currentLanguage === "en"
-      ? "Enter a valid phone number."
-      : "সঠিক ফোন নম্বর দিন।";
-    valid = false;
+  // VALIDATION
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    phoneErr.textContent = "Invalid phone number";
+    return;
   }
 
-  if (!role.value) {
-    roleErr.textContent = currentLanguage === "en"
-      ? "Select a role."
-      : "ভূমিকা নির্বাচন করুন।";
-    valid = false;
+  if (!sessionId) {
+    otpErr.textContent = "Click VERIFY to get OTP first";
+    return;
   }
 
-  if (!valid) return;
+  if (!otpValue) {
+    otpErr.textContent = "Enter OTP";
+    return;
+  }
 
-  msg.style.color = "green";
-  msg.textContent =
-    currentLanguage === "en"
-      ? "Registration successful!"
-      : "নিবন্ধন সফলভাবে সম্পন্ন হয়েছে!";
+  if (!roleValue) {
+    roleErr.textContent = "Select a role";
+    return;
+  }
 
-  form.reset();
+  // CALL OTP VERIFY API
+  try {
+    const res = await fetch(`${BASE_URL}/auth/otp/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        otp: otpValue,
+        sessionId: sessionId
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.verified) {
+      otpErr.textContent = "Incorrect OTP";
+      return;
+    }
+
+    // ✔ OTP SUCCESS
+    msg.style.color = "green";
+    msg.textContent = "OTP verified successfully";
+
+    // SAVE USER ID LOCALLY
+    localStorage.setItem("userId", data.userId);
+
+    // If existing user → save token + role
+    if (data.alreadyRegistered === true) {
+      localStorage.setItem("jwt", data.jwt);
+      localStorage.setItem("role", data.role);
+    }
+
+    // NEW user must save selected role via frontend
+    localStorage.setItem("selectedRole", roleValue);
+
+    // REDIRECT TO NEXT PAGE
+    setTimeout(() => {
+      if (roleValue === "farmer") {
+        window.location.href = "../Farmer/Farmer-register/farmer-register.html";
+      } else {
+        window.location.href = "../Buyer/Buyer-register/buyer-register.html";
+      }
+    }, 900);
+
+  } catch (err) {
+    msg.style.color = "red";
+    msg.textContent = "Network error: " + err.message;
+  }
 });
 
-// inside user-register.js after successful basic registration
-const selectedRole = role.value;
 
-setTimeout(function () {
-  if (selectedRole === "farmer") {
-    window.location.href = "../Farmer-register/farmer-register.html";
-  } else if (selectedRole === "buyer") {
-    window.location.href = "../Buyer-register/buyer-register.html";
-  }
-}, 1500);
+/* CLEAR BUTTON */
+document.getElementById("clearBtn").addEventListener("click", () => {
+  form.reset();
+  phoneErr.textContent = "";
+  otpErr.textContent = "";
+  roleErr.textContent = "";
+  msg.textContent = "";
+  sessionId = null;
+});

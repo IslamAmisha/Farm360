@@ -59,6 +59,22 @@
                 required
               />
               <div id="phoneErr" class="error"></div>
+              <div style="margin-top: 0.6rem">
+                <button
+                  type="button"
+                  id="verifyBtn"
+                  class="btn-outline"
+                  data-text="btnVerify"
+                >
+                  Verify
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label data-text="labelOtp">OTP</label>
+              <input id="otp" type="text" placeholder="Enter OTP" />
+              <div id="otpErr" class="error"></div>
             </div>
 
             <div class="form-group">
@@ -74,8 +90,8 @@
             </div>
 
             <div class="form-buttons">
-              <button type="submit" class="btn-primary" data-text="btnRegister">
-                Register
+              <button type="submit" class="btn-primary" data-text="btnNext">
+                Next
               </button>
               <button
                 type="button"
