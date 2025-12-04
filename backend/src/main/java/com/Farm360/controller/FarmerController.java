@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/farmer")
@@ -18,10 +19,11 @@ public class FarmerController {
     @Autowired
     private FarmerService farmerService;
 
-    @PostMapping("/register/{userId}")
-    public ResponseEntity<FarmerRS> registerFarmer(@PathVariable Long userId, @Valid @RequestBody FarmerRegisterRQ rq) {
+    @PostMapping(value="/register/{userId}", consumes = "multipart/form-data")
+    public ResponseEntity<FarmerRS> registerFarmer( @PathVariable Long userId,
+                                                    @RequestPart("data") FarmerRegisterRQ rq, @RequestPart(value = "landPhoto", required = false) MultipartFile landPhoto){
 
-        FarmerRS rs = farmerService.register(userId, rq);
+        FarmerRS rs = farmerService.register(userId, rq,landPhoto);
         return ResponseEntity.ok(rs);
     }
 }

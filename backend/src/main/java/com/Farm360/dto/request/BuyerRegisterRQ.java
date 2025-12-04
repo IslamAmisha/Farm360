@@ -1,5 +1,9 @@
 package com.Farm360.dto.request;
 
+import com.Farm360.utils.AnnualPurchase;
+import com.Farm360.utils.BusinessAge;
+import com.Farm360.utils.BusinessScale;
+import com.Farm360.utils.BusinessType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,15 +27,15 @@ public class BuyerRegisterRQ {
 
     // Business
     private String businessName;
-    private String businessType;
-    private String businessScale;
+    private BusinessType businessType;
+    private BusinessScale businessScale;
     private boolean paysTax;
     private boolean gstRegistered;
     private boolean hasLicence;
-    private String businessAge;
+    private BusinessAge businessAge;
     private String warehouseName;
     private String warehouseLocation;
-    private String annualPurchase;
+    private AnnualPurchase annualPurchase;
 
     // Crop Selections
     private List<Long> cropIds;

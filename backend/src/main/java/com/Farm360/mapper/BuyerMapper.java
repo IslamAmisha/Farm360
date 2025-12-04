@@ -29,6 +29,7 @@ public interface BuyerMapper {
     @Mapping(source = "block.name", target = "block")
     @Mapping(source = "city.name", target = "city")
     @Mapping(source = "crops", target = "crops")
+    @Mapping(source = "cropSubcategories", target = "cropSubcategories")
     BuyerRS mapEntityToRS(BuyerEntity entity);
 
 

@@ -5,6 +5,7 @@ import com.Farm360.utils.CroppingPattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,5 +26,5 @@ public class FarmerRegisterRQ {
     private List<Long> cropIds;
     private List<Long> subCategoryIds;
 
-    private String landPhoto;
+    private MultipartFile landPhoto;
 }

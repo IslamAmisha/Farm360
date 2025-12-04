@@ -17,13 +17,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserRepo userRepo;
     @Autowired
     private JwtUtils jwtUtils;
+
     private final RestTemplate rest = new RestTemplate();
 
     @Value("${otp.api.key}")
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
             rs.setUserId(existing.getId());
             rs.setRole(existing.getRole());
 
-            if (existing.getRole() != Role.PENDING) {
+            if (existing.getRole() != Role.pending) {
                 rs.setJwt(jwtUtils.generateJwt(existing.getPhoneNumber(), existing.getRole()));
             }
 
@@ -75,12 +75,12 @@ public class AuthServiceImpl implements AuthService {
         // Create new user with PENDING role
         UserEntity user = new UserEntity();
         user.setPhoneNumber(rq.getPhone());
-        user.setRole(Role.PENDING);
+        user.setRole(Role.pending);
         userRepo.save(user);
 
         rs.setAlreadyRegistered(false);
         rs.setUserId(user.getId());
-        rs.setRole(Role.PENDING);
+        rs.setRole(Role.pending);
 
         return rs;
     }

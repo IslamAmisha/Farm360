@@ -14,6 +14,7 @@ import com.Farm360.repository.*;
 import com.Farm360.utils.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 @Service
@@ -35,8 +36,9 @@ public class FarmerServiceImpl implements FarmerService {
     private BlockRepo blockRepo;
 
 
+
     @Override
-    public FarmerRS register(Long userId, FarmerRegisterRQ rq) {
+    public FarmerRS register(Long userId, FarmerRegisterRQ rq, MultipartFile landPhoto) {
 
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Invalid userId"));
@@ -46,7 +48,7 @@ public class FarmerServiceImpl implements FarmerService {
         farmer.setUser(user);
         user.setFarmer(farmer);   // bidirectional fix
 
-        user.setRole(Role.FARMER);
+        user.setRole(Role.farmer);
 
         userRepo.save(user);
 
@@ -79,5 +81,6 @@ public class FarmerServiceImpl implements FarmerService {
 
         return farmerMapper.mapEntityToRS(saved);
     }
+
 
 }

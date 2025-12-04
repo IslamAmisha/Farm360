@@ -6,15 +6,16 @@ import com.Farm360.dto.response.OtpSendRS;
 import com.Farm360.dto.response.OtpVerifyRS;
 import com.Farm360.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    @Autowired
+    private AuthService authService;
 
     @PostMapping("/otp/send")
     public ResponseEntity<OtpSendRS> sendOtp(@RequestBody OtpSendRQ rq) {

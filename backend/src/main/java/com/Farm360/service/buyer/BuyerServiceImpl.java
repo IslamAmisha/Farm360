@@ -36,7 +36,7 @@ public class BuyerServiceImpl implements BuyerService {
         buyer.setUser(user);
         user.setBuyer(buyer);   // bidirectional fix
 
-        user.setRole(Role.BUYER);
+        user.setRole(Role.buyer);
 
         userRepo.save(user);
 
