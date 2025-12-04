@@ -1,7 +1,7 @@
-package com.Farm360.model.cropsubcategories;
+package com.Farm360.model.master.crop;
 
 import com.Farm360.model.FarmerEntity;
-import com.Farm360.model.crop.CropEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,8 +13,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "Crop_SubCategory")
-public class CropSubCategoriesEntity {
+@Table(name= "Crop_Table")
+public class CropEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,11 +22,9 @@ public class CropSubCategoriesEntity {
 
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "crop_id")
-    private CropEntity crop;
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CropSubCategoriesEntity> subcategories;
 
-    @ManyToMany(mappedBy = "cropSubcategories")
+    @ManyToMany(mappedBy = "crops")
     private List<FarmerEntity> farmers;
-
 }
