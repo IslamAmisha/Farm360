@@ -1,4 +1,4 @@
-package com.Farm360.service.impl;
+package com.Farm360.service.buyer;
 
 import com.Farm360.dto.request.BuyerRegisterRQ;
 import com.Farm360.dto.response.BuyerRS;
@@ -7,8 +7,10 @@ import com.Farm360.model.*;
 import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.repository.*;
 import com.Farm360.service.buyer.BuyerService;
+import com.Farm360.utils.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
@@ -33,6 +35,10 @@ public class BuyerServiceImpl implements BuyerService {
         BuyerEntity buyer = new BuyerEntity();
         buyer.setUser(user);
         user.setBuyer(buyer);   // bidirectional fix
+
+        user.setRole(Role.BUYER);
+
+        userRepo.save(user);
 
         buyer.setFullName(rq.getFullName());
         buyer.setAadhaarNo(rq.getAadhaarNo());

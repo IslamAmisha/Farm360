@@ -1,7 +1,5 @@
 package com.Farm360.dto.request;
 
-
-import com.Farm360.utils.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRQ {
+public class OtpSendRQ {
 
-    private String phoneNumber;
-
-    private Role role;
-
+    private String phone;
 }

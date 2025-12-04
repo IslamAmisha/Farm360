@@ -42,6 +42,9 @@ public class WebSecurityConfig {
                         // public endpoints
                         .requestMatchers(
                                 "/auth/**",
+                                "/user/*/role",
+                                "/farmer/register/**",
+                                "/buyer/register/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

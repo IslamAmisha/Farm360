@@ -3,18 +3,28 @@ package com.Farm360.controller;
 import com.Farm360.dto.request.BuyerRegisterRQ;
 import com.Farm360.dto.response.BuyerRS;
 import com.Farm360.service.buyer.BuyerService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/buyer")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class BuyerController {
 
     @Autowired
     private BuyerService buyerService;
 
     @PostMapping("/register/{userId}")
-    public BuyerRS registerBuyer(@PathVariable Long userId, @RequestBody BuyerRegisterRQ rq) {
-        return buyerService.registerBuyer(userId, rq);
+    public ResponseEntity<BuyerRS> registerBuyer(@PathVariable Long userId, @Valid @RequestBody BuyerRegisterRQ rq) {
+
+        BuyerRS rs = buyerService.registerBuyer(userId, rq);
+        return ResponseEntity.ok(rs);
     }
 }
+
+
+

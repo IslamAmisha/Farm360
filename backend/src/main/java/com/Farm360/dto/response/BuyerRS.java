@@ -16,5 +16,8 @@ public class BuyerRS {
     private String district;
     private String block;
     private String city;
+
     private List<String> crops;
+    private List<String> cropSubcategories;
+
 }

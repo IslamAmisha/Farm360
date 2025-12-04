@@ -11,6 +11,7 @@ import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
 import com.Farm360.model.district.DistrictEntity;
 import com.Farm360.model.payment.FarmerWallet;
 import com.Farm360.repository.*;
+import com.Farm360.utils.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,7 @@ public class FarmerServiceImpl implements FarmerService {
     @Autowired
     private BlockRepo blockRepo;
 
+
     @Override
     public FarmerRS register(Long userId, FarmerRegisterRQ rq) {
 
@@ -43,6 +45,10 @@ public class FarmerServiceImpl implements FarmerService {
 
         farmer.setUser(user);
         user.setFarmer(farmer);   // bidirectional fix
+
+        user.setRole(Role.FARMER);
+
+        userRepo.save(user);
 
         farmer.setDistrict(
                 districtRepo.findById(rq.getDistrictId())

@@ -23,7 +23,7 @@ public class UserEntity extends AuditTable<String> {
 
         @Enumerated(EnumType.STRING)
         @Column(nullable = false, length = 20)
-        private Role role;
+        private Role role = Role.PENDING;
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private FarmerEntity farmer;
