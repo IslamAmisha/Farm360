@@ -1,11 +1,15 @@
 package com.Farm360.model;
 
-import com.Farm360.model.payment.BuyerWallet;
-import com.Farm360.model.block.BlockEntity;
-import com.Farm360.model.city.CityEntity;
-import com.Farm360.model.district.DistrictEntity;
-import com.Farm360.model.crop.CropEntity;
-import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
+import com.Farm360.model.Payment.BuyerWallet;
+import com.Farm360.model.master.block.BlockEntity;
+import com.Farm360.model.master.city.CityEntity;
+import com.Farm360.model.master.district.DistrictEntity;
+import com.Farm360.model.master.crop.CropEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
+import com.Farm360.utils.AnnualPurchase;
+import com.Farm360.utils.BusinessAge;
+import com.Farm360.utils.BusinessScale;
+import com.Farm360.utils.BusinessType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,21 +52,25 @@ public class BuyerEntity {
 
     private String businessName;
 
-    private String businessType;
+    @Enumerated(EnumType.STRING)
+    private BusinessType businessType;
 
-    private String businessScale;
+    @Enumerated(EnumType.STRING)
+    private BusinessScale businessScale;
 
     private boolean paysTax;
     private boolean gstRegistered;
     private boolean hasLicence;
 
-    private String businessAge;
+    @Enumerated(EnumType.STRING)
+    private BusinessAge businessAge;
 
     private String warehouseName;
 
     private String warehouseLocation;
 
-    private String annualPurchase;
+    @Enumerated(EnumType.STRING)
+    private AnnualPurchase annualPurchase;
 
     @ManyToMany
     @JoinTable(

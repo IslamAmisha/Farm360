@@ -1,6 +1,6 @@
-package com.Farm360.model.district;
+package com.Farm360.model.master.district;
 
-import com.Farm360.model.block.BlockEntity;
+import com.Farm360.model.master.block.BlockEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
