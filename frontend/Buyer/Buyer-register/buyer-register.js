@@ -327,6 +327,16 @@ async function handleBuyerSubmit() {
     return;
   }
 
+  
+const approvals = [];
+if (document.getElementById("payTax").checked)
+  approvals.push("Pay_Tax");
+if (document.getElementById("gstRegistered").checked)
+  approvals.push("GST_Registered");
+if (document.getElementById("licence").checked)
+  approvals.push("Has_Licence");
+
+
   const payload = {
     fullName: document.getElementById("fullName").value.trim(),
     aadhaarNo: document.getElementById("aadhar").value.trim(),
@@ -343,9 +353,8 @@ async function handleBuyerSubmit() {
     businessType: document.getElementById("businessType").value,
     businessScale: document.getElementById("businessScale").value,
 
-    paysTax: document.getElementById("payTax").checked,
-    gstRegistered: document.getElementById("gstRegistered").checked,
-    hasLicence: document.getElementById("licence").checked,
+    governmentApprovals: approvals,
+
 
     businessAge: document.getElementById("businessAge").value,
     warehouseName: document.getElementById("wareName").value.trim(),

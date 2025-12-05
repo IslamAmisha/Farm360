@@ -6,10 +6,7 @@ import com.Farm360.model.master.city.CityEntity;
 import com.Farm360.model.master.district.DistrictEntity;
 import com.Farm360.model.master.crop.CropEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
-import com.Farm360.utils.AnnualPurchase;
-import com.Farm360.utils.BusinessAge;
-import com.Farm360.utils.BusinessScale;
-import com.Farm360.utils.BusinessType;
+import com.Farm360.utils.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -59,9 +56,14 @@ public class BuyerEntity {
     @Enumerated(EnumType.STRING)
     private BusinessScale businessScale;
 
-    private boolean paysTax;
-    private boolean gstRegistered;
-    private boolean hasLicence;
+    @ElementCollection(targetClass = GovernmentApprovals.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "buyer_government_approvals",
+            joinColumns = @JoinColumn(name = "buyer_id")
+    )
+    @Column(name = "approval")
+    private List<GovernmentApprovals> governmentApprovals;
 
     @Enumerated(EnumType.STRING)
     private BusinessAge businessAge;
