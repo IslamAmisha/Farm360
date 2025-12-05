@@ -32,6 +32,7 @@ public class BuyerEntity {
 
     private String aadhaarNo;
 
+    @Column(columnDefinition = "LONGTEXT")
     private String aadhaarPhotoUrl;
 
     @ManyToOne
