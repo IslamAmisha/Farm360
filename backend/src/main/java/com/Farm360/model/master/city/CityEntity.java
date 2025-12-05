@@ -13,10 +13,11 @@ import lombok.NoArgsConstructor;
 @Table(name="city_table")
 public class CityEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "block_id")
     private BlockEntity block;
 }

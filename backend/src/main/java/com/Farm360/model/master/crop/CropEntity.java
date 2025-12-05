@@ -1,5 +1,6 @@
 package com.Farm360.model.master.crop;
 
+import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.FarmerEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import jakarta.persistence.*;
@@ -27,4 +28,8 @@ public class CropEntity {
 
     @ManyToMany(mappedBy = "crops")
     private List<FarmerEntity> farmers;
+
+    @ManyToMany(mappedBy = "crops")
+    private List<BuyerEntity> buyers;
+
 }

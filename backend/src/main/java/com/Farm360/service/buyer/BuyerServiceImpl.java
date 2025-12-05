@@ -3,28 +3,39 @@ package com.Farm360.service.buyer;
 import com.Farm360.dto.request.BuyerRegisterRQ;
 import com.Farm360.dto.response.BuyerRS;
 import com.Farm360.mapper.BuyerMapper;
-import com.Farm360.model.*;
+import com.Farm360.model.BuyerEntity;
+import com.Farm360.model.UserEntity;
+import com.Farm360.model.master.block.BlockEntity;
+import com.Farm360.model.master.city.CityEntity;
+import com.Farm360.model.master.district.DistrictEntity;
 import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.repository.*;
 import com.Farm360.service.buyer.BuyerService;
 import com.Farm360.utils.Role;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
-import java.util.List;
-
 @Service
+@Transactional
 public class BuyerServiceImpl implements BuyerService {
 
-    @Autowired private UserRepo userRepo;
-    @Autowired private BuyerRepo buyerRepo;
-    @Autowired private DistrictRepo districtRepo;
-    @Autowired private BlockRepo blockRepo;
-    @Autowired private CityRepo cityRepo;
-    @Autowired private CropRepo cropRepo;
-    @Autowired private CropSubCategoriesRepo subRepo;
-    @Autowired private BuyerMapper mapper;
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private BuyerRepo buyerRepo;
+    @Autowired
+    private DistrictRepo districtRepo;
+    @Autowired
+    private BlockRepo blockRepo;
+    @Autowired
+    private CityRepo cityRepo;
+    @Autowired
+    private CropRepo cropRepo;
+    @Autowired
+    private CropSubCategoriesRepo subRepo;
+    @Autowired
+    private BuyerMapper mapper;
 
     @Override
     public BuyerRS registerBuyer(Long userId, BuyerRegisterRQ rq) {
@@ -32,36 +43,43 @@ public class BuyerServiceImpl implements BuyerService {
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
+        // Fetch master data
+        DistrictEntity district = districtRepo.findById(rq.getDistrictId())
+                .orElseThrow(() -> new RuntimeException("Invalid district"));
+
+        BlockEntity block = blockRepo.findById(rq.getBlockId())
+                .orElseThrow(() -> new RuntimeException("Invalid block"));
+
+        CityEntity city = cityRepo.findById(rq.getCityId())
+                .orElseThrow(() -> new RuntimeException("Invalid city"));
+
+
+        // Validate hierarchy
+        if (!block.getDistrict().getId().equals(district.getId())) {
+            throw new RuntimeException("Block does not belong to district");
+        }
+
+        if (!city.getBlock().getId().equals(block.getId())) {
+            throw new RuntimeException("City does not belong to block");
+        }
+
+
+        // Build Buyer Entity
         BuyerEntity buyer = new BuyerEntity();
         buyer.setUser(user);
-        user.setBuyer(buyer);   // bidirectional fix
-
-        user.setRole(Role.buyer);
-
-        userRepo.save(user);
+        user.setBuyer(buyer);
 
         buyer.setFullName(rq.getFullName());
         buyer.setAadhaarNo(rq.getAadhaarNo());
         buyer.setAadhaarPhotoUrl(rq.getAadhaarPhotoUrl());
 
-        // Location
-        buyer.setDistrict(
-                districtRepo.findById(rq.getDistrictId())
-                        .orElseThrow(() -> new RuntimeException("Invalid district"))
-        );
-        buyer.setBlock(
-                blockRepo.findById(rq.getBlockId())
-                        .orElseThrow(() -> new RuntimeException("Invalid block"))
-        );
-        buyer.setCity(
-                cityRepo.findById(rq.getCityId())
-                        .orElseThrow(() -> new RuntimeException("Invalid city"))
-        );
-
+        buyer.setDistrict(district);
+        buyer.setBlock(block);
+        buyer.setCity(city);
         buyer.setVillage(rq.getVillage());
         buyer.setPinCode(rq.getPinCode());
 
-        // Business info
         buyer.setBusinessName(rq.getBusinessName());
         buyer.setBusinessType(rq.getBusinessType());
         buyer.setBusinessScale(rq.getBusinessScale());
@@ -74,22 +92,30 @@ public class BuyerServiceImpl implements BuyerService {
         buyer.setAnnualPurchase(rq.getAnnualPurchase());
 
 
-        buyer.setCrops(
-                rq.getCropIds() == null ? List.of() : cropRepo.findAllById(rq.getCropIds())
-        );
+        // Crop selections
 
-        buyer.setCropSubcategories(
-                rq.getSubcategoryIds() == null ? List.of() : subRepo.findAllById(rq.getSubcategoryIds())
-        );
+        if (rq.getCropIds() != null) {
+            buyer.setCrops(cropRepo.findAllById(rq.getCropIds()));
+        }
+
+        if (rq.getSubcategoryIds() != null) {
+            buyer.setCropSubcategories(subRepo.findAllById(rq.getSubcategoryIds()));
+        }
 
 
+        // Create Wallet
         BuyerWallet wallet = new BuyerWallet();
         wallet.setBuyer(buyer);
         buyer.setWallet(wallet);
 
+
+        // Update role
+        user.setRole(Role.buyer);
+
+        // Save buyer (which saves user via FK)
         BuyerEntity saved = buyerRepo.save(buyer);
 
-
+        // Initialize lazy fields
         saved.getCrops().size();
         saved.getCropSubcategories().size();
 
