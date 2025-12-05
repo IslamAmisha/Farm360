@@ -7,7 +7,7 @@ let selectedBuyerCrops = [];
 let aadhaarBase64 = null;
 
 /* ============================================================
-   TRANSLATIONS (UNCHANGED)
+   TRANSLATIONS
 ============================================================ */
 const translations = {
   en: {
@@ -16,45 +16,27 @@ const translations = {
     basicTitle: "Basic Details",
     businessTitle: "Business Details",
     cropsTitle: "Crops Dealt With",
-    walletTitle: "Buyer Wallet & Escrow (Auto-Created)",
 
     fullNameLabel: "Full Name",
     aadharLabel: "Aadhaar No",
     aadharPhotoLabel: "Aadhaar Photo",
-    aadharPhotoHint: "Upload a clear Aadhaar image (optional)",
-    verifyBtnText: "Verify",
-
-    districtLabel: "District (West Bengal)",
+    districtLabel: "District",
     blockLabel: "Block",
-    cityLabel: "City / Town",
-    villageLabel: "Village / Area",
+    cityLabel: "City",
+    villageLabel: "Village",
     pinLabel: "PIN Code",
 
     businessNameLabel: "Business Name",
     businessTypeLabel: "Business Type",
     businessScaleLabel: "Business Scale",
     govtApprovalLabel: "Government Approvals",
-    payTaxLabel: "Pay Tax",
-    gstLabel: "GST Registered",
-    licenceLabel: "Has Licence",
     businessAgeLabel: "Business Age",
     warehouseNameLabel: "Warehouse Name",
     warehouseLocationLabel: "Warehouse Location",
-    annualPurchaseLabel: "Annual Purchase (approx.)",
+    annualPurchaseLabel: "Annual Purchase",
 
     buyerCropsLabel: "Crops",
     buyerCropSubLabel: "Crop Subcategories",
-    multiSelectHint: "Hold Ctrl/Cmd to select multiple",
-
-    walletText1:
-      "After registration, a Farm360 Buyer Wallet will be created for you.",
-    walletText2: "Payments are released in 3 stages:",
-    walletStage1: "30% — Resource Stage",
-    walletStage2: "30% — Cultivation Progress",
-    walletStage3: "40% — Harvest Completion",
-    walletNote:
-      "This is a demo wallet — no real banking.",
-
     submitBtn: "Submit Profile",
     backBtn: "‹ Back",
   },
@@ -65,27 +47,20 @@ const translations = {
     basicTitle: "মৌলিক বিবরণ",
     businessTitle: "ব্যবসার বিবরণ",
     cropsTitle: "ফসল",
-    walletTitle: "ক্রেতা ওয়ালেট ও এসক্রো (স্বয়ংক্রিয়)",
 
     fullNameLabel: "পূর্ণ নাম",
     aadharLabel: "আধার নম্বর",
     aadharPhotoLabel: "আধারের ছবি",
-    aadharPhotoHint: "পরিষ্কার আধারের ছবি আপলোড করুন (ঐচ্ছিক)",
-    verifyBtnText: "যাচাই",
-
     districtLabel: "জেলা",
     blockLabel: "ব্লক",
-    cityLabel: "শহর / টাউন",
-    villageLabel: "গ্রাম / এলাকা",
+    cityLabel: "শহর",
+    villageLabel: "গ্রাম",
     pinLabel: "পিন কোড",
 
     businessNameLabel: "ব্যবসার নাম",
     businessTypeLabel: "ব্যবসার ধরন",
     businessScaleLabel: "ব্যবসার পরিধি",
     govtApprovalLabel: "সরকারি অনুমোদন",
-    payTaxLabel: "কর প্রদান করে",
-    gstLabel: "জিএসটি নিবন্ধিত",
-    licenceLabel: "লাইসেন্স আছে",
     businessAgeLabel: "ব্যবসার সময়কাল",
     warehouseNameLabel: "গুদামের নাম",
     warehouseLocationLabel: "গুদামের অবস্থান",
@@ -93,18 +68,9 @@ const translations = {
 
     buyerCropsLabel: "ফসল",
     buyerCropSubLabel: "ফসলের উপবিভাগ",
-    multiSelectHint: "Ctrl/Cmd ধরে একাধিক নির্বাচন করুন",
-
-    walletText1: "নিবন্ধনের পর একটি ক্রেতা ওয়ালেট তৈরি হবে।",
-    walletText2: "টাকা ৩ ধাপে ছাড় হবে:",
-    walletStage1: "৩০% — রিসোর্স",
-    walletStage2: "৩০% — অগ্রগতি",
-    walletStage3: "৪০% — ফসল কাটা",
-    walletNote: "এটি শুধুমাত্র ডেমো উদ্দেশ্যে।",
-
     submitBtn: "প্রোফাইল জমা দিন",
     backBtn: "‹ ফিরে যান",
-  },
+  }
 };
 
 /* ============================================================
@@ -119,19 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   THEME (UNCHANGED)
+   THEME
 ============================================================ */
 function applyTheme(theme) {
   document.body.classList.toggle("theme-dark", theme === "dark");
   currentTheme = theme;
 }
-
 function toggleTheme() {
   applyTheme(currentTheme === "light" ? "dark" : "light");
 }
 
 /* ============================================================
-   LANGUAGE (UNCHANGED)
+   LANGUAGE
 ============================================================ */
 function applyLanguage(lang) {
   currentLanguage = lang;
@@ -139,20 +104,18 @@ function applyLanguage(lang) {
 
   const t = translations[lang];
   document.querySelectorAll("[data-text]").forEach((el) => {
-    let key = el.dataset.text;
-    if (t[key]) el.textContent = t[key];
+    if (t[el.dataset.text]) el.textContent = t[el.dataset.text];
   });
 
   document.getElementById("langToggle").textContent =
     lang === "en" ? "বাংলা" : "English";
 }
-
 function toggleLanguage() {
   applyLanguage(currentLanguage === "en" ? "bn" : "en");
 }
 
 /* ============================================================
-   DISTRICT → BLOCK → CITY  (BACKEND)
+   DISTRICT → BLOCK → CITY
 ============================================================ */
 async function loadDistricts() {
   const sel = document.getElementById("district");
@@ -162,29 +125,24 @@ async function loadDistricts() {
   const data = await res.json();
 
   data.forEach((d) => {
-    const opt = document.createElement("option");
-    opt.value = d.id;
-    opt.textContent = d.name;
-    sel.appendChild(opt);
+    sel.innerHTML += `<option value="${d.id}">${d.name}</option>`;
   });
 }
 
 async function updateBlocks() {
   const districtId = document.getElementById("district").value;
   const sel = document.getElementById("block");
+
   sel.innerHTML = `<option value="">Select block</option>`;
   sel.disabled = true;
 
   if (!districtId) return;
 
   const res = await fetch(`http://localhost:8080/master/districts/${districtId}/blocks`);
-  const data = await res.json();
+  const blocks = await res.json();
 
-  data.forEach((b) => {
-    const opt = document.createElement("option");
-    opt.value = b.id;
-    opt.textContent = b.name;
-    sel.appendChild(opt);
+  blocks.forEach((b) => {
+    sel.innerHTML += `<option value="${b.id}">${b.name}</option>`;
   });
 
   sel.disabled = false;
@@ -193,88 +151,92 @@ async function updateBlocks() {
 async function updateCities() {
   const blockId = document.getElementById("block").value;
   const sel = document.getElementById("city");
+
   sel.innerHTML = `<option value="">Select city</option>`;
   sel.disabled = true;
 
   if (!blockId) return;
 
   const res = await fetch(`http://localhost:8080/master/blocks/${blockId}/cities`);
-  const data = await res.json();
+  const cities = await res.json();
 
-  data.forEach((c) => {
-    const opt = document.createElement("option");
-    opt.value = c.id;
-    opt.textContent = c.name;
-    sel.appendChild(opt);
+  cities.forEach((c) => {
+    sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
   });
 
   sel.disabled = false;
 }
 
 /* ============================================================
-   CROPS + SUBCATEGORIES (BACKEND)
+   CROPS + SUBCATEGORIES
 ============================================================ */
 async function loadCrops() {
-  const cont = document.getElementById("buyerCropsContainer");
-  cont.innerHTML = "";
+  const sel = document.getElementById("buyerCropsSelect");
+  sel.innerHTML = "";
 
   const res = await fetch("http://localhost:8080/master/crops");
   const crops = await res.json();
 
   crops.forEach((c) => {
-    const label = document.createElement("label");
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = c.id;
-    input.addEventListener("change", onBuyerCropsChange);
-
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(c.name));
-
-    cont.appendChild(label);
+    sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
   });
+
+  sel.addEventListener("change", onCropsSelect);
 }
 
-async function onBuyerCropsChange() {
+function onCropsSelect() {
   selectedBuyerCrops = Array.from(
-    document.querySelectorAll("#buyerCropsContainer input:checked")
-  ).map((el) => parseInt(el.value));
+    document.getElementById("buyerCropsSelect").selectedOptions
+  ).map(o => parseInt(o.value));
 
+  renderSelectedCrops();
   updateSubcategories();
+}
+
+function renderSelectedCrops() {
+  const wrap = document.getElementById("buyerSelectedCrops");
+  wrap.innerHTML = "";
+
+  selectedBuyerCrops.forEach(id => {
+    const label = document.querySelector(`#buyerCropsSelect option[value="${id}"]`).textContent;
+
+    const chip = document.createElement("div");
+    chip.className = "tag-chip";
+    chip.innerHTML = `<span>${label}</span><button type="button">×</button>`;
+
+    chip.querySelector("button").addEventListener("click", () => {
+      const opt = document.querySelector(`#buyerCropsSelect option[value="${id}"]`);
+      opt.selected = false;
+      onCropsSelect();
+    });
+
+    wrap.appendChild(chip);
+  });
 }
 
 async function updateSubcategories() {
   const sel = document.getElementById("buyerCropSub");
   sel.innerHTML = "";
-  sel.disabled = true;
+  sel.disabled = selectedBuyerCrops.length === 0;
 
-  if (selectedBuyerCrops.length === 0) return;
-
-  const collected = new Map();
+  const subMap = new Map();
 
   for (const cropId of selectedBuyerCrops) {
-    const res = await fetch(
-      `http://localhost:8080/master/crops/${cropId}/subcategories`
-    );
+    const res = await fetch(`http://localhost:8080/master/crops/${cropId}/subcategories`);
     const subs = await res.json();
-    subs.forEach((s) => collected.set(s.id, s));
+
+    subs.forEach(s => subMap.set(s.id, s));
   }
 
-  Array.from(collected.values()).forEach((s) => {
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.textContent = s.name;
-    sel.appendChild(opt);
+  Array.from(subMap.values()).forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
   });
-
-  sel.disabled = false;
 }
 
 /* ============================================================
-   AADHAAR IMAGE → BASE64
+   AADHAAR BASE64
 ============================================================ */
-function onAadhaarPhoto(e) {
+function onAadharPhoto(e) {
   const file = e.target.files[0];
   const preview = document.getElementById("aadharPreview");
 
@@ -285,7 +247,7 @@ function onAadhaarPhoto(e) {
   }
 
   const reader = new FileReader();
-  reader.onload = (ev) => {
+  reader.onload = ev => {
     aadhaarBase64 = ev.target.result;
     preview.src = aadhaarBase64;
     preview.classList.remove("hidden");
@@ -296,12 +258,7 @@ function onAadhaarPhoto(e) {
 /* ============================================================
    VALIDATION
 ============================================================ */
-function clearErrors() {
-  document.querySelectorAll(".error").forEach((e) => (e.textContent = ""));
-}
-
 function validateForm() {
-  clearErrors();
   let ok = true;
 
   const fullName = document.getElementById("fullName").value.trim();
@@ -309,20 +266,15 @@ function validateForm() {
   const block = document.getElementById("block").value;
 
   if (!fullName) {
-    document.getElementById("fullNameErr").textContent =
-      currentLanguage === "en" ? "Enter full name." : "পূর্ণ নাম লিখুন।";
+    document.getElementById("fullNameErr").textContent = "Enter full name.";
     ok = false;
   }
-
   if (!district) {
-    document.getElementById("districtErr").textContent =
-      currentLanguage === "en" ? "Select district." : "জেলা নির্বাচন করুন।";
+    document.getElementById("districtErr").textContent = "Select district.";
     ok = false;
   }
-
   if (!block) {
-    document.getElementById("blockErr").textContent =
-      currentLanguage === "en" ? "Select block." : "ব্লক নির্বাচন করুন।";
+    document.getElementById("blockErr").textContent = "Select block.";
     ok = false;
   }
 
@@ -330,10 +282,11 @@ function validateForm() {
 }
 
 /* ============================================================
-   SUBMIT FORM → BACKEND
+   SUBMIT TO BACKEND
 ============================================================ */
 async function handleSubmit(e) {
   e.preventDefault();
+
   if (!validateForm()) return;
 
   const userId = localStorage.getItem("userId");
@@ -371,29 +324,24 @@ async function handleSubmit(e) {
     cropIds: selectedBuyerCrops,
     subcategoryIds: Array.from(
       document.getElementById("buyerCropSub").selectedOptions
-    ).map((o) => parseInt(o.value)),
+    ).map(o => parseInt(o.value)),
   };
 
-  const res = await fetch(
-    `http://localhost:8080/buyer/register/${userId}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }
-  );
+  const res = await fetch(`http://localhost:8080/buyer/register/${userId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
   if (!res.ok) {
     alert("Registration failed");
     return;
   }
 
-  const msg = document.getElementById("formMsg");
-  msg.textContent =
+  document.getElementById("formMsg").textContent =
     currentLanguage === "en"
       ? "Buyer profile saved successfully!"
       : "ক্রেতা প্রোফাইল সফলভাবে সেভ হয়েছে!";
-  msg.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 /* ============================================================
@@ -406,15 +354,7 @@ function attachEvents() {
   document.getElementById("district").addEventListener("change", updateBlocks);
   document.getElementById("block").addEventListener("change", updateCities);
 
-  document
-    .getElementById("buyerCropsContainer")
-    .addEventListener("change", onBuyerCropsChange);
+  document.getElementById("aadharPhoto").addEventListener("change", onAadharPhoto);
 
-  document
-    .getElementById("aadharPhoto")
-    .addEventListener("change", onAadhaarPhoto);
-
-  document
-    .getElementById("buyerForm")
-    .addEventListener("submit", handleSubmit);
+  document.getElementById("buyerForm").addEventListener("submit", handleSubmit);
 }
