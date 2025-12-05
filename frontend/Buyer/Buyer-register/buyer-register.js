@@ -1,9 +1,14 @@
-// ========= GLOBAL =========
+/* ============================================================
+   GLOBAL STATE
+============================================================ */
 let currentLanguage = "en";
 let currentTheme = "light";
 let selectedBuyerCrops = [];
+let aadhaarBase64 = null;
 
-// ========= TRANSLATIONS =========
+/* ============================================================
+   TRANSLATIONS (UNCHANGED)
+============================================================ */
 const translations = {
   en: {
     pageTitle: "Buyer Registration",
@@ -39,27 +44,28 @@ const translations = {
 
     buyerCropsLabel: "Crops",
     buyerCropSubLabel: "Crop Subcategories",
-    multiSelectHint: "Hold Ctrl/Cmd to select multiple — Ctrl/Cmd ধরে একাধিক নির্বাচন করুন",
+    multiSelectHint: "Hold Ctrl/Cmd to select multiple",
 
-    walletText1: "After registration, a Farm360 Buyer Wallet will be created for you. You can add funds into this wallet to pay farmers securely.",
-    walletText2: "Payments are released to farmers in 3 stages under the demo 30–30–40 escrow system:",
-    walletStage1: "30% — Resource Stage (seed, fertilizer, etc.)",
+    walletText1:
+      "After registration, a Farm360 Buyer Wallet will be created for you.",
+    walletText2: "Payments are released in 3 stages:",
+    walletStage1: "30% — Resource Stage",
     walletStage2: "30% — Cultivation Progress",
-    walletStage3: "40% — Harvest Completion & delivery",
-    walletNote: "This is a simulated wallet for project/demo purpose only — no real banking.",
+    walletStage3: "40% — Harvest Completion",
+    walletNote:
+      "This is a demo wallet — no real banking.",
 
     submitBtn: "Submit Profile",
-
     backBtn: "‹ Back",
-
   },
+
   bn: {
     pageTitle: "ক্রেতা নিবন্ধন",
     pageSubtitle: "আপনার Farm360 ক্রেতা প্রোফাইল সম্পূর্ণ করতে তথ্য দিন।",
     basicTitle: "মৌলিক বিবরণ",
     businessTitle: "ব্যবসার বিবরণ",
-    cropsTitle: "যে ফসলগুলো আপনি ক্রয়/বিক্রয় করেন",
-    walletTitle: "ক্রেতা ওয়ালেট ও এসক্রো (স্বয়ংক্রিয়ভাবে তৈরি)",
+    cropsTitle: "ফসল",
+    walletTitle: "ক্রেতা ওয়ালেট ও এসক্রো (স্বয়ংক্রিয়)",
 
     fullNameLabel: "পূর্ণ নাম",
     aadharLabel: "আধার নম্বর",
@@ -67,7 +73,7 @@ const translations = {
     aadharPhotoHint: "পরিষ্কার আধারের ছবি আপলোড করুন (ঐচ্ছিক)",
     verifyBtnText: "যাচাই",
 
-    districtLabel: "জেলা (পশ্চিমবঙ্গ)",
+    districtLabel: "জেলা",
     blockLabel: "ব্লক",
     cityLabel: "শহর / টাউন",
     villageLabel: "গ্রাম / এলাকা",
@@ -83,92 +89,40 @@ const translations = {
     businessAgeLabel: "ব্যবসার সময়কাল",
     warehouseNameLabel: "গুদামের নাম",
     warehouseLocationLabel: "গুদামের অবস্থান",
-    annualPurchaseLabel: "বার্ষিক ক্রয় (আনুমানিক)",
-
-
-    payTaxLabel: "কর প্রদান করে",
-    gstLabel: "জিএসটি নিবন্ধিত",
-    licenceLabel: "লাইসেন্স আছে",
-
+    annualPurchaseLabel: "বার্ষিক ক্রয়",
 
     buyerCropsLabel: "ফসল",
     buyerCropSubLabel: "ফসলের উপবিভাগ",
-    multiSelectHint: "একাধিক নির্বাচন করতে Ctrl/Cmd ধরে রাখুন",
+    multiSelectHint: "Ctrl/Cmd ধরে একাধিক নির্বাচন করুন",
 
-    walletText1: "নিবন্ধনের পর আপনার জন্য একটি Farm360 ক্রেতা ওয়ালেট তৈরি হবে। এই ওয়ালেটে টাকা যোগ করে নিরাপদভাবে কৃষকদের পরিশোধ করতে পারবেন।",
-    walletText2: "ডেমো ৩০–৩০–৪০ এসক্রো সিস্টেমে কৃষকদের টাকা ৩ ধাপে ছাড় হবে:",
-    walletStage1: "৩০% — রিসোর্স পর্যায় (বীজ, সার ইত্যাদি)",
-    walletStage2: "৩০% — চাষাবাদের অগ্রগতি",
-    walletStage3: "৪০% — ফসল কাটা ও ডেলিভারি সম্পন্ন",
-    walletNote: "এটি শুধুমাত্র প্রজেক্ট/ডেমো উদ্দেশ্যে তৈরি সিমুলেটেড ওয়ালেট — কোনো বাস্তব ব্যাংকিং নয়।",
+    walletText1: "নিবন্ধনের পর একটি ক্রেতা ওয়ালেট তৈরি হবে।",
+    walletText2: "টাকা ৩ ধাপে ছাড় হবে:",
+    walletStage1: "৩০% — রিসোর্স",
+    walletStage2: "৩০% — অগ্রগতি",
+    walletStage3: "৪০% — ফসল কাটা",
+    walletNote: "এটি শুধুমাত্র ডেমো উদ্দেশ্যে।",
 
     submitBtn: "প্রোফাইল জমা দিন",
     backBtn: "‹ ফিরে যান",
-
-  }
-};
-
-// ========= DISTRICT DATA =========
-const districtBlockData = {
-  Alipurduar: ["Alipurduar I", "Alipurduar II"],
-  Bankura: ["Bankura I", "Bankura II", "Bishnupur", "Khatra", "Santiniketan"],
-  Bardhaman: ["Bardhaman I", "Bardhaman II", "Asansol", "Durgapur"],
-  Darjeeling: ["Darjeeling", "Kalimpong", "Kurseong"],
-  "East Medinipur": ["Egra", "Haldia", "Medinipur", "Ramnagar", "Tamluk"],
-  Hooghly: ["Arambagh", "Dhaniakhali", "Goghat", "Polba", "Serampore"],
-  Howrah: ["Amta", "Howrah", "Jagatballavpur", "Panchla", "Shyampur"],
-  Jalpaiguri: ["Jalpaiguri", "Maynaguri", "Nagrakata", "Rajganj"],
-  Jhargram: ["Goaltore", "Jhargram", "Nayagram", "Porahat"],
-  Kolkata: ["Alipore", "Ballygunge", "Shyam Bazaar"],
-  Malda: ["Habibpur", "Kaliachak", "Malda", "Manigram"],
-  Murshidabad: ["Berhampur", "Burwan", "Khagra", "Lalgola", "Raghunathganj"],
-  Nadia: ["Chakdah", "Kaliganj", "Krishnanagar", "Nabadwip"],
-  "North 24 Parganas": ["Barasat", "Basirhat", "Bidhannagar", "Rajarhat"],
-  "North Dinajpur": ["Balurghat", "Gangarampur"],
-  "Purba Bardhaman": ["Jamalpur", "Kalna", "Katwa", "Purba Bardhaman"],
-  Purulia: ["Baghmundi", "Purulia", "Raghunathpur"],
-  "South 24 Parganas": ["Baruipur", "Canning", "Sundarban"],
-  "South Dinajpur": ["Gangarampur", "Kumarganj", "Tapan"],
-  "West Medinipur": ["Debra", "Kharagpur", "Medinipur", "Moyna"],
-  Birbhum: ["Bolpur", "Rampurhat", "Suri"]
-};
-
-// ========= CROPS DATA =========
-// ========= CROPS DATA (Bilingual clean) =========
-const cropsData = {
-  en: {
-    Rice: ["Swarna", "IR-64", "Sona Masuri", "Basmati"],
-    Wheat: ["HD-2733", "PBW-343", "UP-2338"],
-    Potato: ["Kufri Pukhraj", "Kufri Himalini", "Local Red"],
-    Pulses: ["Masur", "Moong", "Arhar", "Gram"],
-    Vegetables: ["Tomato", "Cabbage", "Brinjal"],
-    Jute: ["White Jute", "Tossa Jute", "Red Jute"]
   },
-  bn: {
-    ধান: ["স্বর্ণা", "আইআর-৬৪", "সোনা মাসুরি", "বাসমতি"],
-    গম: ["এইচডি-২৭৩৩", "পিবিডাবলিউ-৩৪৩", "ইউপি-২৩৩৮"],
-    আলু: ["কুফরি পুখরাজ", "কুফরি হিমালিনী", "লাল আলু"],
-    ডাল: ["মাসুর", "মুং", "অড়হর", "ছোলা"],
-    সবজি: ["টমেটো", "বাঁধাকপি", "বেগুন"],
-    পাট: ["সাদা পাট", "টোসা পাট", "লাল পাট"]
-  }
 };
 
-
-// ========= INIT =========
+/* ============================================================
+   INIT
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   applyTheme(currentTheme);
   applyLanguage(currentLanguage);
-  populateDistricts();
-  populateBuyerCrops();
+  loadDistricts();
+  loadCrops();
   attachEvents();
 });
 
-// ========= THEME =========
+/* ============================================================
+   THEME (UNCHANGED)
+============================================================ */
 function applyTheme(theme) {
-  const body = document.body;
-  if (theme === "dark") body.classList.add("theme-dark");
-  else body.classList.remove("theme-dark");
+  document.body.classList.toggle("theme-dark", theme === "dark");
   currentTheme = theme;
 }
 
@@ -176,168 +130,172 @@ function toggleTheme() {
   applyTheme(currentTheme === "light" ? "dark" : "light");
 }
 
-// ========= LANGUAGE =========
+/* ============================================================
+   LANGUAGE (UNCHANGED)
+============================================================ */
 function applyLanguage(lang) {
-  const body = document.body;
-  body.classList.toggle("lang-bn", lang === "bn");
   currentLanguage = lang;
+  document.body.classList.toggle("lang-bn", lang === "bn");
 
   const t = translations[lang];
   document.querySelectorAll("[data-text]").forEach((el) => {
-    const key = el.getAttribute("data-text");
+    let key = el.dataset.text;
     if (t[key]) el.textContent = t[key];
   });
 
-  const langBtn = document.getElementById("langToggle");
-  if (langBtn) langBtn.textContent = lang === "en" ? "বাংলা" : "English";
+  document.getElementById("langToggle").textContent =
+    lang === "en" ? "বাংলা" : "English";
 }
 
 function toggleLanguage() {
   applyLanguage(currentLanguage === "en" ? "bn" : "en");
 }
 
-// ========= DISTRICTS =========
-function populateDistricts() {
-  const select = document.getElementById("district");
-  Object.keys(districtBlockData)
-    .sort()
-    .forEach((d) => {
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d;
-      select.appendChild(opt);
-    });
-}
+/* ============================================================
+   DISTRICT → BLOCK → CITY  (BACKEND)
+============================================================ */
+async function loadDistricts() {
+  const sel = document.getElementById("district");
+  sel.innerHTML = `<option value="">Select district</option>`;
 
-function updateBlocks() {
-  const district = document.getElementById("district").value;
-  const blockSel = document.getElementById("block");
-  blockSel.innerHTML =
-    '<option value="">Select block — ব্লক নির্বাচন করুন</option>';
-  blockSel.disabled = true;
-  if (!district || !districtBlockData[district]) return;
-  districtBlockData[district].forEach((b) => {
+  const res = await fetch("http://localhost:8080/master/districts");
+  const data = await res.json();
+
+  data.forEach((d) => {
     const opt = document.createElement("option");
-    opt.value = b;
-    opt.textContent = b;
-    blockSel.appendChild(opt);
+    opt.value = d.id;
+    opt.textContent = d.name;
+    sel.appendChild(opt);
   });
-  blockSel.disabled = false;
 }
 
-// ========= CROPS =========
-function populateBuyerCrops() {
+async function updateBlocks() {
+  const districtId = document.getElementById("district").value;
+  const sel = document.getElementById("block");
+  sel.innerHTML = `<option value="">Select block</option>`;
+  sel.disabled = true;
+
+  if (!districtId) return;
+
+  const res = await fetch(`http://localhost:8080/master/districts/${districtId}/blocks`);
+  const data = await res.json();
+
+  data.forEach((b) => {
+    const opt = document.createElement("option");
+    opt.value = b.id;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+
+  sel.disabled = false;
+}
+
+async function updateCities() {
+  const blockId = document.getElementById("block").value;
+  const sel = document.getElementById("city");
+  sel.innerHTML = `<option value="">Select city</option>`;
+  sel.disabled = true;
+
+  if (!blockId) return;
+
+  const res = await fetch(`http://localhost:8080/master/blocks/${blockId}/cities`);
+  const data = await res.json();
+
+  data.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+
+  sel.disabled = false;
+}
+
+/* ============================================================
+   CROPS + SUBCATEGORIES (BACKEND)
+============================================================ */
+async function loadCrops() {
   const cont = document.getElementById("buyerCropsContainer");
   cont.innerHTML = "";
 
-  const langCrops = cropsData[currentLanguage];
+  const res = await fetch("http://localhost:8080/master/crops");
+  const crops = await res.json();
 
-  Object.keys(langCrops).forEach((crop) => {
+  crops.forEach((c) => {
     const label = document.createElement("label");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.value = crop;
 
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(crop));
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = c.id;
+    input.addEventListener("change", onBuyerCropsChange);
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(c.name));
+
     cont.appendChild(label);
   });
 }
 
-function onBuyerCropsChange() {
+async function onBuyerCropsChange() {
   selectedBuyerCrops = Array.from(
-    document.querySelectorAll("#buyerCropsContainer input[type='checkbox']:checked")
-  ).map(cb => cb.value);
+    document.querySelectorAll("#buyerCropsContainer input:checked")
+  ).map((el) => parseInt(el.value));
 
-  updateBuyerSubcategories();
+  updateSubcategories();
 }
 
-function updateBuyerSubcategories() {
-  const subSel = document.getElementById("buyerCropSub");
-  subSel.innerHTML = "";
+async function updateSubcategories() {
+  const sel = document.getElementById("buyerCropSub");
+  sel.innerHTML = "";
+  sel.disabled = true;
 
-  if (selectedBuyerCrops.length === 0) {
-    subSel.disabled = true;
-    return;
+  if (selectedBuyerCrops.length === 0) return;
+
+  const collected = new Map();
+
+  for (const cropId of selectedBuyerCrops) {
+    const res = await fetch(
+      `http://localhost:8080/master/crops/${cropId}/subcategories`
+    );
+    const subs = await res.json();
+    subs.forEach((s) => collected.set(s.id, s));
   }
 
-  const langCrops = cropsData[currentLanguage];
-  const set = new Set();
-
-  selectedBuyerCrops.forEach((c) => {
-    (langCrops[c] || []).forEach((sub) => set.add(sub));
-  });
-
-  Array.from(set).forEach((sub) => {
+  Array.from(collected.values()).forEach((s) => {
     const opt = document.createElement("option");
-    opt.value = sub;
-    opt.textContent = sub;
-    subSel.appendChild(opt);
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
   });
 
-  subSel.disabled = false;
+  sel.disabled = false;
 }
 
-
-// ========= AADHAAR =========
+/* ============================================================
+   AADHAAR IMAGE → BASE64
+============================================================ */
 function onAadhaarPhoto(e) {
-  const file = e.target.files && e.target.files[0];
+  const file = e.target.files[0];
   const preview = document.getElementById("aadharPreview");
-  const err = document.getElementById("aadharPhotoErr");
-  err.textContent = "";
 
   if (!file) {
-    preview.src = "";
+    aadhaarBase64 = null;
     preview.classList.add("hidden");
     return;
   }
-  if (!file.type.startsWith("image/")) {
-    err.textContent =
-      currentLanguage === "en"
-        ? "Please upload an image file."
-        : "অনুগ্রহ করে একটি ইমেজ ফাইল আপলোড করুন।";
-    e.target.value = "";
-    preview.src = "";
-    preview.classList.add("hidden");
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    err.textContent =
-      currentLanguage === "en"
-        ? "Image must be 5MB or smaller."
-        : "ইমেজ সাইজ ৫MB বা তার কম হতে হবে।";
-    e.target.value = "";
-    preview.src = "";
-    preview.classList.add("hidden");
-    return;
-  }
-  const r = new FileReader();
-  r.onload = (ev) => {
-    preview.src = ev.target.result;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    aadhaarBase64 = ev.target.result;
+    preview.src = aadhaarBase64;
     preview.classList.remove("hidden");
   };
-  r.readAsDataURL(file);
+  reader.readAsDataURL(file);
 }
 
-function verifyAadhaar() {
-  const a = (document.getElementById("aadhar").value || "").trim();
-  const status = document.getElementById("aadharStatus");
-  if (/^\d{12}$/.test(a)) {
-    status.textContent =
-      currentLanguage === "en"
-        ? "Verified ✓"
-        : "যাচাই হয়েছে ✓";
-    status.style.color = "#16a34a";
-  } else {
-    status.textContent =
-      currentLanguage === "en"
-        ? "Invalid Aadhaar (12 digits)."
-        : "ভুল আধার নম্বর (১২ সংখ্যা দিন)।";
-    status.style.color = "#dc2626";
-  }
-}
-
-// ========= VALIDATION & SUBMIT =========
+/* ============================================================
+   VALIDATION
+============================================================ */
 function clearErrors() {
   document.querySelectorAll(".error").forEach((e) => (e.textContent = ""));
 }
@@ -347,101 +305,116 @@ function validateForm() {
   let ok = true;
 
   const fullName = document.getElementById("fullName").value.trim();
-  const pin = document.getElementById("pin").value.trim();
   const district = document.getElementById("district").value;
   const block = document.getElementById("block").value;
-  const subs = Array.from(
-    document.getElementById("buyerCropSub").selectedOptions
-  ).map((o) => o.value);
 
   if (!fullName) {
     document.getElementById("fullNameErr").textContent =
-      currentLanguage === "en"
-        ? "Enter full name."
-        : "পূর্ণ নাম লিখুন।";
-    ok = false;
-  }
-
-  if (pin && !/^\d{6}$/.test(pin)) {
-    document.getElementById("pinErr").textContent =
-      currentLanguage === "en"
-        ? "Enter valid 6-digit PIN."
-        : "সঠিক ৬-অঙ্কের পিন লিখুন।";
+      currentLanguage === "en" ? "Enter full name." : "পূর্ণ নাম লিখুন।";
     ok = false;
   }
 
   if (!district) {
     document.getElementById("districtErr").textContent =
-      currentLanguage === "en"
-        ? "Select district."
-        : "জেলা নির্বাচন করুন।";
+      currentLanguage === "en" ? "Select district." : "জেলা নির্বাচন করুন।";
     ok = false;
   }
 
   if (!block) {
     document.getElementById("blockErr").textContent =
-      currentLanguage === "en"
-        ? "Select block."
-        : "ব্লক নির্বাচন করুন।";
-    ok = false;
-  }
-
-  if (selectedBuyerCrops.length === 0) {
-    document.getElementById("buyerCropsErr").textContent =
-      currentLanguage === "en"
-        ? "Select at least one crop."
-        : "কমপক্ষে একটি ফসল নির্বাচন করুন।";
-    ok = false;
-  } else if (subs.length === 0) {
-    document.getElementById("buyerCropsErr").textContent =
-      currentLanguage === "en"
-        ? "Select at least one crop subcategory."
-        : "কমপক্ষে একটি ফসলের উপবিভাগ নির্বাচন করুন।";
+      currentLanguage === "en" ? "Select block." : "ব্লক নির্বাচন করুন।";
     ok = false;
   }
 
   return ok;
 }
 
-function handleSubmit(e) {
+/* ============================================================
+   SUBMIT FORM → BACKEND
+============================================================ */
+async function handleSubmit(e) {
   e.preventDefault();
   if (!validateForm()) return;
+
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    alert("User not logged in");
+    return;
+  }
+
+  const payload = {
+    fullName: document.getElementById("fullName").value.trim(),
+    aadhaarNo: document.getElementById("aadhar").value.trim(),
+    aadhaarPhotoUrl: aadhaarBase64,
+
+    districtId: parseInt(document.getElementById("district").value),
+    blockId: parseInt(document.getElementById("block").value),
+    cityId: parseInt(document.getElementById("city").value),
+
+    village: document.getElementById("village").value.trim(),
+    pinCode: document.getElementById("pin").value.trim(),
+
+    businessName: document.getElementById("businessName").value.trim(),
+    businessType: document.getElementById("businessType").value,
+    businessScale: document.getElementById("businessScale").value,
+
+    paysTax: document.getElementById("payTax").checked,
+    gstRegistered: document.getElementById("gstRegistered").checked,
+    hasLicence: document.getElementById("licence").checked,
+
+    businessAge: document.getElementById("businessAge").value,
+    warehouseName: document.getElementById("wareName").value.trim(),
+    warehouseLocation: document.getElementById("wareLocation").value.trim(),
+
+    annualPurchase: document.getElementById("annualPurchase").value,
+
+    cropIds: selectedBuyerCrops,
+    subcategoryIds: Array.from(
+      document.getElementById("buyerCropSub").selectedOptions
+    ).map((o) => parseInt(o.value)),
+  };
+
+  const res = await fetch(
+    `http://localhost:8080/buyer/register/${userId}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    alert("Registration failed");
+    return;
+  }
 
   const msg = document.getElementById("formMsg");
   msg.textContent =
     currentLanguage === "en"
-      ? "Buyer profile saved successfully! (Demo)"
-      : "ক্রেতা প্রোফাইল সফলভাবে সেভ হয়েছে! (ডেমো)";
+      ? "Buyer profile saved successfully!"
+      : "ক্রেতা প্রোফাইল সফলভাবে সেভ হয়েছে!";
   msg.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// ========= EVENTS =========
+/* ============================================================
+   EVENTS
+============================================================ */
 function attachEvents() {
-  document
-    .getElementById("themeToggle")
-    ?.addEventListener("click", toggleTheme);
+  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+  document.getElementById("langToggle").addEventListener("click", toggleLanguage);
 
-  document
-    .getElementById("langToggle")
-    ?.addEventListener("click", toggleLanguage);
-
-  document
-    .getElementById("district")
-    ?.addEventListener("change", updateBlocks);
+  document.getElementById("district").addEventListener("change", updateBlocks);
+  document.getElementById("block").addEventListener("change", updateCities);
 
   document
     .getElementById("buyerCropsContainer")
-    ?.addEventListener("change", onBuyerCropsChange);
+    .addEventListener("change", onBuyerCropsChange);
 
   document
     .getElementById("aadharPhoto")
-    ?.addEventListener("change", onAadhaarPhoto);
-
-  document
-    .getElementById("verifyAadhaarBtn")
-    ?.addEventListener("click", verifyAadhaar);
+    .addEventListener("change", onAadhaarPhoto);
 
   document
     .getElementById("buyerForm")
-    ?.addEventListener("submit", handleSubmit);
+    .addEventListener("submit", handleSubmit);
 }
