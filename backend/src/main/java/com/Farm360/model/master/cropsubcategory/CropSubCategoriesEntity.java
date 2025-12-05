@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "Crop_SubCategory")
+@Table(name = "crop_sub_category")
 public class CropSubCategoriesEntity {
 
     @Id

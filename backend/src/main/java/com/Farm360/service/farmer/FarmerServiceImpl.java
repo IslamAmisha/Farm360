@@ -39,8 +39,6 @@ public class FarmerServiceImpl implements FarmerService {
     @Autowired
     private BlockRepo blockRepo;
 
-
-
     @Override
     public FarmerRS register(Long userId, FarmerRegisterRQ rq, MultipartFile landPhoto) {
 
@@ -49,13 +47,12 @@ public class FarmerServiceImpl implements FarmerService {
 
         FarmerEntity farmer = farmerMapper.mapToEntity(rq);
 
-        // user & role assignment
+        // Assign user & role
         farmer.setUser(user);
         user.setFarmer(farmer);
         user.setRole(Role.farmer);
-        userRepo.save(user);
 
-        // district & block
+        // district & block BEFORE save
         farmer.setDistrict(
                 districtRepo.findById(rq.getDistrictId())
                         .orElseThrow(() -> new RuntimeException("Invalid district"))
@@ -65,7 +62,7 @@ public class FarmerServiceImpl implements FarmerService {
                         .orElseThrow(() -> new RuntimeException("Invalid block"))
         );
 
-        // crop lists
+        // Crops & Subcategories BEFORE save
         farmer.setCrops(
                 rq.getCropIds() == null ? List.of() : cropRepo.findAllById(rq.getCropIds())
         );
@@ -73,7 +70,7 @@ public class FarmerServiceImpl implements FarmerService {
                 rq.getSubCategoryIds() == null ? List.of() : subCategoryRepo.findAllById(rq.getSubCategoryIds())
         );
 
-        // ===== FILE UPLOAD HANDLING =====
+        // FILE UPLOAD
         if (landPhoto != null && !landPhoto.isEmpty()) {
             try {
                 String uploadDir = "uploads/landPhotos/";
@@ -82,32 +79,28 @@ public class FarmerServiceImpl implements FarmerService {
 
                 String fileName = System.currentTimeMillis() + "_" + landPhoto.getOriginalFilename();
                 Path path = Paths.get(uploadDir + fileName);
-
                 Files.write(path, landPhoto.getBytes());
 
-                farmer.setLandPhotoUrl("/" + uploadDir + fileName); // save URL/path
+                farmer.setLandPhotoUrl("/" + uploadDir + fileName);
 
             } catch (Exception e) {
                 throw new RuntimeException("Failed to upload image");
             }
-        } else {
-            farmer.setLandPhotoUrl(null); // optional
         }
 
-        // wallet setup
+        // Wallet
         FarmerWallet wallet = new FarmerWallet();
         wallet.setFarmer(farmer);
         farmer.setWallet(wallet);
 
+        // ✅ NOW SAVE EVERYTHING ONCE
         FarmerEntity saved = farmerRepo.save(farmer);
 
-        // force initialize lazy lists
+        // Lazy lists
         saved.getCrops().size();
         saved.getCropSubcategories().size();
 
         return farmerMapper.mapEntityToRS(saved);
     }
-
-
 
 }

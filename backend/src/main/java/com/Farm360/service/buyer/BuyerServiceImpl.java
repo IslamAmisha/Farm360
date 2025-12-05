@@ -10,7 +10,6 @@ import com.Farm360.model.master.city.CityEntity;
 import com.Farm360.model.master.district.DistrictEntity;
 import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.repository.*;
-import com.Farm360.service.buyer.BuyerService;
 import com.Farm360.utils.Role;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class BuyerServiceImpl implements BuyerService {
     @Autowired
     private CropSubCategoriesRepo subRepo;
     @Autowired
-    private BuyerMapper mapper;
+    private BuyerMapper buyerMapper;
 
     @Override
     public BuyerRS registerBuyer(Long userId, BuyerRegisterRQ rq) {
@@ -43,8 +42,12 @@ public class BuyerServiceImpl implements BuyerService {
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // If user already has buyer → STOP duplicate
+        if (user.getBuyer() != null) {
+            throw new RuntimeException("User already has a Buyer profile");
+        }
 
-        // Fetch master data
+
         DistrictEntity district = districtRepo.findById(rq.getDistrictId())
                 .orElseThrow(() -> new RuntimeException("Invalid district"));
 
@@ -55,70 +58,48 @@ public class BuyerServiceImpl implements BuyerService {
                 .orElseThrow(() -> new RuntimeException("Invalid city"));
 
 
-        // Validate hierarchy
         if (!block.getDistrict().getId().equals(district.getId())) {
-            throw new RuntimeException("Block does not belong to district");
+            throw new RuntimeException("Block does not belong to the selected district");
         }
 
         if (!city.getBlock().getId().equals(block.getId())) {
-            throw new RuntimeException("City does not belong to block");
+            throw new RuntimeException("City does not belong to the selected block");
         }
 
 
-        // Build Buyer Entity
-        BuyerEntity buyer = new BuyerEntity();
+        BuyerEntity buyer = buyerMapper.mapToEntity(rq);
+
+        // Link to user
         buyer.setUser(user);
         user.setBuyer(buyer);
+        user.setRole(Role.buyer);
 
-        buyer.setFullName(rq.getFullName());
-        buyer.setAadhaarNo(rq.getAadhaarNo());
-        buyer.setAadhaarPhotoUrl(rq.getAadhaarPhotoUrl());
-
+        // Set master table relations
         buyer.setDistrict(district);
         buyer.setBlock(block);
         buyer.setCity(city);
-        buyer.setVillage(rq.getVillage());
-        buyer.setPinCode(rq.getPinCode());
-
-        buyer.setBusinessName(rq.getBusinessName());
-        buyer.setBusinessType(rq.getBusinessType());
-        buyer.setBusinessScale(rq.getBusinessScale());
-        buyer.setPaysTax(rq.isPaysTax());
-        buyer.setGstRegistered(rq.isGstRegistered());
-        buyer.setHasLicence(rq.isHasLicence());
-        buyer.setBusinessAge(rq.getBusinessAge());
-        buyer.setWarehouseName(rq.getWarehouseName());
-        buyer.setWarehouseLocation(rq.getWarehouseLocation());
-        buyer.setAnnualPurchase(rq.getAnnualPurchase());
 
 
-        // Crop selections
-
-        if (rq.getCropIds() != null) {
+        if (rq.getCropIds() != null && !rq.getCropIds().isEmpty()) {
             buyer.setCrops(cropRepo.findAllById(rq.getCropIds()));
         }
 
-        if (rq.getSubcategoryIds() != null) {
+        if (rq.getSubcategoryIds() != null && !rq.getSubcategoryIds().isEmpty()) {
             buyer.setCropSubcategories(subRepo.findAllById(rq.getSubcategoryIds()));
         }
 
 
-        // Create Wallet
         BuyerWallet wallet = new BuyerWallet();
         wallet.setBuyer(buyer);
         buyer.setWallet(wallet);
 
 
-        // Update role
-        user.setRole(Role.buyer);
-
-        // Save buyer (which saves user via FK)
         BuyerEntity saved = buyerRepo.save(buyer);
 
-        // Initialize lazy fields
+        // Initialize lazy lists
         saved.getCrops().size();
         saved.getCropSubcategories().size();
 
-        return mapper.mapEntityToRS(saved);
+        return buyerMapper.mapEntityToRS(saved);
     }
 }
