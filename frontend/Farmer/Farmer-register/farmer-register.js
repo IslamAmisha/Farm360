@@ -276,7 +276,22 @@ function validateForm() {
 // SUBMIT
 // =========================
 async function handleSubmit() {
-  if (!validateForm()) return;
+
+  // SHOW LOADING POPUP
+  const popup = document.getElementById("submitPopup");
+  const popupContent = document.getElementById("popupContent");
+  const popupMessage = document.getElementById("popupMessage");
+  const loader = document.getElementById("popupLoader");
+
+  popupContent.className = "popup-content"; // reset
+  loader.classList.remove("hidden");
+  popupMessage.textContent = "Submitting your profile...";
+  popup.classList.remove("hidden");
+
+  if (!validateForm()) {
+    popup.classList.add("hidden");
+    return;
+  }
 
   const payload = {
     farmerName: document.getElementById("farmerName").value.trim(),
@@ -299,7 +314,10 @@ async function handleSubmit() {
   if (photo) fd.append("landPhoto", photo);
 
   const userId = localStorage.getItem("userId");
-  if (!userId) return showToast("User not logged in.", "error");
+  if (!userId) {
+    popupError("User not logged in.");
+    return;
+  }
 
   try {
     const res = await fetch(`http://localhost:8080/farmer/register/${userId}`, {
@@ -307,13 +325,40 @@ async function handleSubmit() {
       body: fd
     });
 
-    if (!res.ok) return showToast("Registration failed.", "error");
+    loader.classList.add("hidden");
 
-    showToast("Farmer registered successfully!", "success");
-  } catch (e) {
-    showToast("Something went wrong.", "error");
+    if (!res.ok) {
+      popupError("Registration Failed !");
+      return;
+    }
+
+    popupSuccess("Registration Successful!");
+
+  } catch (err) {
+    loader.classList.add("hidden");
+    popupError("Something went wrong.");
   }
 }
+
+// SUCCESS POPUP
+function popupSuccess(msg) {
+  const popup = document.getElementById("submitPopup");
+  const popupContent = document.getElementById("popupContent");
+  const popupMessage = document.getElementById("popupMessage");
+  popupContent.className = "popup-content popup-success";
+  popupMessage.textContent = msg;
+}
+
+// ERROR POPUP
+function popupError(msg) {
+  const popup = document.getElementById("submitPopup");
+  const popupContent = document.getElementById("popupContent");
+  const popupMessage = document.getElementById("popupMessage");
+  popupContent.className = "popup-content popup-error";
+  popupMessage.textContent = msg;
+}
+
+
 
 // =========================
 // EVENT BINDINGS

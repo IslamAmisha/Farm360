@@ -85,6 +85,29 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
+   POPUP SUCCESS & ERROR
+============================================================ */
+function popupSuccess(msg) {
+  const popupMessage = document.getElementById("popupMessage");
+  const popupContent = document.getElementById("popupContent");
+
+  popupMessage.textContent = msg;
+  popupContent.className = "popup-content success";
+
+  setTimeout(() => {
+    document.getElementById("submitPopup").classList.add("hidden");
+  }, 1500);
+}
+
+function popupError(msg) {
+  const popupMessage = document.getElementById("popupMessage");
+  const popupContent = document.getElementById("popupContent");
+
+  popupMessage.textContent = msg;
+  popupContent.className = "popup-content error";
+}
+
+/* ============================================================
    THEME
 ============================================================ */
 function applyTheme(theme) {
@@ -138,7 +161,7 @@ async function updateBlocks() {
 
   if (!districtId) return;
 
-  const res = await fetch(`http://localhost:8080/master/districts/${districtId}/blocks`);
+  const res = await fetch(`http://localhost:8080/master/blocks/${districtId}`);
   const blocks = await res.json();
 
   blocks.forEach((b) => {
@@ -157,7 +180,7 @@ async function updateCities() {
 
   if (!blockId) return;
 
-  const res = await fetch(`http://localhost:8080/master/blocks/${blockId}/cities`);
+  const res = await fetch(`http://localhost:8080/master/cities/${blockId}`);
   const cities = await res.json();
 
   cities.forEach((c) => {
@@ -222,7 +245,7 @@ async function updateSubcategories() {
   const subMap = new Map();
 
   for (const cropId of selectedBuyerCrops) {
-    const res = await fetch(`http://localhost:8080/master/crops/${cropId}/subcategories`);
+    const res = await fetch(`http://localhost:8080/master/subcategories/${cropId}`);
     const subs = await res.json();
 
     subs.forEach(s => subMap.set(s.id, s));
@@ -261,6 +284,8 @@ function onAadharPhoto(e) {
 function validateForm() {
   let ok = true;
 
+  document.querySelectorAll(".error").forEach(e => e.textContent = "");
+
   const fullName = document.getElementById("fullName").value.trim();
   const district = document.getElementById("district").value;
   const block = document.getElementById("block").value;
@@ -282,16 +307,23 @@ function validateForm() {
 }
 
 /* ============================================================
-   SUBMIT TO BACKEND
+   SUBMIT
 ============================================================ */
-async function handleSubmit(e) {
-  e.preventDefault();
+async function handleBuyerSubmit() {
 
-  if (!validateForm()) return;
+  // SHOW POPUP
+  const popup = document.getElementById("submitPopup");
+  const popupContent = document.getElementById("popupContent");
+  const popupMessage = document.getElementById("popupMessage");
+  const loader = document.getElementById("popupLoader");
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    alert("User not logged in");
+  popupContent.className = "popup-content"; 
+  loader.classList.remove("hidden");
+  popupMessage.textContent = "Submitting your profile...";
+  popup.classList.remove("hidden");
+
+  if (!validateForm()) {
+    popup.classList.add("hidden");
     return;
   }
 
@@ -327,21 +359,32 @@ async function handleSubmit(e) {
     ).map(o => parseInt(o.value)),
   };
 
-  const res = await fetch(`http://localhost:8080/buyer/register/${userId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) {
-    alert("Registration failed");
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    popupError("User not logged in.");
     return;
   }
 
-  document.getElementById("formMsg").textContent =
-    currentLanguage === "en"
-      ? "Buyer profile saved successfully!"
-      : "ক্রেতা প্রোফাইল সফলভাবে সেভ হয়েছে!";
+  try {
+    const res = await fetch(`http://localhost:8080/buyer/register/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    loader.classList.add("hidden");
+
+    if (!res.ok) {
+      popupError("Registration Failed !");
+      return;
+    }
+
+    popupSuccess("Registration Successful!");
+
+  } catch (err) {
+    loader.classList.add("hidden");
+    popupError("Something went wrong.");
+  }
 }
 
 /* ============================================================
@@ -356,5 +399,8 @@ function attachEvents() {
 
   document.getElementById("aadharPhoto").addEventListener("change", onAadharPhoto);
 
-  document.getElementById("buyerForm").addEventListener("submit", handleSubmit);
+  document.getElementById("buyerForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    handleBuyerSubmit();
+  });
 }
