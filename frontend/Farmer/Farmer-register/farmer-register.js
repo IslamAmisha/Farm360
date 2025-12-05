@@ -3,7 +3,6 @@
 // =========================
 let currentLanguage = "en";
 let currentTheme = "light";
-let selectedCrops = []; // now will store CROP IDs from backend
 
 // =========================
 // TRANSLATIONS
@@ -18,7 +17,7 @@ const translations = {
     photoTitle: "Land Photo",
     walletTitle: "Escrow Wallet (Auto-Created)",
     nameLabel: "Farmer Name",
-    districtLabel: "District (West Bengal)",
+    districtLabel: "District",
     blockLabel: "Block",
     villageLabel: "Village",
     pinLabel: "PIN Code",
@@ -26,7 +25,7 @@ const translations = {
     croppingLabel: "Cropping Pattern",
     subcategoryLabel: "Crop Subcategories",
     submitBtn: "Submit Profile",
-    backBtn: "‹ Back",
+    backBtn: "‹ Back"
   },
   bn: {
     pageTitle: "কৃষক নিবন্ধন",
@@ -37,7 +36,7 @@ const translations = {
     photoTitle: "জমির ছবি",
     walletTitle: "এসক্রো ওয়ালেট (স্বয়ংক্রিয়ভাবে তৈরি)",
     nameLabel: "কৃষকের নাম",
-    districtLabel: "জেলা (পশ্চিমবঙ্গ)",
+    districtLabel: "জেলা",
     blockLabel: "ব্লক",
     villageLabel: "গ্রাম",
     pinLabel: "পিন কোড",
@@ -45,9 +44,26 @@ const translations = {
     croppingLabel: "ফসল কাটার ধরন",
     subcategoryLabel: "ফসলের উপবিভাগ",
     submitBtn: "প্রোফাইল জমা দিন",
-    backBtn: "‹ ফিরে যান",
+    backBtn: "‹ ফিরে যান"
   }
 };
+
+// =========================
+// TOAST
+// =========================
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.classList.add("show"), 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 
 // =========================
 // INIT
@@ -64,28 +80,21 @@ document.addEventListener("DOMContentLoaded", () => {
 // THEME
 // =========================
 function applyTheme(theme) {
-  const body = document.body;
-  if (theme === "dark") {
-    body.classList.add("theme-dark");
-  } else {
-    body.classList.remove("theme-dark");
-  }
+  document.body.classList.toggle("theme-dark", theme === "dark");
   currentTheme = theme;
 }
 
 function toggleTheme() {
-  const newTheme = currentTheme === "light" ? "dark" : "light";
-  applyTheme(newTheme);
+  applyTheme(currentTheme === "light" ? "dark" : "light");
 }
 
 // =========================
 // LANGUAGE
 // =========================
 function applyLanguage(lang) {
-  const body = document.body;
-  body.classList.toggle("lang-bn", lang === "bn");
-
+  document.body.classList.toggle("lang-bn", lang === "bn");
   currentLanguage = lang;
+
   const t = translations[lang];
 
   document.querySelectorAll("[data-text]").forEach(el => {
@@ -93,38 +102,30 @@ function applyLanguage(lang) {
     if (t[key]) el.textContent = t[key];
   });
 
-  const langBtn = document.getElementById("langToggle");
-  if (langBtn) {
-    langBtn.textContent = lang === "en" ? "বাংলা" : "English";
-  }
+  document.getElementById("langToggle").textContent =
+    lang === "en" ? "বাংলা" : "English";
 }
 
 function toggleLanguage() {
-  const newLang = currentLanguage === "en" ? "bn" : "en";
-  applyLanguage(newLang);
+  applyLanguage(currentLanguage === "en" ? "bn" : "en");
 }
 
 // =========================
-// DISTRICTS & BLOCKS
+// DISTRICTS → BLOCKS
 // =========================
 async function populateDistricts() {
-  const districtSelect = document.getElementById("district");
-  if (!districtSelect) return;
-
-  districtSelect.innerHTML = `<option value="">Select district</option>`;
-
   try {
     const res = await fetch("http://localhost:8080/master/districts");
     const districts = await res.json();
 
-    districts.forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.id;
-      opt.textContent = d.name;
-      districtSelect.appendChild(opt);
-    });
+    const select = document.getElementById("district");
+    select.innerHTML = `<option value="">Select district</option>`;
+
+    districts.forEach(d =>
+      select.innerHTML += `<option value="${d.id}">${d.name}</option>`
+    );
   } catch (e) {
-    console.error(e);
+    showToast("Failed to load districts.", "error");
   }
 }
 
@@ -138,29 +139,25 @@ async function updateBlocks() {
   if (!districtId) return;
 
   try {
-    const res = await fetch(`http://localhost:8080/master/districts/${districtId}/blocks`);
+    const res = await fetch(`http://localhost:8080/master/blocks/${districtId}`);
     const blocks = await res.json();
 
-    blocks.forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b.id;
-      opt.textContent = b.name;
-      blockSelect.appendChild(opt);
-    });
+    blocks.forEach(b =>
+      blockSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`
+    );
+
     blockSelect.disabled = false;
   } catch (e) {
-    console.error(e);
+    showToast("Failed to load blocks.", "error");
   }
 }
 
 // =========================
-// CROPS
+// CROPS (MULTI-DROPDOWN)
 // =========================
 async function populateCrops() {
-  const container = document.getElementById("cropsContainer");
-  if (!container) return;
-
-  container.innerHTML = "";
+  const select = document.getElementById("cropsSelect");
+  select.innerHTML = "";
 
   try {
     const res = await fetch("http://localhost:8080/master/crops");
@@ -169,125 +166,77 @@ async function populateCrops() {
     crops
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(crop => {
-        const wrap = document.createElement("div");
-        wrap.className = "multi-select-item";
-
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.value = crop.id;
-        cb.id = `crop_${crop.id}`;
-        cb.addEventListener("change", handleCropChange);
-
-        const label = document.createElement("label");
-        label.setAttribute("for", cb.id);
-        label.textContent = crop.name;
-
-        wrap.appendChild(cb);
-        wrap.appendChild(label);
-        container.appendChild(wrap);
+        const opt = document.createElement("option");
+        opt.value = crop.id;
+        opt.textContent = crop.name;
+        select.appendChild(opt);
       });
+
+    select.addEventListener("change", updateSubcategories);
+
   } catch (e) {
-    console.error(e);
+    console.error("Failed to load crops", e);
   }
 }
 
-function handleCropChange() {
-  selectedCrops = [];
-  document
-    .querySelectorAll("#cropsContainer input[type='checkbox']:checked")
-    .forEach(cb => selectedCrops.push(parseInt(cb.value)));
-
-  renderSelectedCrops();
-  updateSubcategories();
-}
-
-function renderSelectedCrops() {
-  const wrap = document.getElementById("selectedCrops");
-  wrap.innerHTML = "";
-
-  selectedCrops.forEach(cropId => {
-    const labelEl = document.querySelector(`label[for='crop_${cropId}']`);
-    const cropLabel = labelEl ? labelEl.textContent : cropId;
-
-    const chip = document.createElement("div");
-    chip.className = "tag-chip";
-    chip.innerHTML = `
-      <span>${cropLabel}</span>
-      <button type="button" aria-label="Remove">×</button>
-    `;
-    chip.querySelector("button").addEventListener("click", () => {
-      const cb = document.getElementById(`crop_${cropId}`);
-      if (cb) cb.checked = false;
-      handleCropChange();
-    });
-    wrap.appendChild(chip);
-  });
+function getSelectedCrops() {
+  return Array.from(
+    document.getElementById("cropsSelect").selectedOptions
+  ).map(o => parseInt(o.value));
 }
 
 // =========================
 // SUBCATEGORIES
 // =========================
 async function updateSubcategories() {
-  const select = document.getElementById("cropSubcategory");
-  select.innerHTML = "";
-  select.disabled = selectedCrops.length === 0;
+  const cropIds = getSelectedCrops();
+  const subSelect = document.getElementById("cropSubcategory");
 
-  if (selectedCrops.length === 0) return;
+  subSelect.innerHTML = "";
+  subSelect.disabled = cropIds.length === 0;
 
-  const allSubsMap = new Map();
+  if (cropIds.length === 0) return;
+
+  const subsMap = new Map();
 
   try {
-    for (const cropId of selectedCrops) {
-      const res = await fetch(`http://localhost:8080/master/crops/${cropId}/subcategories`);
+    for (const id of cropIds) {
+      const res = await fetch(`http://localhost:8080/master/subcategories/${id}`);
       const subs = await res.json();
 
-      subs.forEach(sub => {
-        if (!allSubsMap.has(sub.id)) {
-          allSubsMap.set(sub.id, sub);
-        }
+      subs.forEach(s => {
+        if (!subsMap.has(s.id)) subsMap.set(s.id, s);
       });
     }
 
-    Array.from(allSubsMap.values())
+    Array.from(subsMap.values())
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(sub => {
-        const opt = document.createElement("option");
-        opt.value = sub.id;
-        opt.textContent = sub.name;
-        select.appendChild(opt);
+        subSelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
       });
+
   } catch (e) {
-    console.error(e);
+    showToast("Failed to load subcategories.", "error");
   }
 }
 
 // =========================
-// PHOTO PREVIEW
+// PHOTO HANDLING
 // =========================
 function handlePhotoInput(e) {
   const file = e.target.files[0];
+  const preview = document.getElementById("photoPreview");
   const wrap = document.getElementById("photoPreviewWrap");
-  const img = document.getElementById("photoPreview");
 
   if (!file) {
     wrap.classList.add("hidden");
-    img.src = "";
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    alert(
-      currentLanguage === "en"
-        ? "Please upload an image file."
-        : "অনুগ্রহ করে একটি ইমেজ ফাইল আপলোড করুন।"
-    );
-    e.target.value = "";
+    preview.src = "";
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = evt => {
-    img.src = evt.target.result;
+  reader.onload = ev => {
+    preview.src = ev.target.result;
     wrap.classList.remove("hidden");
   };
   reader.readAsDataURL(file);
@@ -295,89 +244,40 @@ function handlePhotoInput(e) {
 
 function removePhoto() {
   const input = document.getElementById("landPhoto");
-  const wrap = document.getElementById("photoPreviewWrap");
-  const img = document.getElementById("photoPreview");
   input.value = "";
-  img.src = "";
-  wrap.classList.add("hidden");
+  document.getElementById("photoPreviewWrap").classList.add("hidden");
 }
 
-// =========================
-// VALIDATION
-// =========================
-function clearErrors() {
-  document.querySelectorAll(".error").forEach(el => {
-    el.textContent = "";
-  });
-}
-
-function showError(id, msg) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = msg;
-}
 
 function validateForm() {
-  clearErrors();
   let ok = true;
+  const f = id => document.getElementById(id).value.trim();
 
-  const name = document.getElementById("farmerName").value.trim();
-  const district = document.getElementById("district").value;
-  const block = document.getElementById("block").value;
-  const village = document.getElementById("village").value.trim();
-  const pin = document.getElementById("pin").value.trim();
-  const landSize = parseFloat(document.getElementById("landSize").value);
-  const cropping = document.getElementById("croppingPattern").value;
-  const subcategories = Array.from(
-    document.getElementById("cropSubcategory").selectedOptions
-  ).map(o => o.value);
+  if (!f("farmerName")) return showToast("Enter farmer name.", "error"), false;
+  if (!f("district")) return showToast("Select district.", "error"), false;
+  if (!f("block")) return showToast("Select block.", "error"), false;
+  if (!f("village")) return showToast("Enter village.", "error"), false;
+  if (!/^\d{6}$/.test(f("pin"))) return showToast("Enter valid PIN.", "error"), false;
+  if (!(parseFloat(f("landSize")) > 0))
+    return showToast("Enter valid land size.", "error"), false;
+  if (!f("croppingPattern"))
+    return showToast("Select cropping pattern.", "error"), false;
 
-  if (!name) {
-    showError("nameErr", currentLanguage === "en" ? "Please enter farmer name." : "কৃষকের নাম লিখুন।");
-    ok = false;
-  }
-  if (!district) {
-    showError("districtErr", currentLanguage === "en" ? "Please select district." : "জেলা নির্বাচন করুন।");
-    ok = false;
-  }
-  if (!block) {
-    showError("blockErr", currentLanguage === "en" ? "Please select block." : "ব্লক নির্বাচন করুন।");
-    ok = false;
-  }
-  if (!village) {
-    showError("villageErr", currentLanguage === "en" ? "Please enter village." : "গ্রামের নাম লিখুন।");
-    ok = false;
-  }
-  if (!/^\d{6}$/.test(pin)) {
-    showError("pinErr", currentLanguage === "en" ? "Enter a valid 6-digit PIN." : "সঠিক ৬-অঙ্কের পিন লিখুন।");
-    ok = false;
-  }
-  if (!(landSize > 0)) {
-    showError("landSizeErr", currentLanguage === "en" ? "Enter valid land size." : "বৈধ জমির আকার দিন।");
-    ok = false;
-  }
-  if (!cropping) {
-    showError("croppingErr", currentLanguage === "en" ? "Select cropping pattern." : "ফসল কাটার ধরন বেছে নিন।");
-    ok = false;
-  }
-  if (selectedCrops.length === 0) {
-    showError("cropsErr", currentLanguage === "en" ? "Select at least one crop." : "কমপক্ষে একটি ফসল নির্বাচন করুন।");
-    ok = false;
-  }
-  if (subcategories.length === 0) {
-    showError("subcategoryErr", currentLanguage === "en" ? "Select at least one subcategory." : "কমপক্ষে একটি উপবিভাগ নির্বাচন করুন।");
-    ok = false;
-  }
+  if (getSelectedCrops().length === 0)
+    return showToast("Select at least one crop.", "error"), false;
+
+  if (document.getElementById("cropSubcategory").selectedOptions.length === 0)
+    return showToast("Select at least one subcategory.", "error"), false;
 
   return ok;
 }
 
 // =========================
-// SUBMIT (UPDATED!)
+// SUBMIT
 // =========================
 async function handleSubmit() {
   if (!validateForm()) return;
 
-  // Build payload WITHOUT landPhoto
   const payload = {
     farmerName: document.getElementById("farmerName").value.trim(),
     districtId: parseInt(document.getElementById("district").value),
@@ -386,84 +286,45 @@ async function handleSubmit() {
     pinCode: document.getElementById("pin").value.trim(),
     landSize: parseFloat(document.getElementById("landSize").value),
     croppingPattern: document.getElementById("croppingPattern").value,
-    cropIds: selectedCrops,
+    cropIds: getSelectedCrops(),
     subCategoryIds: Array.from(
       document.getElementById("cropSubcategory").selectedOptions
     ).map(o => parseInt(o.value))
   };
 
-  // Create multipart form-data
-  const formData = new FormData();
-  formData.append(
-    "data",
-    new Blob([JSON.stringify(payload)], { type: "application/json" })
-  );
+  const fd = new FormData();
+  fd.append("data", new Blob([JSON.stringify(payload)], { type: "application/json" }));
 
-  const photoInput = document.getElementById("landPhoto");
-  if (photoInput.files[0]) {
-    formData.append("landPhoto", photoInput.files[0]);
-  }
+  const photo = document.getElementById("landPhoto").files[0];
+  if (photo) fd.append("landPhoto", photo);
 
-  // User ID from storage
   const userId = localStorage.getItem("userId");
-  if (!userId) {
-    alert(
-      currentLanguage === "en"
-        ? "User not logged in. Set userId in localStorage."
-        : "ইউজার লগইন নেই। localStorage এ userId সেট করুন।"
-    );
-    return;
-  }
+  if (!userId) return showToast("User not logged in.", "error");
 
   try {
-    const res = await fetch(
-      `http://localhost:8080/farmer/register/${userId}`,
-      {
-        method: "POST",
-        body: formData
-      }
-    );
+    const res = await fetch(`http://localhost:8080/farmer/register/${userId}`, {
+      method: "POST",
+      body: fd
+    });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error(txt);
-      alert(currentLanguage === "en" ? "Registration failed." : "নিবন্ধন ব্যর্থ হয়েছে।");
-      return;
-    }
+    if (!res.ok) return showToast("Registration failed.", "error");
 
-    const data = await res.json();
-    console.log("Server Response:", data);
-
-    const msg = document.getElementById("successMsg");
-    msg.textContent =
-      currentLanguage === "en"
-        ? "Farmer profile saved successfully!"
-        : "কৃষক প্রোফাইল সফলভাবে সেভ হয়েছে!";
-
-    msg.scrollIntoView({ behavior: "smooth", block: "center" });
-
+    showToast("Farmer registered successfully!", "success");
   } catch (e) {
-    console.error(e);
-    alert(currentLanguage === "en" ? "Something went wrong." : "কিছু সমস্যা হয়েছে।");
+    showToast("Something went wrong.", "error");
   }
 }
 
 // =========================
-// EVENTS
+// EVENT BINDINGS
 // =========================
 function attachEvents() {
-  const themeToggle = document.getElementById("themeToggle");
-  const langToggleBtn = document.getElementById("langToggle");
-  const districtSelect = document.getElementById("district");
-  const photoInput = document.getElementById("landPhoto");
-  const submitBtn = document.getElementById("submitBtn");
-
-  if (themeToggle) themeToggle.addEventListener("click", toggleTheme);
-  if (langToggleBtn) langToggleBtn.addEventListener("click", toggleLanguage);
-  if (districtSelect) districtSelect.addEventListener("change", updateBlocks);
-  if (photoInput) photoInput.addEventListener("change", handlePhotoInput);
-  if (submitBtn) submitBtn.addEventListener("click", (e) => {
+  document.getElementById("themeToggle").onclick = toggleTheme;
+  document.getElementById("langToggle").onclick = toggleLanguage;
+  document.getElementById("district").onchange = updateBlocks;
+  document.getElementById("landPhoto").onchange = handlePhotoInput;
+  document.getElementById("submitBtn").onclick = e => {
     e.preventDefault();
     handleSubmit();
-  });
+  };
 }
