@@ -42,12 +42,11 @@ public class BuyerServiceImpl implements BuyerService {
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // If user already has buyer → STOP duplicate
         if (user.getBuyer() != null) {
-            throw new RuntimeException("User already has a Buyer profile");
+            throw new RuntimeException("User already registered as Buyer");
         }
 
-
+        // Fetch master data
         DistrictEntity district = districtRepo.findById(rq.getDistrictId())
                 .orElseThrow(() -> new RuntimeException("Invalid district"));
 
@@ -57,49 +56,52 @@ public class BuyerServiceImpl implements BuyerService {
         CityEntity city = cityRepo.findById(rq.getCityId())
                 .orElseThrow(() -> new RuntimeException("Invalid city"));
 
-
+        // Validation
         if (!block.getDistrict().getId().equals(district.getId())) {
-            throw new RuntimeException("Block does not belong to the selected district");
+            throw new RuntimeException("Block does not belong to district");
         }
 
         if (!city.getBlock().getId().equals(block.getId())) {
-            throw new RuntimeException("City does not belong to the selected block");
+            throw new RuntimeException("City does not belong to block");
         }
 
-
+        // Map DTO → Entity
         BuyerEntity buyer = buyerMapper.mapToEntity(rq);
 
-        // Link to user
-        buyer.setUser(user);
-        user.setBuyer(buyer);
-        user.setRole(Role.buyer);
-
-        // Set master table relations
+        // Set master relations BEFORE saving
         buyer.setDistrict(district);
         buyer.setBlock(block);
         buyer.setCity(city);
 
-
-        if (rq.getCropIds() != null && !rq.getCropIds().isEmpty()) {
+        // Crop relations
+        if (rq.getCropIds() != null) {
             buyer.setCrops(cropRepo.findAllById(rq.getCropIds()));
         }
 
-        if (rq.getSubcategoryIds() != null && !rq.getSubcategoryIds().isEmpty()) {
+        if (rq.getSubcategoryIds() != null) {
             buyer.setCropSubcategories(subRepo.findAllById(rq.getSubcategoryIds()));
         }
 
+        // Link user
+        buyer.setUser(user);
+        user.setBuyer(buyer);
 
+        // Create Wallet
         BuyerWallet wallet = new BuyerWallet();
         wallet.setBuyer(buyer);
         buyer.setWallet(wallet);
 
+        // SAVE BUYER FIRST
+        BuyerEntity savedBuyer = buyerRepo.save(buyer);
 
-        BuyerEntity saved = buyerRepo.save(buyer);
+        // UPDATE USER ROLE AFTER buyer is saved
+        user.setRole(Role.buyer);
+        userRepo.save(user);
 
         // Initialize lazy lists
-        saved.getCrops().size();
-        saved.getCropSubcategories().size();
+        savedBuyer.getCrops().size();
+        savedBuyer.getCropSubcategories().size();
 
-        return buyerMapper.mapEntityToRS(saved);
+        return buyerMapper.mapEntityToRS(savedBuyer);
     }
 }

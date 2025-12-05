@@ -26,7 +26,9 @@ public class BuyerRegisterRQ {
     private String businessName;
     private BusinessType businessType;
     private BusinessScale businessScale;
-    private List<GovernmentApprovals> governmentApprovals;
+    private boolean paysTax;
+    private boolean gstRegistered;
+    private boolean hasLicence;
     private BusinessAge businessAge;
     private String warehouseName;
     private String warehouseLocation;

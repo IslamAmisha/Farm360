@@ -1,7 +1,9 @@
 package com.Farm360.service.auth;
 
+import com.Farm360.dto.request.LoginRQ;
 import com.Farm360.dto.request.OtpSendRQ;
 import com.Farm360.dto.request.OtpVerifyRQ;
+import com.Farm360.dto.response.LoginRS;
 import com.Farm360.dto.response.OtpSendRS;
 import com.Farm360.dto.response.OtpVerifyRS;
 import com.Farm360.model.UserEntity;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -28,6 +31,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${otp.api.key}")
     private String apiKey;
+
+    private final Map<String, String> captchaStore = new HashMap<>();
+
 
     @Override
     public OtpSendRS sendOtp(OtpSendRQ rq) {
@@ -83,6 +89,29 @@ public class AuthServiceImpl implements AuthService {
         rs.setRole(Role.pending);
 
         return rs;
+    }
+
+    @Override
+    public LoginRS login(LoginRQ rq) {
+
+        // Validate captcha
+        String realCaptcha = captchaStore.get(rq.getPhoneNumber());
+        if (realCaptcha == null || !realCaptcha.equals(rq.getCaptcha())) {
+            throw new RuntimeException("Invalid Captcha");
+        }
+
+        // Find user by phone
+        UserEntity user = userRepo.findByPhoneNumber(rq.getPhoneNumber())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Generate token
+        String token = jwtUtils.generateJwt(user.getPhoneNumber(), user.getRole());
+
+        return new LoginRS(user.getId(), token, user.getRole().name());
+    }
+
+    public void saveCaptcha(String phone, String captcha){
+        captchaStore.put(phone, captcha);
     }
 
 }

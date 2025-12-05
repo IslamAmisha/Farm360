@@ -13,6 +13,8 @@
 		<relativePath/>
 	</parent>
 
+
+
 	<!-- Project Coordinates -->
 	<groupId>com.Farm360</groupId>
 	<artifactId>Farm360</artifactId>
@@ -52,6 +54,15 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+
+		<!-- add inside pom.xml -->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.14.0</version>
+		</dependency>
+
 
 		<!-- Swagger / OpenAPI for Spring Boot 3 -->
 		<dependency>
