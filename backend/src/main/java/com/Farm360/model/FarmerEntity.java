@@ -55,7 +55,7 @@ public class FarmerEntity {
     @JoinTable(name = "farmer_crop_subcategories_map", joinColumns = @JoinColumn(name = "farmer_id"), inverseJoinColumns = @JoinColumn(name = "subcategory_id"))
     private List<CropSubCategoriesEntity> cropSubcategories;
 
-    private String landPhoto;   // stored filename or full path
+    private String landPhotoUrl;   // stored filename or full path
 
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)
     private FarmerWallet wallet;

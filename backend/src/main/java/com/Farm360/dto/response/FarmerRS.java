@@ -25,7 +25,7 @@ public class FarmerRS {
     private List<String> crops;
     private List<String> cropSubcategories;
 
-    private MultipartFile landPhoto;
+    private String landPhotoUrl;
 
     private Long userId;
 }

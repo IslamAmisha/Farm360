@@ -21,6 +21,7 @@ public interface FarmerMapper {
     @Mapping(target = "block", ignore = true)
     @Mapping(target = "crops", ignore = true)
     @Mapping(target = "cropSubcategories", ignore = true)
+    @Mapping(target = "landPhotoUrl", ignore = true)  // if you initialize manually
     FarmerEntity mapToEntity(FarmerRegisterRQ rq);
 
 
