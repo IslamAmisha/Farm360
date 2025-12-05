@@ -1,6 +1,12 @@
-/* LANGUAGE ------------------------------ */
+/* ============================
+   GLOBAL STATE
+============================ */
 let currentLanguage = "en";
+let serverCaptcha = "";
 
+/* ============================
+   TRANSLATIONS
+============================ */
 const text = {
   en: {
     loginTitle: "Login",
@@ -9,10 +15,8 @@ const text = {
     labelCaptcha: "Captcha",
     btnLogin: "Login",
     btnClear: "Clear",
-    footerHint: "Don't have an account? Register first.",
     goRegisterText: "Don’t have an account?",
     backBtn: "‹ Back",
-
   },
   bn: {
     loginTitle: "লগইন",
@@ -21,10 +25,8 @@ const text = {
     labelCaptcha: "ক্যাপচা",
     btnLogin: "লগইন",
     btnClear: "মুছে ফেলুন",
-    footerHint: "অ্যাকাউন্ট নেই? আগে রেজিস্টার করুন।",
     goRegisterText: "অ্যাকাউন্ট নেই?",
     backBtn: "‹ ফিরে যান",
-
   }
 };
 
@@ -33,7 +35,11 @@ function updateText() {
     el.textContent = text[currentLanguage][el.dataset.text];
   });
 }
+updateText();
 
+/* ============================
+   LANGUAGE TOGGLE
+============================ */
 document.getElementById("langToggle").onclick = () => {
   currentLanguage = currentLanguage === "en" ? "bn" : "en";
   document.body.classList.toggle("lang-bn");
@@ -44,88 +50,129 @@ document.getElementById("langToggle").onclick = () => {
   updateText();
 };
 
-updateText();
-
-/* THEME ------------------------------ */
+/* ============================
+   THEME TOGGLE
+============================ */
 document.getElementById("themeToggle").onclick = () => {
   document.body.classList.toggle("theme-dark");
 };
 
-/* CAPTCHA ------------------------------ */
-function generateCaptcha() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+/* ============================
+   CAPTCHA FROM BACKEND
+============================ */
+async function loadCaptcha() {
+  const phone = document.getElementById("phone").value.trim();
+
+  if (!/^[0-9]{10}$/.test(phone)) {
+    serverCaptcha = "";
+    document.getElementById("captchaText").textContent = "-----";
+    return;
   }
-  return code;
+
+  try {
+    const res = await fetch(`http://localhost:8080/auth/captcha/${phone}`);
+    serverCaptcha = await res.text();
+    document.getElementById("captchaText").textContent = serverCaptcha;
+  } catch (err) {
+    document.getElementById("captchaText").textContent = "Error";
+  }
 }
 
-let currentCaptcha = "";
+/* Load captcha when phone becomes 10 digits */
+document.getElementById("phone").addEventListener("input", () => {
+  const phone = document.getElementById("phone").value.trim();
+  if (phone.length === 10) loadCaptcha();
+  else document.getElementById("captchaText").textContent = "-----";
+});
 
-function refreshCaptcha() {
-  currentCaptcha = generateCaptcha();
-  document.getElementById("captchaText").textContent = currentCaptcha;
-}
+/* Refresh button reloads captcha */
+document.getElementById("refreshCaptcha").onclick = loadCaptcha;
 
-document.getElementById("refreshCaptcha").onclick = refreshCaptcha;
-refreshCaptcha();
-
-/* FORM VALIDATION ------------------------------ */
+/* ============================
+   LOGIN HANDLING
+============================ */
 const form = document.getElementById("loginForm");
-const phone = document.getElementById("phone");
-const captchaInput = document.getElementById("captchaInput");
 const phoneErr = document.getElementById("phoneErr");
 const captchaErr = document.getElementById("captchaErr");
+const captchaInput = document.getElementById("captchaInput");
 const msg = document.getElementById("msg");
 
-/* CLEAR BUTTON ------------------------------ */
-const clearBtn = document.getElementById("clearBtn");
-if (clearBtn) {
-  clearBtn.addEventListener("click", () => {
-    // reset the form and clear UI messages
-    form.reset();
-    phoneErr.textContent = "";
-    captchaErr.textContent = "";
-    msg.textContent = "";
-    // generate a fresh captcha
-    refreshCaptcha();
-    // focus phone field for convenience
-    try { phone.focus(); } catch (e) {}
-  });
-}
-
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
   phoneErr.textContent = "";
   captchaErr.textContent = "";
   msg.textContent = "";
 
-  let valid = true;
+  const phone = document.getElementById("phone").value.trim();
+  const captcha = captchaInput.value.trim().toUpperCase();
 
-  if (!/^\+?\d{7,15}$/.test(phone.value.trim())) {
+  // Phone validation
+  if (!/^[0-9]{10}$/.test(phone)) {
     phoneErr.textContent =
-      currentLanguage === "en" ? "Enter a valid phone number." : "সঠিক ফোন নম্বর দিন।";
-    valid = false;
+      currentLanguage === "en" ? "Enter valid phone number" : "সঠিক ফোন নম্বর দিন";
+    return;
   }
 
-  if (captchaInput.value.trim().toUpperCase() !== currentCaptcha) {
+  // Captcha validation (match backend captcha)
+  if (captcha !== serverCaptcha) {
     captchaErr.textContent =
-      currentLanguage === "en" ? "Incorrect captcha." : "ক্যাপচা সঠিক নয়।";
-    valid = false;
+      currentLanguage === "en" ? "Incorrect captcha" : "ক্যাপচা ভুল";
+    return;
   }
 
-  if (!valid) return;
+  // SEND LOGIN REQUEST TO BACKEND
+  try {
+    const res = await fetch("http://localhost:8080/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: phone, captcha })
+    });
 
-  msg.style.color = "green";
-  msg.textContent =
-    currentLanguage === "en" ? "Login successful!" : "লগইন সফল হয়েছে!";
+    if (!res.ok) {
+      msg.style.color = "red";
+      msg.textContent =
+        currentLanguage === "en" ? "Login failed" : "লগইন ব্যর্থ হয়েছে";
+      return;
+    }
 
-  form.reset();
-  refreshCaptcha();
+    const data = await res.json();
 
-  setTimeout(() => {
-    window.location.href = "../Dashboard/dashboard.html";
-  }, 1500);
+    // SAVE LOGIN SESSION
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userId", data.userId);
+    localStorage.setItem("role", data.role);
+
+    msg.style.color = "green";
+    msg.textContent =
+      currentLanguage === "en" ? "Login Successful!" : "লগইন সফল হয়েছে!";
+
+    // REDIRECT BASED ON USER ROLE
+    setTimeout(() => {
+      if (data.role === "pending") {
+        window.location.href = "../Registration/user-register.html";
+      } else if (data.role === "farmer") {
+        window.location.href = "../Farmer/Farmer-Dashboard/farmer-dashboard.html";
+      } else if (data.role === "buyer") {
+        window.location.href = "../Buyer/Buyer-Dashboard/buyer-dashboard.html";
+      }
+    }, 1000);
+
+  } catch (err) {
+    msg.style.color = "red";
+    msg.textContent =
+      currentLanguage === "en" ? "Server error" : "সার্ভার ত্রুটি";
+  }
 });
+
+/* ============================
+   CLEAR BUTTON
+============================ */
+document.getElementById("clearBtn").onclick = () => {
+  form.reset();
+  phoneErr.textContent = "";
+  captchaErr.textContent = "";
+  msg.textContent = "";
+  document.getElementById("captchaText").textContent = "-----";
+  serverCaptcha = "";
+};
