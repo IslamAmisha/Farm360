@@ -1,9 +1,6 @@
 package com.Farm360.dto.request;
 
-import com.Farm360.utils.AnnualPurchase;
-import com.Farm360.utils.BusinessAge;
-import com.Farm360.utils.BusinessScale;
-import com.Farm360.utils.BusinessType;
+import com.Farm360.utils.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,9 +26,7 @@ public class BuyerRegisterRQ {
     private String businessName;
     private BusinessType businessType;
     private BusinessScale businessScale;
-    private boolean paysTax;
-    private boolean gstRegistered;
-    private boolean hasLicence;
+    private List<GovernmentApprovals> governmentApprovals;
     private BusinessAge businessAge;
     private String warehouseName;
     private String warehouseLocation;
