@@ -1,6 +1,6 @@
 package com.Farm360.repository;
 
-import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

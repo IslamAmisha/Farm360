@@ -1,11 +1,11 @@
 package com.Farm360.controller;
 
 
-import com.Farm360.model.block.BlockEntity;
-import com.Farm360.model.city.CityEntity;
-import com.Farm360.model.crop.CropEntity;
-import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
-import com.Farm360.model.district.DistrictEntity;
+import com.Farm360.model.master.block.BlockEntity;
+import com.Farm360.model.master.city.CityEntity;
+import com.Farm360.model.master.crop.CropEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
+import com.Farm360.model.master.district.DistrictEntity;
 import com.Farm360.service.master.MasterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

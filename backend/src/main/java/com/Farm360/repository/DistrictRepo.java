@@ -1,6 +1,6 @@
 package com.Farm360.repository;
 
-import com.Farm360.model.district.DistrictEntity;
+import com.Farm360.model.master.district.DistrictEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

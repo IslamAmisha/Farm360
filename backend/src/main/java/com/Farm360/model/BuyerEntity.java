@@ -1,11 +1,11 @@
 package com.Farm360.model;
 
 import com.Farm360.model.payment.BuyerWallet;
-import com.Farm360.model.block.BlockEntity;
-import com.Farm360.model.city.CityEntity;
-import com.Farm360.model.district.DistrictEntity;
-import com.Farm360.model.crop.CropEntity;
-import com.Farm360.model.cropsubcategories.CropSubCategoriesEntity;
+import com.Farm360.model.master.block.BlockEntity;
+import com.Farm360.model.master.city.CityEntity;
+import com.Farm360.model.master.district.DistrictEntity;
+import com.Farm360.model.master.crop.CropEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import com.Farm360.utils.AnnualPurchase;
 import com.Farm360.utils.BusinessAge;
 import com.Farm360.utils.BusinessScale;

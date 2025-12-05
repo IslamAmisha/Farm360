@@ -1,6 +1,6 @@
 package com.Farm360.repository;
 
-import com.Farm360.model.city.CityEntity;
+import com.Farm360.model.master.city.CityEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
