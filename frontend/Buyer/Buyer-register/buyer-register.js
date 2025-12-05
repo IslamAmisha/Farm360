@@ -310,7 +310,6 @@ function validateForm() {
    SUBMIT
 ============================================================ */
 async function handleBuyerSubmit() {
-
   // SHOW POPUP
   const popup = document.getElementById("submitPopup");
   const popupContent = document.getElementById("popupContent");
@@ -327,15 +326,37 @@ async function handleBuyerSubmit() {
     return;
   }
 
-  
-const approvals = [];
-if (document.getElementById("payTax").checked)
-  approvals.push("Pay_Tax");
-if (document.getElementById("gstRegistered").checked)
-  approvals.push("GST_Registered");
-if (document.getElementById("licence").checked)
-  approvals.push("Has_Licence");
+  // Get and clean the userId
+  let userId = localStorage.getItem("userId");
 
+  // Clean the userId - remove everything after colon if present
+  if (userId && userId.includes(':')) {
+    userId = userId.split(':')[0];
+    console.log("Cleaned userId from localStorage. Using:", userId);
+  }
+
+  // Validate userId
+  if (!userId) {
+    popupError("User not logged in.");
+    popup.classList.add("hidden");
+    return;
+  }
+
+  // Optional: Ensure it's a valid number
+  const userIdNum = parseInt(userId);
+  if (isNaN(userIdNum)) {
+    popupError("Invalid user ID.");
+    popup.classList.add("hidden");
+    return;
+  }
+
+  const approvals = [];
+  if (document.getElementById("payTax").checked)
+    approvals.push("Pay_Tax");
+  if (document.getElementById("gstRegistered").checked)
+    approvals.push("GST_Registered");
+  if (document.getElementById("licence").checked)
+    approvals.push("Has_Licence");
 
   const payload = {
     fullName: document.getElementById("fullName").value.trim(),
@@ -355,7 +376,6 @@ if (document.getElementById("licence").checked)
 
     governmentApprovals: approvals,
 
-
     businessAge: document.getElementById("businessAge").value,
     warehouseName: document.getElementById("wareName").value.trim(),
     warehouseLocation: document.getElementById("wareLocation").value.trim(),
@@ -368,14 +388,9 @@ if (document.getElementById("licence").checked)
     ).map(o => parseInt(o.value)),
   };
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    popupError("User not logged in.");
-    return;
-  }
-
   try {
-    const res = await fetch(`http://localhost:8080/buyer/register/${userId}`, {
+    // Use the cleaned userId
+    const res = await fetch(`http://localhost:8080/buyer/register/${userIdNum}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -395,7 +410,6 @@ if (document.getElementById("licence").checked)
     popupError("Something went wrong.");
   }
 }
-
 /* ============================================================
    EVENTS
 ============================================================ */

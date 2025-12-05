@@ -56,9 +56,14 @@ public class BuyerEntity {
     @Enumerated(EnumType.STRING)
     private BusinessScale businessScale;
 
-    private boolean paysTax;
-    private boolean gstRegistered;
-    private boolean hasLicence;
+    @ElementCollection
+    @CollectionTable(
+            name = "buyer_government_approvals",
+            joinColumns = @JoinColumn(name = "buyer_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval")
+    private List<GovernmentApprovals> governmentApprovals;
 
     @Enumerated(EnumType.STRING)
     private BusinessAge businessAge;
