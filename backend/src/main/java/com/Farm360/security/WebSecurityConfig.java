@@ -47,8 +47,9 @@ public class WebSecurityConfig {
                                 "/farmer/register/**",
                                 "/buyer/register/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                                "/v3/api-docs/**",
+                                "/master/**"
+                ).permitAll()
                         // everything else secured
                         .anyRequest().authenticated()
                 );
