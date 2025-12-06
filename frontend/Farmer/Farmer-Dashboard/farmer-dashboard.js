@@ -1,20 +1,17 @@
-
 (function protectFarmerDashboard() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
   const role = (localStorage.getItem("role") || "").toLowerCase();
 
-  // If not logged in OR wrong role OR missing info → block access
   if (!token || !userId || role !== "farmer") {
     alert("User not found or unauthorized access!");
     localStorage.clear();
-    window.location.href = "../../Login/login.html"; // adjust path if needed
+    window.location.href = "../../Login/login.html";
     return;
   }
 })();
 
-
-// 1) Extend global translations with dashboard keys
+// Extended translations
 const dashboardTranslations = {
   en: {
     brandName: "Farm360",
@@ -26,14 +23,16 @@ const dashboardTranslations = {
     navSupport: "Support",
 
     dashboard: "Dashboard",
+
     sidebarDashboard: "Dashboard",
-    sidebarProfile: "My Profile",
-    sidebarLand: "My Land",
-    sidebarProposals: "Proposals",
+    sidebarLandsBuyers: "My Lands & Buyers",
+    sidebarProposalsRequests: "Proposals / Requests",
+    sidebarNegotiation: "Negotiation / Messages",
     sidebarAgreements: "Agreements",
-    sidebarCultivation: "Cultivation Progress",
-    sidebarPayments: "Payments",
-    sidebarNotifications: "Notifications",
+    sidebarWallet: "Wallet",
+    sidebarInputSupply: "Input Supply",
+    sidebarCultivationHarvest: "Cultivation / Harvest",
+    sidebarDelivery: "Delivery / Logistics",
     sidebarSettings: "Settings",
     sidebarLogout: "Logout",
 
@@ -56,7 +55,8 @@ const dashboardTranslations = {
     summaryProgress: "Progress",
 
     buyerProfiles: "Available Buyers",
-    buyerProfilesSubtitle: "Connect with buyers interested in your crops",
+    buyerProfilesSubtitle:
+      "Connect with buyers interested in your crops.",
 
     btnRequest: "Request",
     btnRequested: "Requested",
@@ -88,15 +88,18 @@ const dashboardTranslations = {
     navAbout: "আমাদের সম্পর্কে",
     navInsights: "তথ্য ও বিশ্লেষণ",
     navSupport: "সহায়তা",
+
     dashboard: "ড্যাশবোর্ড",
+
     sidebarDashboard: "ড্যাশবোর্ড",
-    sidebarProfile: "আমার প্রোফাইল",
-    sidebarLand: "আমার জমি",
-    sidebarProposals: "প্রস্তাব",
+    sidebarLandsBuyers: "জমি ও ক্রেতা",
+    sidebarProposalsRequests: "প্রস্তাব / অনুরোধ",
+    sidebarNegotiation: "আলোচনা / বার্তা",
     sidebarAgreements: "চুক্তি",
-    sidebarCultivation: "চাষের অগ্রগতি",
-    sidebarPayments: "পেমেন্ট",
-    sidebarNotifications: "বিজ্ঞপ্তি",
+    sidebarWallet: "ওয়ালেট",
+    sidebarInputSupply: "ইনপুট সরবরাহ",
+    sidebarCultivationHarvest: "চাষ / ফসল সংগ্রহ",
+    sidebarDelivery: "ডেলিভারি / লজিস্টিক্স",
     sidebarSettings: "সেটিংস",
     sidebarLogout: "লগআউট",
 
@@ -145,16 +148,14 @@ const dashboardTranslations = {
   },
 };
 
-// Merge into global `translations` from landing-page.js if present
+// Merge translations
 if (typeof translations !== "undefined") {
   Object.assign(translations.en, dashboardTranslations.en);
   Object.assign(translations.bn, dashboardTranslations.bn);
 }
 
-// ==== CONFIG ====
 const API_BASE_URL = "http://localhost:8080";
 
-// Helper: get current language & texts
 function getDashText() {
   const lang = window.currentLanguage || "en";
   const t =
@@ -163,26 +164,23 @@ function getDashText() {
   return { lang, t };
 }
 
-// Helper: get auth info from localStorage
 function getAuthInfo() {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-  const role = localStorage.getItem("role");
-  return { token, userId, role };
+  return {
+    token: localStorage.getItem("token"),
+    userId: localStorage.getItem("userId"),
+    role: localStorage.getItem("role"),
+  };
 }
 
-// 3) Rating display
-function getThumbRating(ratingUp, ratingDown) {
+function getThumbRating(up, down) {
   return `
-    <div class="thumb-line">👍 ${ratingUp ?? 0}</div>
-    <div class="thumb-line">👎 ${ratingDown ?? 0}</div>
+    <div class="thumb-line">👍 ${up ?? 0}</div>
+    <div class="thumb-line">👎 ${down ?? 0}</div>
   `;
 }
 
-// 4) Render buyers from BACKEND response
-// each item = DashboardCardRS
 function renderBuyers(list) {
-  const { lang, t } = getDashText();
+  const { t } = getDashText();
   const container = document.getElementById("buyersGrid");
   if (!container) return;
 
@@ -200,91 +198,78 @@ function renderBuyers(list) {
       const cropBadges = (b.crops || [])
         .map((c) => {
           const key = "crop_" + String(c).toLowerCase();
-          const label = (t && t[key]) || c;
-          return `<span class="crop-badge" data-text="${key}">${label}</span>`;
+          const label = t[key] || c;
+          return `<span class="crop-badge">${label}</span>`;
         })
         .join("");
 
       let requestLabel = t.btnRequest;
-      let requestDisabled = false;
+      let disabled = false;
 
       if (!b.canSendRequest) {
-        if (b.requestStatus === "PENDING") {
-          requestLabel = t.btnRequested;
-        } else if (b.requestStatus === "ACCEPTED") {
-          requestLabel = t.btnConnected;
-        }
-        requestDisabled = true;
+        if (b.requestStatus === "PENDING") requestLabel = t.btnRequested;
+        else if (b.requestStatus === "ACCEPTED") requestLabel = t.btnConnected;
+        disabled = true;
       }
 
-      const btnDet = (t && t.btnDetails) || "Details";
-
-      const locationText = [b.villageOrCity, b.district]
+      const location = [b.villageOrCity, b.district]
         .filter(Boolean)
         .join(", ");
 
       return `
-      <div class="buyer-card" data-receiver-id="${b.userId}">
-        <h3>${b.name}</h3>
-        <div class="buyer-rating">
-          ${getThumbRating(b.ratingUp, b.ratingDown)}
-        </div>
-        <p class="buyer-company">${b.businessName || ""}</p>
-        <p class="buyer-location">📍 ${locationText}</p>
+        <div class="buyer-card" data-receiver-id="${b.userId}">
+          <h3>${b.name}</h3>
 
-        <div class="buyer-crops">
-          ${cropBadges}
-        </div>
+          <div class="buyer-rating">${getThumbRating(
+            b.ratingUp,
+            b.ratingDown
+          )}</div>
 
-        <div class="buyer-buttons">
-          <button class="btn-request"
-                  data-text="btnRequest"
-                  ${requestDisabled ? "disabled" : ""}>
-            ${requestLabel}
-          </button>
-          <button class="btn-details" data-text="btnDetails">${btnDet}</button>
+          <p class="buyer-company">${b.businessName || ""}</p>
+          <p class="buyer-location">📍 ${location}</p>
+
+          <div class="buyer-crops">${cropBadges}</div>
+
+          <div class="buyer-buttons">
+            <button class="btn-request" ${disabled ? "disabled" : ""}>
+              ${requestLabel}
+            </button>
+            <button class="btn-details">${t.btnDetails}</button>
+          </div>
         </div>
-      </div>`;
+      `;
     })
     .join("");
 
-  if (typeof updateTranslatedText === "function") {
-    updateTranslatedText();
-  }
+  if (typeof updateTranslatedText === "function") updateTranslatedText();
 
   attachRequestButtonHandlers();
 }
 
-// 5) Fetch buyers from backend
 async function loadBuyers() {
   const { token, userId } = getAuthInfo();
   const { t } = getDashText();
 
-  if (!token || !userId) {
-    alert(t.msgLoginRequired);
-    return;
-  }
+  if (!token || !userId) return alert(t.msgLoginRequired);
 
-  const searchText =
+  const search =
     document.getElementById("buyerSearch")?.value.trim().toLowerCase() || "";
-  const cropFilter = document.getElementById("cropFilter")?.value || "";
+  const crop = document.getElementById("cropFilter")?.value || "";
 
   const params = new URLSearchParams();
   params.append("farmerUserId", userId);
-  if (searchText) params.append("search", searchText);
-  if (cropFilter) params.append("crop", cropFilter);
+  if (search) params.append("search", search);
+  if (crop) params.append("crop", crop);
 
   const container = document.getElementById("buyersGrid");
-  if (container) {
-    container.innerHTML = `
+  container.innerHTML = `
       <div class="buyer-card loading-card">
         <div class="loader"></div>
       </div>`;
-  }
 
   try {
     const resp = await fetch(
-      `${API_BASE_URL}/dashboard/buyers?` + params.toString(),
+      `${API_BASE_URL}/dashboard/buyers?${params.toString()}`,
       {
         method: "GET",
         headers: {
@@ -295,30 +280,25 @@ async function loadBuyers() {
     );
 
     if (!resp.ok) {
-      console.error("Failed to load buyers:", resp.status);
-      renderBuyers([]);
-      return;
+      console.error("Load error:", resp.status);
+      return renderBuyers([]);
     }
 
-    const data = await resp.json(); // expected: { users: [...] }
+    const data = await resp.json();
     renderBuyers(data.users || []);
-  } catch (err) {
-    console.error("Error loading buyers:", err);
+  } catch (e) {
+    console.error("Load error:", e);
     renderBuyers([]);
   }
 }
 
-// 6) Send request from farmer to buyer
-async function sendRequestToBuyer(receiverUserId, buttonEl) {
+async function sendRequestToBuyer(receiverUserId, btn) {
   const { token, userId } = getAuthInfo();
   const { t } = getDashText();
 
-  if (!token || !userId) {
-    alert(t.msgLoginRequired);
-    return;
-  }
+  if (!token || !userId) return alert(t.msgLoginRequired);
 
-  buttonEl.disabled = true;
+  btn.disabled = true;
 
   try {
     const resp = await fetch(
@@ -337,87 +317,65 @@ async function sendRequestToBuyer(receiverUserId, buttonEl) {
 
     if (resp.ok && body.success) {
       alert(t.msgRequestSent);
-      buttonEl.textContent = t.btnRequested;
-      buttonEl.disabled = true;
+      btn.textContent = t.btnRequested;
+      btn.disabled = true;
     } else {
-      console.error("Request failed:", body);
       alert(t.msgRequestFailed);
-      buttonEl.disabled = false;
+      btn.disabled = false;
     }
   } catch (e) {
-    console.error("Error sending request:", e);
     alert(t.msgRequestFailed);
-    buttonEl.disabled = false;
+    btn.disabled = false;
   }
 }
 
-// 7) Attach click handlers to "Request" buttons
 function attachRequestButtonHandlers() {
-  const container = document.getElementById("buyersGrid");
-  if (!container) return;
+  const cards = document.querySelectorAll(".buyer-card .btn-request");
 
-  container.querySelectorAll(".btn-request").forEach((btn) => {
-    if (btn.dataset.bound === "1") return; // avoid double binding
+  cards.forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
     btn.dataset.bound = "1";
 
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", () => {
       if (btn.disabled) return;
 
       const card = btn.closest(".buyer-card");
-      if (!card) return;
-
-      const receiverId = card.getAttribute("data-receiver-id");
-      if (!receiverId) return;
-
-      sendRequestToBuyer(receiverId, btn);
+      const receiver = card.getAttribute("data-receiver-id");
+      if (receiver) sendRequestToBuyer(receiver, btn);
     });
   });
 }
 
-// 8) Filters
 function applyFilters() {
   loadBuyers();
 }
 
-// 9) Sync dashboard when language changes
 function syncDashboardLanguage() {
-  // Just reload buyers so text + placeholders update
   const { t } = getDashText();
 
   const search = document.getElementById("buyerSearch");
-  if (search && t && t.searchPlaceholder) {
-    search.placeholder = t.searchPlaceholder;
-  }
+  if (search) search.placeholder = t.searchPlaceholder;
 
   loadBuyers();
 }
 
-// 10) Language toggle listeners
-document.getElementById("langToggle")?.addEventListener("click", () => {
-  setTimeout(syncDashboardLanguage, 0);
-});
-document
-  .getElementById("mobileLangToggle")
-  ?.addEventListener("click", () => {
-    setTimeout(syncDashboardLanguage, 0);
-  });
+document.getElementById("langToggle")?.addEventListener("click", () =>
+  setTimeout(syncDashboardLanguage, 0)
+);
+document.getElementById("mobileLangToggle")?.addEventListener("click", () =>
+  setTimeout(syncDashboardLanguage, 0)
+);
 
-// 11) Sidebar collapse
 document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   document.querySelector(".sidebar")?.classList.toggle("collapsed");
 });
 
-// 12) Init
 document.addEventListener("DOMContentLoaded", () => {
   const { t } = getDashText();
   const search = document.getElementById("buyerSearch");
-  if (search && t && t.searchPlaceholder) {
-    search.placeholder = t.searchPlaceholder;
-  }
+  if (search) search.placeholder = t.searchPlaceholder;
 
-  document
-    .getElementById("applyFiltersBtn")
-    ?.addEventListener("click", applyFilters);
+  document.getElementById("applyFiltersBtn")?.addEventListener("click", applyFilters);
 
-  loadBuyers(); // initial load
+  loadBuyers();
 });
