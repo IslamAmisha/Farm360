@@ -48,6 +48,7 @@ public class WebSecurityConfig {
                                 "/buyer/register/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/auth/logout",
                                 "/master/**"
                 ).permitAll()
                         // everything else secured

@@ -6,6 +6,7 @@ import com.Farm360.dto.request.OtpVerifyRQ;
 import com.Farm360.dto.response.LoginRS;
 import com.Farm360.dto.response.OtpSendRS;
 import com.Farm360.dto.response.OtpVerifyRS;
+import com.Farm360.security.jwt.JwtBlacklistService;
 import com.Farm360.service.auth.AuthService;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtBlacklistService jwtBlacklistService;
 
     @PostMapping("/otp/send")
     public ResponseEntity<OtpSendRS> sendOtp(@RequestBody OtpSendRQ rq) {
@@ -40,6 +44,20 @@ public class AuthController {
         authService.saveCaptcha(phone, captcha);
         return ResponseEntity.ok(captcha);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
+
+        String token = authHeader.substring(7);
+        jwtBlacklistService.blacklistToken(token);
+
+        return ResponseEntity.ok("Logged out successfully");
+    }
+
 
 
 

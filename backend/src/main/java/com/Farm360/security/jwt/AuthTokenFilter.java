@@ -22,6 +22,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
+    private JwtBlacklistService jwtBlacklistService;
+
+
+    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
     @Override
@@ -35,6 +39,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
                 String jwt = headerAuth.substring(7);
+
+                if (jwtBlacklistService.isBlacklisted(jwt)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
 
                 if (jwtUtils.validateJwtToken(jwt)) {
                     String phone = jwtUtils.getPhoneNumberFromJwt(jwt);
@@ -56,6 +65,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+
         } catch (Exception e) {
             // optional: log error
         }
