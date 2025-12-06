@@ -272,9 +272,7 @@ function validateForm() {
   return ok;
 }
 
-// =========================
-// SUBMIT
-// =========================
+
 async function handleSubmit() {
 
   // SHOW LOADING POPUP

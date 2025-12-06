@@ -140,7 +140,6 @@
   const walletTotalEl = document.getElementById("walletTotal");
   const walletAvailableEl = document.getElementById("walletAvailable");
   const walletLockedEl = document.getElementById("walletLocked");
-
   const landsListEl = document.getElementById("landsList");
 
   const photoInput = document.getElementById("photoInput");

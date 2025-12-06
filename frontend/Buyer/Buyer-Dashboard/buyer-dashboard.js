@@ -311,7 +311,7 @@ async function loadFarmers() {
   }
 }
 
-// Send request from buyer to farmer
+
 async function sendRequestToFarmer(receiverUserId, buttonEl) {
   const { token, userId } = getAuthInfo();
   const { t } = getBuyerText();

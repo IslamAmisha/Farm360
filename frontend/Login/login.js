@@ -160,7 +160,6 @@ form.addEventListener("submit", async function (e) {
         window.location.href = "../Buyer/Buyer-Dashboard/buyer-dashboard.html";
       }
     }, 1000);
-
   } catch (err) {
     msg.style.color = "red";
     msg.textContent =

@@ -1,7 +1,4 @@
-/* =========================================
-   FARMER DASHBOARD STYLES
-   Uses shared variables from landing-page.css
-========================================= */
+
 
 /* Layout shell */
 .dashboard-shell {
@@ -11,9 +8,6 @@
   background: var(--background);
 }
 
-/* =========================================
-   SIDEBAR
-========================================= */
 
 .sidebar {
   position: fixed;

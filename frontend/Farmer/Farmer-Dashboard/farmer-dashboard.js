@@ -78,7 +78,6 @@ const dashboardTranslations = {
     navAbout: "আমাদের সম্পর্কে",
     navInsights: "তথ্য ও বিশ্লেষণ",
     navSupport: "সহায়তা",
-
     dashboard: "ড্যাশবোর্ড",
     sidebarDashboard: "ড্যাশবোর্ড",
     sidebarProfile: "আমার প্রোফাইল",

@@ -349,7 +349,6 @@ async function handleBuyerSubmit() {
 
     village: document.getElementById("village").value.trim(),
     pinCode: document.getElementById("pin").value.trim(),
-
     businessName: document.getElementById("businessName").value.trim(),
     businessType: document.getElementById("businessType").value,
     businessScale: document.getElementById("businessScale").value,
