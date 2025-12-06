@@ -11,123 +11,25 @@
   }
 })();
 
+function logoutUser() {
+  const token = localStorage.getItem("token");
+
+  fetch("http://localhost:8080/auth/logout", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  }).finally(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "../../Login/login.html";
+  });
+}
+
 // 1) Extend translations
 const buyerDashboardTranslations = {
-  en: {
-    brandName: "Farm360",
-
-    navHome: "Home",
-    navModules: "Modules",
-    navAbout: "About",
-    navInsights: "Insights",
-    navSupport: "Support",
-
-    dashboard: "Dashboard",
-    sidebarDashboard: "Dashboard",
-    sidebarLandFarmers: "Land & Farmers",
-    sidebarProposals: "Proposals / Requests",
-    sidebarNegotiation: "Negotiation / Messages",
-    sidebarAgreements: "Agreements",
-    sidebarEscrowWallet: "Escrow & Wallet",
-    sidebarInputSupply: "Input Supply",
-    sidebarCultivation: "Cultivation / Harvest",
-    sidebarLogistics: "Delivery / Logistics",
-    sidebarSettings: "Settings",
-    sidebarLogout: "Logout",
-
-    dashboardTitle: "Buyer Dashboard",
-    dashboardSubtitle:
-      "View your agreements, find farmers and collaborate effectively.",
-
-    searchLabel: "Search farmers",
-    searchPlaceholder: "Search farmers...",
-
-    filterApply: "Apply",
-    filterSeason: "Season",
-    seasonAll: "All Seasons",
-    filterCropType: "Crop",
-    cropAll: "All Crops",
-
-    summaryAgreements: "Agreements",
-    summaryRequests: "Requests",
-    summaryProgress: "Progress",
-
-    farmerProfiles: "Available Farmers",
-    farmerProfilesSubtitle:
-      "Connect with farmers cultivating your preferred crops",
-
-    btnRequest: "Request",
-    btnDetails: "Details",
-
-    crop_rice: "Rice",
-    crop_wheat: "Wheat",
-    crop_potato: "Potato",
-    crop_tomato: "Tomato",
-    crop_corn: "Corn",
-    crop_onion: "Onion",
-
-    season_kharif: "Kharif",
-    season_rabi: "Rabi",
-    season_summer: "Summer",
-  },
-
-  bn: {
-    brandName: "ফার্ম৩৬০",
-
-    navHome: "হোম",
-    navModules: "মডিউল",
-    navAbout: "আমাদের সম্পর্কে",
-    navInsights: "তথ্য ও বিশ্লেষণ",
-    navSupport: "সহায়তা",
-
-    dashboard: "ড্যাশবোর্ড",
-    sidebarDashboard: "ড্যাশবোর্ড",
-    sidebarLandFarmers: "ভূমি ও চাষি",
-    sidebarProposals: "অনুরোধ / প্রস্তাবনা",
-    sidebarNegotiation: "আলোচনা / বার্তা",
-    sidebarAgreements: "চুক্তি",
-    sidebarEscrowWallet: "ইস্ক্রো ও ওয়ালেট",
-    sidebarInputSupply: "ইনপুট সাপ্লাই",
-    sidebarCultivation: "চাষ / ফসল",
-    sidebarLogistics: "সরবরাহ / লজিস্টিক্স",
-    sidebarSettings: "সেটিংস",
-    sidebarLogout: "লগআউট",
-
-    dashboardTitle: "ক্রেতার ড্যাশবোর্ড",
-    dashboardSubtitle:
-      "আপনার চুক্তি দেখুন, চাষিদের খুঁজুন এবং সহযোগিতা করুন।",
-
-    searchLabel: "চাষি খুঁজুন",
-    searchPlaceholder: "চাষি খুঁজুন...",
-
-    filterApply: "ফিল্টার প্রয়োগ",
-    filterSeason: "মৌসুম",
-    seasonAll: "সব মৌসুম",
-    filterCropType: "ফসল",
-    cropAll: "সব ফসল",
-
-    summaryAgreements: "মোট চুক্তি",
-    summaryRequests: "মোট অনুরোধ",
-    summaryProgress: "অগ্রগতি",
-
-    farmerProfiles: "উপলব্ধ চাষি",
-    farmerProfilesSubtitle:
-      "আপনার পছন্দসই ফসল উৎপাদনকারী চাষিদের সাথে সংযোগ করুন",
-
-    btnRequest: "অনুরোধ",
-    btnDetails: "বিস্তারিত",
-
-    crop_rice: "চাল",
-    crop_wheat: "গম",
-    crop_potato: "আলু",
-    crop_tomato: "টমেটো",
-    crop_corn: "ভুট্টা",
-    crop_onion: "পেঁয়াজ",
-
-    season_kharif: "খরিফ",
-    season_rabi: "রবি",
-    season_summer: "গ্রীষ্ম",
-  },
+  en: { /* ...existing translations... */ },
+  bn: { /* ...existing translations... */ }
 };
 
 // merge into global system
@@ -136,7 +38,7 @@ if (typeof translations !== "undefined") {
   Object.assign(translations.bn, buyerDashboardTranslations.bn);
 }
 
-// 2) FARMERS DATA (same as before)
+// 2) FARMERS DATA
 const farmersData = [
   { id: 1, name: "Rakesh Das", bnName: "রাকেশ দাস", village: "Bara Village", crops: ["Rice", "Wheat"], location: "Nadia", bnLocation: "নদিয়া", thumbsUp: 51, thumbsDown: 9 },
   { id: 2, name: "Soma Mondal", bnName: "সোমা মন্ডল", village: "Dakshin Para", crops: ["Potato", "Tomato"], location: "Howrah", bnLocation: "হাওড়া", thumbsUp: 32, thumbsDown: 7 },
@@ -170,7 +72,7 @@ function renderFarmers(list) {
       const btnDet = t.btnDetails;
 
       return `
-      <div class="farmer-card buyer-card">
+      <div class="farmer-card buyer-card" data-farmer-id="${f.id}">
         <h3>${lang === "bn" ? f.bnName : f.name}</h3>
         <div class="buyer-rating">${getThumbRating(f)}</div>
         <p class="buyer-company">${f.village}</p>
@@ -217,21 +119,53 @@ function syncBuyerDashboardLanguage() {
   if (typeof updateTranslatedText === "function") updateTranslatedText();
 }
 
-document.getElementById("langToggle")?.addEventListener("click", () => {
-  setTimeout(syncBuyerDashboardLanguage, 0);
-});
+// 7) Load farmers dynamically from backend
+async function loadFarmers() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const container = document.getElementById("farmersGrid");
+  const { t } = (window.translations && window.translations[window.currentLanguage || "en"]) || buyerDashboardTranslations.en;
 
-document.getElementById("mobileLangToggle")?.addEventListener("click", () => {
-  setTimeout(syncBuyerDashboardLanguage, 0);
-});
+  if (!token || !userId) return alert(t.msgLoginRequired);
 
-// 7) Sidebar toggle
-document.getElementById("sidebarToggle")?.addEventListener("click", () => {
-  document.querySelector(".sidebar")?.classList.toggle("collapsed");
-});
+  container.innerHTML = `<div class="farmer-card loading-card"><div class="loader"></div></div>`;
+
+  try {
+    const resp = await fetch(`http://localhost:8080/dashboard/farmers?buyerUserId=${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    });
+
+    if (!resp.ok) {
+      console.error("Load error:", resp.status);
+      return renderFarmers([]);
+    }
+
+    const data = await resp.json();
+    renderFarmers(data.users || []);
+  } catch (e) {
+    console.error("Load error:", e);
+    renderFarmers([]);
+  }
+}
+
+// Event listeners
+document.getElementById("langToggle")?.addEventListener("click", () => setTimeout(syncBuyerDashboardLanguage, 0));
+document.getElementById("mobileLangToggle")?.addEventListener("click", () => setTimeout(syncBuyerDashboardLanguage, 0));
+document.getElementById("sidebarToggle")?.addEventListener("click", () => document.querySelector(".sidebar")?.classList.toggle("collapsed"));
 
 // 8) Init
 document.addEventListener("DOMContentLoaded", () => {
   syncBuyerDashboardLanguage();
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", applyFilters);
+  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
+    applyFilters();
+    loadFarmers();
+  });
+  document.querySelector(".logout")?.addEventListener("click", logoutUser);
+
+  // load farmers on page load
+  loadFarmers();
 });

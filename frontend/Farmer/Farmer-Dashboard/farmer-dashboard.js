@@ -11,6 +11,20 @@
   }
 })();
 
+function logoutUser() {
+  const token = localStorage.getItem("token");
+
+  fetch("http://localhost:8080/auth/logout", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  }).finally(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "../../Login/login.html";
+  });
+}
 // Extended translations
 const dashboardTranslations = {
   en: {
@@ -377,5 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("applyFiltersBtn")?.addEventListener("click", applyFilters);
 
+  document.querySelector(".logout")?.addEventListener("click", logoutUser);
+  
   loadBuyers();
 });
