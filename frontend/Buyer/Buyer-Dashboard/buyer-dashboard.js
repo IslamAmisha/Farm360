@@ -1,6 +1,15 @@
-/* ============================================
-   BUYER DASHBOARD JS (Updated for new sidebar)
-============================================ */
+(function protectBuyerDashboard() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  if (!token || !userId || role !== "buyer") {
+    alert("User not found or unauthorized access!");
+    localStorage.clear();
+    window.location.href = "../../Login/login.html";
+    return;
+  }
+})();
 
 // 1) Extend translations
 const buyerDashboardTranslations = {
