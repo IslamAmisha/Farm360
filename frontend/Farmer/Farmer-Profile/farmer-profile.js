@@ -1,6 +1,16 @@
-/* -------------------------------------------------- */
-/* FARMER PROFILE JS (API-CONNECTED VERSION)          */
-/* -------------------------------------------------- */
+(function protectFarmerProfile() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  // If not logged in OR wrong role → redirect
+  if (!token || !userId || role !== "farmer") {
+    alert("User not found or unauthorized access!");
+    localStorage.clear();
+    window.location.href = "../../Login/login.html"; // adjust path if needed
+    return;
+  }
+})();
 
 (function () {
   /* 0) TRANSLATIONS --------------------------------- */

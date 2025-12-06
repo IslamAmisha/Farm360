@@ -1,6 +1,16 @@
-/* -------------------------------------------------- */
-/* BUYER PROFILE JS — BACKEND CONNECTED + TRANSLATIONS */
-/* -------------------------------------------------- */
+(function protectBuyerProfile() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  if (!token || !userId || role !== "buyer") {
+    alert("User not found or unauthorized access!");
+    localStorage.clear();
+    window.location.href = "../../Login/login.html";
+    return;
+  }
+})();
+
 
 (function () {
   const API_BASE = "http://localhost:8080/api/profile/buyer";

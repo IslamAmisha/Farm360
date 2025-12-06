@@ -1,8 +1,18 @@
-/* ============================================
-   FARMER DASHBOARD JS  (BACKEND-INTEGRATED)
-   Uses landing-page language system (data-text)
-   Farmer sees: Available BUYERS
-============================================ */
+
+(function protectFarmerDashboard() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  // If not logged in OR wrong role OR missing info → block access
+  if (!token || !userId || role !== "farmer") {
+    alert("User not found or unauthorized access!");
+    localStorage.clear();
+    window.location.href = "../../Login/login.html"; // adjust path if needed
+    return;
+  }
+})();
+
 
 // 1) Extend global translations with dashboard keys
 const dashboardTranslations = {
