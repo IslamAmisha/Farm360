@@ -11,15 +11,15 @@
       rel="stylesheet"
     />
 
-    <!-- Shared landing-page theme -->
+    <!-- Landing Page Theme -->
     <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
 
-    <!-- Page-specific styles -->
+    <!-- Page specific -->
     <link rel="stylesheet" href="buyer-profile.css" />
   </head>
 
   <body class="theme-light lang-en">
-    <!-- === Shared-style Header (same feel as farmer profile) === -->
+    <!-- HEADER -->
     <header id="site-header">
       <div class="header-container">
         <div class="header-left">
@@ -30,33 +30,26 @@
         </div>
 
         <nav class="nav-links">
-          <a
-            href="../../Landing-page/landing-page.html"
-            class="nav-item"
-            data-text="navHome"
+          <a href="../../Landing-page/landing-page.html" data-text="navHome"
             >Home</a
           >
           <a
             href="../../Landing-page/landing-page.html#modules"
-            class="nav-item"
             data-text="navModules"
             >Modules</a
           >
           <a
             href="../../Landing-page/landing-page.html#about"
-            class="nav-item"
             data-text="navAbout"
             >About</a
           >
           <a
             href="../../Landing-page/landing-page.html#data-insights"
-            class="nav-item"
             data-text="navInsights"
             >Insights</a
           >
           <a
             href="../../Landing-page/landing-page.html#footer"
-            class="nav-item"
             data-text="navSupport"
             >Support</a
           >
@@ -71,51 +64,11 @@
           <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
         </div>
       </div>
-
-      <div id="mobileMenu" class="mobile-menu">
-        <a
-          href="../../Landing-page/landing-page.html"
-          class="mobile-item"
-          data-text="navHome"
-          >Home</a
-        >
-        <a
-          href="../../Landing-page/landing-page.html#modules"
-          class="mobile-item"
-          data-text="navModules"
-          >Modules</a
-        >
-        <a
-          href="../../Landing-page/landing-page.html#about"
-          class="mobile-item"
-          data-text="navAbout"
-          >About</a
-        >
-        <a
-          href="../../Landing-page/landing-page.html#data-insights"
-          class="mobile-item"
-          data-text="navInsights"
-          >Insights</a
-        >
-        <a
-          href="../../Landing-page/landing-page.html#footer"
-          class="mobile-item"
-          data-text="navSupport"
-          >Support</a
-        >
-
-        <div class="mobile-controls">
-          <button id="mobileThemeToggle" class="mobile-theme-btn">
-            Toggle Theme
-          </button>
-          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
-        </div>
-      </div>
     </header>
 
-    <!-- === Main content === -->
+    <!-- MAIN -->
     <main class="profile-page container" id="profile">
-      <!-- Top wallet summary card -->
+      <!-- Wallet -->
       <section class="wallet-summary card">
         <div class="wallet-grid">
           <div class="wallet-item">
@@ -131,49 +84,29 @@
             </div>
             <div class="wallet-value" id="walletEscrow">₹ 0</div>
           </div>
-
-          <div class="wallet-item">
-            <div class="wallet-label" data-text="walletSpent">Total Spent</div>
-            <div class="wallet-value" id="walletSpent">₹ 0</div>
-          </div>
-
-          <div class="wallet-item">
-            <div class="wallet-label" data-text="lastTransaction">
-              Last Transaction
-            </div>
-            <div class="wallet-value" id="lastTransaction">—</div>
-          </div>
         </div>
       </section>
 
-      <!-- Layout: left column forms, right column actions/photo -->
       <div class="profile-grid">
+        <!-- LEFT COLUMN -->
         <div class="profile-col">
-          <!-- Basic Details Card -->
+          <!-- BASIC DETAILS -->
           <section class="card section-basic">
             <div class="card-header">
               <h3 data-text="basicDetails">Basic Details</h3>
-              <div class="card-actions">
-                <button
-                  class="btn-outline btn-edit"
-                  data-section="basic"
-                  data-text="btnEdit"
-                >
-                  Edit
-                </button>
-              </div>
+              <button
+                class="btn-outline btn-edit"
+                data-section="basic"
+                data-text="btnEdit"
+              >
+                Edit
+              </button>
             </div>
 
             <form class="card-body form-basic" data-editing="false">
               <div class="form-row">
                 <label data-text="phone">Phone Number</label>
-                <input
-                  type="text"
-                  id="phone"
-                  readonly
-                  value="+91 9XXXXXXXXX"
-                  class="input-locked"
-                />
+                <input type="text" id="phone" readonly class="input-locked" />
               </div>
 
               <div class="form-row">
@@ -182,74 +115,50 @@
                   type="text"
                   id="role"
                   readonly
-                  value="Buyer"
                   class="input-locked"
+                  value="Buyer"
                 />
               </div>
 
               <div class="form-row">
                 <label data-text="fullName">Full Name</label>
-                <input
-                  type="text"
-                  id="fullName"
-                  placeholder="Enter full name"
-                  disabled
-                />
+                <input type="text" id="fullName" disabled />
               </div>
 
               <div class="form-row">
                 <label data-text="aadhar">Aadhaar Number</label>
-                <input
-                  type="text"
-                  id="aadhar"
-                  maxlength="12"
-                  placeholder="12-digit Aadhaar"
-                  disabled
-                />
+                <input type="text" id="aadhar" readonly class="input-locked" />
               </div>
 
               <div class="form-row two-cols">
                 <div>
-                  <label data-text="district">District</label>
-                  <select id="districtSelect" disabled></select>
-                </div>
-
-                <div>
-                  <label data-text="block">Block</label>
-                  <select id="blockSelect" disabled></select>
-                </div>
-              </div>
-
-              <div class="form-row two-cols">
-                <div>
-                  <label data-text="city">City / Town</label>
+                  <label>District</label>
                   <input
                     type="text"
-                    id="city"
-                    placeholder="City / Town"
-                    disabled
+                    id="district"
+                    readonly
+                    class="input-locked"
                   />
                 </div>
                 <div>
-                  <label data-text="village">Village / Area</label>
-                  <input
-                    type="text"
-                    id="village"
-                    placeholder="Village / Area"
-                    disabled
-                  />
+                  <label>Block</label>
+                  <input type="text" id="block" readonly class="input-locked" />
                 </div>
               </div>
 
               <div class="form-row">
-                <label data-text="pincode">PIN Code</label>
-                <input
-                  type="text"
-                  id="pincode"
-                  maxlength="6"
-                  placeholder="PIN Code"
-                  disabled
-                />
+                <label>City</label>
+                <input type="text" id="city" readonly class="input-locked" />
+              </div>
+
+              <div class="form-row">
+                <label>Village</label>
+                <input type="text" id="village" readonly class="input-locked" />
+              </div>
+
+              <div class="form-row">
+                <label>PIN Code</label>
+                <input type="text" id="pincode" readonly class="input-locked" />
               </div>
 
               <div class="form-actions" hidden>
@@ -273,30 +182,23 @@
             </form>
           </section>
 
-          <!-- Business Details Card -->
+          <!-- BUSINESS DETAILS -->
           <section class="card section-business">
             <div class="card-header">
               <h3 data-text="businessDetails">Business Details</h3>
-              <div class="card-actions">
-                <button
-                  class="btn-outline btn-edit"
-                  data-section="business"
-                  data-text="btnEdit"
-                >
-                  Edit
-                </button>
-              </div>
+              <button
+                class="btn-outline btn-edit"
+                data-section="business"
+                data-text="btnEdit"
+              >
+                Edit
+              </button>
             </div>
 
             <form class="card-body form-business" data-editing="false">
               <div class="form-row">
                 <label data-text="businessName">Business Name</label>
-                <input
-                  type="text"
-                  id="businessName"
-                  placeholder="Business / Shop name"
-                  disabled
-                />
+                <input type="text" id="businessName" disabled />
               </div>
 
               <div class="form-row two-cols">
@@ -304,11 +206,11 @@
                   <label data-text="businessType">Business Type</label>
                   <select id="businessType" disabled>
                     <option value="">Select</option>
-                    <option value="individual">Individual</option>
-                    <option value="company">Company</option>
-                    <option value="exporter">Exporter</option>
-                    <option value="wholesaler">Wholesaler</option>
-                    <option value="retailer">Retailer</option>
+                    <option value="INDIVIDUAL">Individual</option>
+                    <option value="COMPANY">Company</option>
+                    <option value="EXPORTER">Exporter</option>
+                    <option value="WHOLESALER">Wholesaler</option>
+                    <option value="RETAILER">Retailer</option>
                   </select>
                 </div>
 
@@ -316,9 +218,9 @@
                   <label data-text="businessScale">Business Scale</label>
                   <select id="businessScale" disabled>
                     <option value="">Select</option>
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
+                    <option value="SMALL">Small</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LARGE">Large</option>
                   </select>
                 </div>
               </div>
@@ -326,18 +228,24 @@
               <div class="form-row">
                 <label data-text="govtApprovals">Government Approvals</label>
                 <div class="checkbox-row">
-                  <label>
-                    <input type="checkbox" id="payTax" disabled />
-                    <span data-text="payTaxLabel">Pays Tax</span>
-                  </label>
-                  <label>
-                    <input type="checkbox" id="gstRegistered" disabled />
-                    <span data-text="gstLabel">GST Registered</span>
-                  </label>
-                  <label>
-                    <input type="checkbox" id="licence" disabled />
-                    <span data-text="licenceLabel">Has Licence</span>
-                  </label>
+                  <label
+                    ><input type="checkbox" id="payTax" disabled /><span
+                      data-text="payTaxLabel"
+                      >Pays Tax</span
+                    ></label
+                  >
+                  <label
+                    ><input type="checkbox" id="gstRegistered" disabled /><span
+                      data-text="gstLabel"
+                      >GST Registered</span
+                    ></label
+                  >
+                  <label
+                    ><input type="checkbox" id="licence" disabled /><span
+                      data-text="licenceLabel"
+                      >Has Licence</span
+                    ></label
+                  >
                 </div>
               </div>
 
@@ -346,12 +254,11 @@
                   <label data-text="businessAge">Business Age</label>
                   <select id="businessAge" disabled>
                     <option value="">Select</option>
-                    <option value="lt1">Less than 1 year</option>
-                    <option value="1to5">1 to 5 years</option>
-                    <option value="gt5">More than 5 years</option>
+                    <option value="LT1">Less than 1 year</option>
+                    <option value="Y1TO5">1–5 years</option>
+                    <option value="GT5">More than 5 years</option>
                   </select>
                 </div>
-
                 <div>
                   <label data-text="warehouseName">Warehouse Name</label>
                   <input type="text" id="wareName" disabled />
@@ -364,20 +271,17 @@
               </div>
 
               <div class="form-row">
-                <label data-text="annualPurchase"
-                  >Annual Purchase (approx.)</label
-                >
+                <label data-text="annualPurchase">Annual Purchase</label>
                 <select id="annualPurchase" disabled>
                   <option value="">Select</option>
-                  <option value="lt10">Less than 10 tons</option>
-                  <option value="10to100">10–100 tons</option>
-                  <option value="gt100">More than 100 tons</option>
+                  <option value="LT10">Less than 10 tons</option>
+                  <option value="T10TO100">10–100 tons</option>
+                  <option value="GT100">More than 100 tons</option>
                 </select>
               </div>
 
               <div class="form-actions" hidden>
                 <button
-                  type="button"
                   class="btn-outline btn-cancel"
                   data-section="business"
                   data-text="btnCancel"
@@ -385,7 +289,6 @@
                   Cancel
                 </button>
                 <button
-                  type="button"
                   class="btn-primary btn-save"
                   data-section="business"
                   data-text="btnSave"
@@ -396,19 +299,17 @@
             </form>
           </section>
 
-          <!-- Crops Dealt With Card -->
+          <!-- CROPS -->
           <section class="card section-crops">
             <div class="card-header">
               <h3 data-text="cropsDetails">Crops Dealt With</h3>
-              <div class="card-actions">
-                <button
-                  class="btn-outline btn-edit"
-                  data-section="crops"
-                  data-text="btnEdit"
-                >
-                  Edit
-                </button>
-              </div>
+              <button
+                class="btn-outline btn-edit"
+                data-section="crops"
+                data-text="btnEdit"
+              >
+                Edit
+              </button>
             </div>
 
             <form class="card-body form-crops" data-editing="false">
@@ -419,12 +320,11 @@
 
               <div class="form-row">
                 <label data-text="cropSubLabel">Crop Subcategories</label>
-                <div id="cropSubcategories" class="subcategories"></div>
+                <div id="cropSubcategories"></div>
               </div>
 
               <div class="form-actions" hidden>
                 <button
-                  type="button"
                   class="btn-outline btn-cancel"
                   data-section="crops"
                   data-text="btnCancel"
@@ -432,7 +332,6 @@
                   Cancel
                 </button>
                 <button
-                  type="button"
                   class="btn-primary btn-save"
                   data-section="crops"
                   data-text="btnSave"
@@ -444,75 +343,61 @@
           </section>
         </div>
 
-        <!-- Right sidebar column -->
+        <!-- RIGHT SIDEBAR -->
         <div class="profile-col sidebar-right">
-          <!-- Photo Card -->
           <section class="card card-photo">
-            <div class="card-header">
-              <h3 data-text="buyerPhoto">Buyer / Business Photo</h3>
+            <h3 data-text="buyerPhoto">Buyer / Business Photo</h3>
+            <div class="photo-preview">
+              <img id="photoImg" hidden />
+              <div id="photoEmpty">No photo</div>
             </div>
-            <div class="card-body photo-body">
-              <div class="photo-preview" id="photoPreview">
-                <img id="photoImg" alt="Buyer / Business photo" src="" hidden />
-                <div class="photo-empty" id="photoEmpty">No photo</div>
-              </div>
-
-              <div class="photo-actions">
-                <input type="file" id="photoInput" accept="image/*" hidden />
-                <button
-                  class="btn-outline"
-                  id="btnUpload"
-                  data-text="btnUpload"
-                >
-                  Upload
-                </button>
-                <button
-                  class="btn-outline"
-                  id="btnReplace"
-                  hidden
-                  data-text="btnReplace"
-                >
-                  Replace
-                </button>
-                <button
-                  class="btn-outline"
-                  id="btnDelete"
-                  hidden
-                  data-text="btnDelete"
-                >
-                  Delete
-                </button>
-              </div>
+            <div class="photo-actions">
+              <input type="file" id="photoInput" accept="image/*" hidden />
+              <button id="btnUpload" class="btn-outline" data-text="btnUpload">
+                Upload
+              </button>
+              <button
+                id="btnReplace"
+                class="btn-outline"
+                hidden
+                data-text="btnReplace"
+              >
+                Replace
+              </button>
+              <button
+                id="btnDelete"
+                class="btn-outline"
+                hidden
+                data-text="btnDelete"
+              >
+                Delete
+              </button>
             </div>
           </section>
 
-          <!-- Quick account info card -->
           <section class="card card-info">
-            <div class="card-body">
-              <h4 data-text="accountTitle">Account</h4>
-              <p>
-                <strong data-text="buyerNameLabel">Name:</strong>
-                <span id="infoName">—</span>
-              </p>
-              <p>
-                <strong data-text="phoneLabel">Phone:</strong>
-                <span id="infoPhone">—</span>
-              </p>
-              <p>
-                <strong data-text="locationLabel">Location:</strong>
-                <span id="infoLocation">—</span>
-              </p>
-              <p>
-                <strong data-text="businessTypeShort">Business Type:</strong>
-                <span id="infoBusinessType">—</span>
-              </p>
-            </div>
+            <h4 data-text="accountTitle">Account</h4>
+            <p>
+              <strong data-text="buyerNameLabel">Name:</strong>
+              <span id="infoName">—</span>
+            </p>
+            <p>
+              <strong data-text="phoneLabel">Phone:</strong>
+              <span id="infoPhone">—</span>
+            </p>
+            <p>
+              <strong data-text="locationLabel">Location:</strong>
+              <span id="infoLocation">—</span>
+            </p>
+            <p>
+              <strong data-text="businessTypeShort">Business Type:</strong>
+              <span id="infoBusinessType">—</span>
+            </p>
           </section>
         </div>
       </div>
     </main>
 
-    <!-- Page JS -->
     <script src="buyer-profile.js"></script>
   </body>
 </html>

@@ -221,14 +221,18 @@ function renderSelectedCrops() {
   wrap.innerHTML = "";
 
   selectedBuyerCrops.forEach(id => {
-    const label = document.querySelector(`#buyerCropsSelect option[value="${id}"]`).textContent;
+    const label = document.querySelector(
+      `#buyerCropsSelect option[value="${id}"]`
+    ).textContent;
 
     const chip = document.createElement("div");
     chip.className = "tag-chip";
     chip.innerHTML = `<span>${label}</span><button type="button">×</button>`;
 
     chip.querySelector("button").addEventListener("click", () => {
-      const opt = document.querySelector(`#buyerCropsSelect option[value="${id}"]`);
+      const opt = document.querySelector(
+        `#buyerCropsSelect option[value="${id}"]`
+      );
       opt.selected = false;
       onCropsSelect();
     });
@@ -327,15 +331,12 @@ async function handleBuyerSubmit() {
     return;
   }
 
-  
-const approvals = [];
-if (document.getElementById("payTax").checked)
-  approvals.push("Pay_Tax");
-if (document.getElementById("gstRegistered").checked)
-  approvals.push("GST_Registered");
-if (document.getElementById("licence").checked)
-  approvals.push("Has_Licence");
-
+  // ============================================================
+  // ✅ FIXED APPROVAL COLLECTION (correct & safe)
+  // ============================================================
+  const approvals = Array.from(
+    document.querySelectorAll(".gov-approval:checked")
+  ).map(cb => cb.value);
 
   const payload = {
     fullName: document.getElementById("fullName").value.trim(),
@@ -353,8 +354,9 @@ if (document.getElementById("licence").checked)
     businessType: document.getElementById("businessType").value,
     businessScale: document.getElementById("businessScale").value,
 
-    governmentApprovals: approvals,
-
+    paysTax: approvals.includes("Pay_Tax"),
+  gstRegistered: approvals.includes("GST_Registered"),
+  hasLicence: approvals.includes("Has_Licence"),
 
     businessAge: document.getElementById("businessAge").value,
     warehouseName: document.getElementById("wareName").value.trim(),
@@ -384,7 +386,7 @@ if (document.getElementById("licence").checked)
     loader.classList.add("hidden");
 
     if (!res.ok) {
-      popupError("Registration Failed !");
+      popupError("Registration Failed!");
       return;
     }
 

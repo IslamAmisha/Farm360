@@ -1,6 +1,7 @@
 /* ============================================
-   FARMER DASHBOARD JS  
+   FARMER DASHBOARD JS  (BACKEND-INTEGRATED)
    Uses landing-page language system (data-text)
+   Farmer sees: Available BUYERS
 ============================================ */
 
 // 1) Extend global translations with dashboard keys
@@ -26,9 +27,9 @@ const dashboardTranslations = {
     sidebarSettings: "Settings",
     sidebarLogout: "Logout",
 
-    dashboardTitle: "Farmer Dashboard",
+    dashboardTitle: "Overview",
     dashboardSubtitle:
-      "View your agreements, proposals and connect with trusted buyers.",
+      "Here is your activity summary and available connections.",
 
     searchLabel: "Search buyers",
     searchPlaceholder: "Search buyers...",
@@ -48,6 +49,8 @@ const dashboardTranslations = {
     buyerProfilesSubtitle: "Connect with buyers interested in your crops",
 
     btnRequest: "Request",
+    btnRequested: "Requested",
+    btnConnected: "Connected",
     btnDetails: "Details",
 
     crop_rice: "Rice",
@@ -60,6 +63,11 @@ const dashboardTranslations = {
     season_kharif: "Kharif",
     season_rabi: "Rabi",
     season_summer: "Summer",
+
+    msgNoBuyers: "No buyers found for the selected filters.",
+    msgLoginRequired: "Please login again. User info not found.",
+    msgRequestSent: "Request sent successfully.",
+    msgRequestFailed: "Failed to send request. Please try again.",
   },
 
   bn: {
@@ -83,7 +91,7 @@ const dashboardTranslations = {
     sidebarSettings: "সেটিংস",
     sidebarLogout: "লগআউট",
 
-    dashboardTitle: "চাষির ড্যাশবোর্ড",
+    dashboardTitle: "ওভারভিউ",
     dashboardSubtitle:
       "আপনার চুক্তি, প্রস্তাব দেখুন এবং বিশ্বস্ত ক্রেতাদের সাথে সংযোগ করুন।",
 
@@ -106,6 +114,8 @@ const dashboardTranslations = {
       "আপনার ফসলে আগ্রহী ক্রেতাদের সাথে সংযোগ করুন",
 
     btnRequest: "অনুরোধ",
+    btnRequested: "অনুরোধ পাঠানো হয়েছে",
+    btnConnected: "সংযুক্ত",
     btnDetails: "বিস্তারিত",
 
     crop_rice: "চাল",
@@ -118,162 +128,262 @@ const dashboardTranslations = {
     season_kharif: "খরিফ",
     season_rabi: "রবি",
     season_summer: "গ্রীষ্ম",
+
+    msgNoBuyers: "এই ফিল্টার অনুযায়ী কোনো ক্রেতা পাওয়া যায়নি।",
+    msgLoginRequired: "অনুগ্রহ করে আবার লগইন করুন।",
+    msgRequestSent: "অনুরোধ সফলভাবে পাঠানো হয়েছে।",
+    msgRequestFailed: "অনুরোধ পাঠাতে ব্যর্থ হয়েছে, আবার চেষ্টা করুন।",
   },
 };
 
-// Merge into global `translations` from landing-page.js
+// Merge into global `translations` from landing-page.js if present
 if (typeof translations !== "undefined") {
   Object.assign(translations.en, dashboardTranslations.en);
   Object.assign(translations.bn, dashboardTranslations.bn);
 }
 
-// 2) Dummy buyers
-const buyersData = [
-  {
-    id: 1,
-    name: "Rajesh Patel",
-    bnName: "রাজেশ প্যাটেল",
-    company: "Fresh Valley",
-    crops: ["Rice", "Wheat", "Corn"],
-    location: "Kolkata",
-    bnLocation: "কলকাতা",
-    thumbsUp: 45,
-    thumbsDown: 12
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    bnName: "প্রিয়া শর্মা",
-    company: "Green Harvest",
-    crops: ["Tomato", "Onion"],
-    location: "Howrah",
-    bnLocation: "হাওড়া",
-    thumbsUp: 19,
-    thumbsDown: 11
-  },
-  {
-    id: 3,
-    name: "Amit Kumar",
-    bnName: "অমিত কুমার",
-    company: "Bengal Foods",
-    crops: ["Corn", "Rice"],
-    location: "Durgapur",
-    bnLocation: "দুর্গাপুর",
-    thumbsUp: 26,
-    thumbsDown: 7
-  },
-  {
-    id: 4,
-    name: "Meera Verma",
-    bnName: "মীরা ভার্মা",
-    company: "Rural Connect",
-    crops: ["Potato", "Wheat"],
-    location: "Siliguri",
-    bnLocation: "শিলিগুড়ি",
-    thumbsUp: 38,
-    thumbsDown: 9
-  },
-];
+// ==== CONFIG ====
+const API_BASE_URL = "http://localhost:8080";
 
-// 3) Stars
-function getThumbRating(buyer) {
+// Helper: get current language & texts
+function getDashText() {
+  const lang = window.currentLanguage || "en";
+  const t =
+    (window.translations && window.translations[lang]) ||
+    dashboardTranslations[lang];
+  return { lang, t };
+}
+
+// Helper: get auth info from localStorage
+function getAuthInfo() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
+  return { token, userId, role };
+}
+
+// 3) Rating display
+function getThumbRating(ratingUp, ratingDown) {
   return `
-    <div class="thumb-line">👍 ${buyer.thumbsUp}</div>
-    <div class="thumb-line">👎 ${buyer.thumbsDown}</div>
+    <div class="thumb-line">👍 ${ratingUp ?? 0}</div>
+    <div class="thumb-line">👎 ${ratingDown ?? 0}</div>
   `;
 }
 
-
-// 4) Render buyers (uses translations + data-text)
+// 4) Render buyers from BACKEND response
+// each item = DashboardCardRS
 function renderBuyers(list) {
-  const lang = window.currentLanguage || "en";
-  const t =
-    (window.translations && window.translations[lang]) || dashboardTranslations[lang];
-
+  const { lang, t } = getDashText();
   const container = document.getElementById("buyersGrid");
   if (!container) return;
 
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div class="buyer-card empty-card">
+        <p>${t.msgNoBuyers}</p>
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = list
     .map((b) => {
-      const cropBadges = b.crops
+      const cropBadges = (b.crops || [])
         .map((c) => {
-          const key = "crop_" + c.toLowerCase();
+          const key = "crop_" + String(c).toLowerCase();
           const label = (t && t[key]) || c;
           return `<span class="crop-badge" data-text="${key}">${label}</span>`;
         })
         .join("");
 
-      const btnReq = (t && t.btnRequest) || "Request";
+      let requestLabel = t.btnRequest;
+      let requestDisabled = false;
+
+      if (!b.canSendRequest) {
+        if (b.requestStatus === "PENDING") {
+          requestLabel = t.btnRequested;
+        } else if (b.requestStatus === "ACCEPTED") {
+          requestLabel = t.btnConnected;
+        }
+        requestDisabled = true;
+      }
+
       const btnDet = (t && t.btnDetails) || "Details";
 
+      const locationText = [b.villageOrCity, b.district]
+        .filter(Boolean)
+        .join(", ");
+
       return `
-      <div class="buyer-card">
-        <h3>${lang === "bn" ? b.bnName : b.name}</h3>
-       <div class="buyer-rating">${getThumbRating(b)}</div>
-        <p class="buyer-company">${b.company}</p>
-        <p class="buyer-location">📍 ${lang === "bn" ? b.bnLocation : b.location}</p>
+      <div class="buyer-card" data-receiver-id="${b.userId}">
+        <h3>${b.name}</h3>
+        <div class="buyer-rating">
+          ${getThumbRating(b.ratingUp, b.ratingDown)}
+        </div>
+        <p class="buyer-company">${b.businessName || ""}</p>
+        <p class="buyer-location">📍 ${locationText}</p>
 
         <div class="buyer-crops">
           ${cropBadges}
         </div>
 
         <div class="buyer-buttons">
-          <button class="btn-request" data-text="btnRequest">${btnReq}</button>
+          <button class="btn-request"
+                  data-text="btnRequest"
+                  ${requestDisabled ? "disabled" : ""}>
+            ${requestLabel}
+          </button>
           <button class="btn-details" data-text="btnDetails">${btnDet}</button>
         </div>
       </div>`;
     })
     .join("");
-}
 
-// 5) Filters
-function applyFilters() {
-  const searchText =
-    document.getElementById("buyerSearch").value.toLowerCase();
-  const cropFilter = document.getElementById("cropFilter").value;
-
-  let filtered = buyersData;
-
-  if (searchText) {
-    filtered = filtered.filter(
-      (b) =>
-        b.name.toLowerCase().includes(searchText) ||
-        b.bnName.toLowerCase().includes(searchText) ||  
-        b.company.toLowerCase().includes(searchText)
-    );
-  }
-
-  if (cropFilter) {
-    filtered = filtered.filter((b) =>
-      b.crops.some((c) => c.toLowerCase() === cropFilter)
-    );
-  }
-
-  renderBuyers(filtered);
   if (typeof updateTranslatedText === "function") {
     updateTranslatedText();
   }
+
+  attachRequestButtonHandlers();
 }
 
-// 6) Sync dashboard when language changes
-function syncDashboardLanguage() {
-  renderBuyers(buyersData);
+// 5) Fetch buyers from backend
+async function loadBuyers() {
+  const { token, userId } = getAuthInfo();
+  const { t } = getDashText();
 
-  const lang = window.currentLanguage || "en";
-  const t =
-    (window.translations && window.translations[lang]) || dashboardTranslations[lang];
+  if (!token || !userId) {
+    alert(t.msgLoginRequired);
+    return;
+  }
+
+  const searchText =
+    document.getElementById("buyerSearch")?.value.trim().toLowerCase() || "";
+  const cropFilter = document.getElementById("cropFilter")?.value || "";
+
+  const params = new URLSearchParams();
+  params.append("farmerUserId", userId);
+  if (searchText) params.append("search", searchText);
+  if (cropFilter) params.append("crop", cropFilter);
+
+  const container = document.getElementById("buyersGrid");
+  if (container) {
+    container.innerHTML = `
+      <div class="buyer-card loading-card">
+        <div class="loader"></div>
+      </div>`;
+  }
+
+  try {
+    const resp = await fetch(
+      `${API_BASE_URL}/dashboard/buyers?` + params.toString(),
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+      }
+    );
+
+    if (!resp.ok) {
+      console.error("Failed to load buyers:", resp.status);
+      renderBuyers([]);
+      return;
+    }
+
+    const data = await resp.json(); // expected: { users: [...] }
+    renderBuyers(data.users || []);
+  } catch (err) {
+    console.error("Error loading buyers:", err);
+    renderBuyers([]);
+  }
+}
+
+// 6) Send request from farmer to buyer
+async function sendRequestToBuyer(receiverUserId, buttonEl) {
+  const { token, userId } = getAuthInfo();
+  const { t } = getDashText();
+
+  if (!token || !userId) {
+    alert(t.msgLoginRequired);
+    return;
+  }
+
+  buttonEl.disabled = true;
+
+  try {
+    const resp = await fetch(
+      `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ receiverId: receiverUserId }),
+      }
+    );
+
+    const body = await resp.json().catch(() => ({}));
+
+    if (resp.ok && body.success) {
+      alert(t.msgRequestSent);
+      buttonEl.textContent = t.btnRequested;
+      buttonEl.disabled = true;
+    } else {
+      console.error("Request failed:", body);
+      alert(t.msgRequestFailed);
+      buttonEl.disabled = false;
+    }
+  } catch (e) {
+    console.error("Error sending request:", e);
+    alert(t.msgRequestFailed);
+    buttonEl.disabled = false;
+  }
+}
+
+// 7) Attach click handlers to "Request" buttons
+function attachRequestButtonHandlers() {
+  const container = document.getElementById("buyersGrid");
+  if (!container) return;
+
+  container.querySelectorAll(".btn-request").forEach((btn) => {
+    if (btn.dataset.bound === "1") return; // avoid double binding
+    btn.dataset.bound = "1";
+
+    btn.addEventListener("click", (e) => {
+      if (btn.disabled) return;
+
+      const card = btn.closest(".buyer-card");
+      if (!card) return;
+
+      const receiverId = card.getAttribute("data-receiver-id");
+      if (!receiverId) return;
+
+      sendRequestToBuyer(receiverId, btn);
+    });
+  });
+}
+
+// 8) Filters
+function applyFilters() {
+  loadBuyers();
+}
+
+// 9) Sync dashboard when language changes
+function syncDashboardLanguage() {
+  // Just reload buyers so text + placeholders update
+  const { t } = getDashText();
 
   const search = document.getElementById("buyerSearch");
   if (search && t && t.searchPlaceholder) {
     search.placeholder = t.searchPlaceholder;
   }
 
-  if (typeof updateTranslatedText === "function") {
-    updateTranslatedText();
-  }
+  loadBuyers();
 }
 
-// 7) Attach extra listeners to language buttons (after landing-page toggle)
+// 10) Language toggle listeners
 document.getElementById("langToggle")?.addEventListener("click", () => {
   setTimeout(syncDashboardLanguage, 0);
 });
@@ -283,17 +393,22 @@ document
     setTimeout(syncDashboardLanguage, 0);
   });
 
-// 8) Sidebar collapse (unchanged)
+// 11) Sidebar collapse
 document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   document.querySelector(".sidebar")?.classList.toggle("collapsed");
 });
 
-// 9) Init
+// 12) Init
 document.addEventListener("DOMContentLoaded", () => {
-  // initial render according to currentLanguage (default "en")
-  syncDashboardLanguage();
+  const { t } = getDashText();
+  const search = document.getElementById("buyerSearch");
+  if (search && t && t.searchPlaceholder) {
+    search.placeholder = t.searchPlaceholder;
+  }
 
   document
     .getElementById("applyFiltersBtn")
     ?.addEventListener("click", applyFilters);
+
+  loadBuyers(); // initial load
 });

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Farm360 — My Profile</title>
 
-    <!-- Fonts + Material Icons (same as landing) -->
+    <!-- Fonts + Material Icons -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
       rel="stylesheet"
@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
 
-    <!-- Shared landing-page theme (do NOT modify landing files) -->
+    <!-- Shared landing-page theme -->
     <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
 
     <!-- Page-specific styles -->
@@ -23,14 +23,14 @@
   </head>
 
   <body class="theme-light lang-en">
-    <!-- === Shared Header (identical structure to landing page) === -->
+    <!-- HEADER -->
     <header id="site-header">
       <div class="header-container">
         <div class="header-left">
-          <div class="logo">
+          <a href="../../Landing-page/landing-page.html" class="logo">
             <span class="logo-icon">🌿</span>
             <span data-text="brandName">Farm360</span>
-          </div>
+          </a>
         </div>
 
         <nav class="nav-links">
@@ -68,7 +68,8 @@
 
         <div class="header-right">
           <button id="themeToggle" class="icon-btn">
-            <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
           </button>
           <button id="langToggle" class="lang-btn">বাংলা</button>
           <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
@@ -76,60 +77,78 @@
       </div>
 
       <div id="mobileMenu" class="mobile-menu">
-  <a href="../../Landing-page/landing-page.html" class="mobile-item" data-text="navHome">Home</a>
-  <a href="../../Modules/modules.html" class="mobile-item" data-text="navModules">Modules</a>
-  <a href="../../Landing-page/landing-page.html#about" class="mobile-item" data-text="navAbout">About</a>
-  <a href="../../Insights/insights.html" class="mobile-item" data-text="navInsights">Insights</a>
-  <a href="../../Support/support.html" class="mobile-item" data-text="navSupport">Support</a>
+        <a
+          href="../../Landing-page/landing-page.html"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a
+          href="../../Modules/modules.html"
+          class="mobile-item"
+          data-text="navModules"
+          >Modules</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+        <a
+          href="../../Insights/insights.html"
+          class="mobile-item"
+          data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="../../Support/support.html"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
 
-  <div class="mobile-controls">
-    <button id="mobileThemeToggle" class="mobile-theme-btn">Toggle Theme</button>
-    <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
-  </div>
-</div>
-
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
       </div>
     </header>
 
-    <!-- === Main content === -->
+    <!-- MAIN -->
     <main class="profile-page container" id="profile">
-      <!-- Top wallet summary card -->
+      <!-- WALLET SUMMARY -->
       <section class="wallet-summary card">
         <div class="wallet-grid">
           <div class="wallet-item">
-            <div class="wallet-label" data-text="totalReceivable">
-              Total Receivable
+            <div class="wallet-label" data-text="walletTotalLimit">
+              Total Limit
             </div>
-            <div class="wallet-value" id="totalReceivable">₹ 0</div>
+            <div class="wallet-value" id="walletTotal">₹ 0</div>
           </div>
 
           <div class="wallet-item">
-            <div class="wallet-label" data-text="totalReleased">
-              Total Released
+            <div class="wallet-label" data-text="walletAvailable">
+              Available Balance
             </div>
-            <div class="wallet-value" id="totalReleased">₹ 0</div>
+            <div class="wallet-value" id="walletAvailable">₹ 0</div>
           </div>
 
           <div class="wallet-item">
-            <div class="wallet-label" data-text="totalPending">
-              Total Pending
+            <div class="wallet-label" data-text="walletLocked">
+              Locked Amount
             </div>
-            <div class="wallet-value" id="totalPending">₹ 0</div>
-          </div>
-
-          <div class="wallet-item">
-            <div class="wallet-label" data-text="lastTransaction">
-              Last Transaction
-            </div>
-            <div class="wallet-value" id="lastTransaction">—</div>
+            <div class="wallet-value" id="walletLocked">₹ 0</div>
           </div>
         </div>
       </section>
 
-      <!-- Layout: left column forms, right column actions/photo -->
       <div class="profile-grid">
+        <!-- LEFT COLUMN -->
         <div class="profile-col">
-          <!-- Basic Details Card -->
+          <!-- BASIC DETAILS -->
           <section class="card section-basic">
             <div class="card-header">
               <h3 data-text="basicDetails">Basic Details</h3>
@@ -147,13 +166,7 @@
             <form class="card-body form-basic" data-editing="false">
               <div class="form-row">
                 <label data-text="phone">Phone Number</label>
-                <input
-                  type="text"
-                  id="phone"
-                  readonly
-                  value="+91 9XXXXXXXXX"
-                  class="input-locked"
-                />
+                <input type="text" id="phone" readonly class="input-locked" />
               </div>
 
               <div class="form-row">
@@ -162,8 +175,8 @@
                   type="text"
                   id="role"
                   readonly
-                  value="Farmer"
                   class="input-locked"
+                  value="Farmer"
                 />
               </div>
 
@@ -177,37 +190,29 @@
                 />
               </div>
 
-              <div class="form-row two-cols">
-                <div>
-                  <label data-text="district">District</label>
-                  <select id="districtSelect" disabled></select>
-                </div>
+              <div class="form-row">
+                <label data-text="district">District</label>
+                <input
+                  type="text"
+                  id="district"
+                  readonly
+                  class="input-locked"
+                />
+              </div>
 
-                <div>
-                  <label data-text="block">Block</label>
-                  <select id="blockSelect" disabled></select>
-                </div>
+              <div class="form-row">
+                <label data-text="block">Block</label>
+                <input type="text" id="block" readonly class="input-locked" />
               </div>
 
               <div class="form-row">
                 <label data-text="village">Village / City</label>
-                <input
-                  type="text"
-                  id="village"
-                  placeholder="Village or City"
-                  disabled
-                />
+                <input type="text" id="village" readonly class="input-locked" />
               </div>
 
               <div class="form-row">
                 <label data-text="pincode">PIN Code</label>
-                <input
-                  type="text"
-                  id="pincode"
-                  maxlength="6"
-                  placeholder="PIN Code"
-                  disabled
-                />
+                <input type="text" id="pinCode" readonly class="input-locked" />
               </div>
 
               <div class="form-actions" hidden>
@@ -231,77 +236,29 @@
             </form>
           </section>
 
-          <!-- Land Details Card -->
+          <!-- LAND SUMMARY -->
           <section class="card section-land">
             <div class="card-header">
-              <h3 data-text="landDetails">Land Details</h3>
+              <h3 data-text="landDetails">My Lands</h3>
               <div class="card-actions">
-                <button
-                  class="btn-outline btn-edit"
-                  data-section="land"
-                  data-text="btnEdit"
+                <a
+                  href="../Farmer-Land/farmer-land.html"
+                  class="btn-outline"
+                  data-text="manageLands"
+                  >Manage Lands</a
                 >
-                  Edit
-                </button>
               </div>
             </div>
 
-            <form class="card-body form-land" data-editing="false">
-              <div class="form-row">
-                <label data-text="landSize">Land Size (acres)</label>
-                <input
-                  type="number"
-                  id="landSize"
-                  step="0.01"
-                  min="0"
-                  disabled
-                />
-              </div>
-
-              <div class="form-row">
-                <label data-text="croppingPattern">Cropping Pattern</label>
-                <select id="croppingPattern" disabled>
-                  <option value="">Select</option>
-                  <option value="monocrop">Monocrop</option>
-                  <option value="intercrop">Intercrop</option>
-                  <option value="mixed">Mixed</option>
-                </select>
-              </div>
-
-              <div class="form-row">
-                <label data-text="crops">Crops (select multiple)</label>
-                <div id="cropsChecklist" class="crops-checklist"></div>
-              </div>
-
-              <div class="form-row">
-                <label data-text="cropSubcategories">Crop Subcategories</label>
-                <div id="cropSubcategories" class="subcategories"></div>
-              </div>
-
-              <div class="form-actions" hidden>
-                <button
-                  type="button"
-                  class="btn-outline btn-cancel"
-                  data-section="land"
-                  data-text="btnCancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  class="btn-primary btn-save"
-                  data-section="land"
-                  data-text="btnSave"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+            <div class="card-body" id="landsList">
+              <p class="empty-text" data-text="noLands">No lands added yet.</p>
+            </div>
           </section>
         </div>
 
+        <!-- RIGHT COLUMN -->
         <div class="profile-col sidebar-right">
-          <!-- Photo Card -->
+          <!-- PHOTO CARD -->
           <section class="card card-photo">
             <div class="card-header">
               <h3 data-text="landPhoto">Land Photo</h3>
@@ -341,7 +298,7 @@
             </div>
           </section>
 
-          <!-- Quick contact / actions card -->
+          <!-- ACCOUNT SUMMARY -->
           <section class="card card-info">
             <div class="card-body">
               <h4 data-text="accountTitle">Account</h4>
@@ -363,9 +320,8 @@
       </div>
     </main>
 
-    <!-- Landing-page JS (theme + language) -->
+    <!-- Shared JS -->
     <script src="../../Landing-page/landing-page.js"></script>
-
     <!-- Page JS -->
     <script src="farmer-profile.js"></script>
   </body>

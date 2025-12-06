@@ -1,518 +1,361 @@
 /* -------------------------------------------------- */
-/* FARMER PROFILE JS — FINAL OPTIMIZED VERSION        */
+/* FARMER PROFILE JS (API-CONNECTED VERSION)          */
 /* -------------------------------------------------- */
 
 (function () {
+  /* 0) TRANSLATIONS --------------------------------- */
+  const translations = {
+    en: {
+      brandName: "Farm360",
 
-    /* -------------------------------------------------- */
-    /* 0) TRANSLATIONS (LOCAL TO THIS PAGE)               */
-    /* -------------------------------------------------- */
-    window.translations = {
-        en: {
-            brandName: "Farm360",
+      navHome: "Home",
+      navModules: "Modules",
+      navAbout: "About",
+      navInsights: "Insights",
+      navSupport: "Support",
 
-            navHome: "Home",
-            navModules: "Modules",
-            navAbout: "About",
-            navInsights: "Insights",
-            navSupport: "Support",
+      walletTotalLimit: "Total Limit",
+      walletAvailable: "Available Balance",
+      walletLocked: "Locked Amount",
 
-            /* Wallet */
-            totalReceivable: "Total Receivable",
-            totalReleased: "Total Released",
-            totalPending: "Total Pending",
-            lastTransaction: "Last Transaction",
+      basicDetails: "Basic Details",
+      phone: "Phone Number",
+      role: "Role",
+      farmerName: "Full Name",
+      district: "District",
+      block: "Block",
+      village: "Village / City",
+      pincode: "PIN Code",
 
-            /* Basic section */
-            basicDetails: "Basic Details",
-            phone: "Phone Number",
-            role: "Role",
-            farmerName: "Full Name",
-            district: "District",
-            block: "Block",
-            village: "Village / City",
-            pincode: "PIN Code",
+      landDetails: "My Lands",
+      manageLands: "Manage Lands",
+      noLands: "No lands added yet.",
 
-            /* Land section */
-            landDetails: "Land Details",
-            landSize: "Land Size (acres)",
-            croppingPattern: "Cropping Pattern",
-            crops: "Crops",
-            cropSubcategories: "Crop Subcategories",
+      landPhoto: "Land Photo",
+      btnUpload: "Upload",
+      btnReplace: "Replace",
+      btnDelete: "Delete",
 
-            /* Photo */
-            landPhoto: "Land Photo",
-            btnUpload: "Upload",
-            btnReplace: "Replace",
-            btnDelete: "Delete",
+      btnEdit: "Edit",
+      btnSave: "Save",
+      btnCancel: "Cancel",
 
-            /* Buttons */
-            btnEdit: "Edit",
-            btnSave: "Save",
-            btnCancel: "Cancel",
+      accountTitle: "Account",
+      farmerNameLabel: "Name:",
+      phoneLabel: "Phone:",
+      locationLabel: "Location:",
+    },
 
-            /* Sidebar */
-            accountTitle: "Account",
-            farmerNameLabel: "Name:",
-            phoneLabel: "Phone:",
-            locationLabel: "Location:",
-        },
+    bn: {
+      brandName: "Farm360",
 
-        bn: {
-            brandName: "Farm360",
+      navHome: "হোম",
+      navModules: "মডিউল",
+      navAbout: "সম্পর্কিত",
+      navInsights: "ইনসাইটস",
+      navSupport: "সহায়তা",
 
-            navHome: "হোম",
-            navModules: "মডিউল",
-            navAbout: "সম্পর্কিত",
-            navInsights: "ইনসাইটস",
-            navSupport: "সহায়তা",
+      walletTotalLimit: "মোট সীমা",
+      walletAvailable: "উপলব্ধ ব্যালেন্স",
+      walletLocked: "লকড টাকা",
 
-            /* Wallet */
-            totalReceivable: "মোট গ্রহণযোগ্য",
-            totalReleased: "মোট রিলিজড",
-            totalPending: "মোট বকেয়া",
-            lastTransaction: "শেষ লেনদেন",
+      basicDetails: "মৌলিক তথ্য",
+      phone: "ফোন নম্বর",
+      role: "ভূমিকা",
+      farmerName: "সম্পূর্ণ নাম",
+      district: "জেলা",
+      block: "ব্লক",
+      village: "গ্রাম / শহর",
+      pincode: "পিন কোড",
 
-            /* Basic section */
-            basicDetails: "মৌলিক তথ্য",
-            phone: "ফোন নম্বর",
-            role: "ভূমিকা",
-            farmerName: "সম্পূর্ণ নাম",
-            district: "জেলা",
-            block: "ব্লক",
-            village: "গ্রাম / শহর",
-            pincode: "পিন কোড",
+      landDetails: "জমির বিবরণ",
+      manageLands: "জমি ম্যানেজ করুন",
+      noLands: "এখনও কোনো জমি যোগ করা হয়নি।",
 
-            /* Land section */
-            landDetails: "জমির বিবরণ",
-            landSize: "জমির আকার (একর)",
-            croppingPattern: "চাষের ধরন",
-            crops: "ফসল",
-            cropSubcategories: "ফসলের উপশ্রেণী",
+      landPhoto: "জমির ছবি",
+      btnUpload: "আপলোড",
+      btnReplace: "পরিবর্তন",
+      btnDelete: "মুছুন",
 
-            /* Photo */
-            landPhoto: "জমির ছবি",
-            btnUpload: "আপলোড",
-            btnReplace: "পরিবর্তন",
-            btnDelete: "মুছুন",
+      btnEdit: "এডিট",
+      btnSave: "সেভ",
+      btnCancel: "বাতিল",
 
-            /* Buttons */
-            btnEdit: "এডিট",
-            btnSave: "সেভ",
-            btnCancel: "বাতিল",
+      accountTitle: "অ্যাকাউন্ট",
+      farmerNameLabel: "নাম:",
+      phoneLabel: "ফোন:",
+      locationLabel: "অবস্থান:",
+    },
+  };
 
-            /* Sidebar */
-            accountTitle: "অ্যাকাউন্ট",
-            farmerNameLabel: "নাম:",
-            phoneLabel: "ফোন:",
-            locationLabel: "অবস্থান:",
-        }
-    };
+  /* 1) GLOBAL STATE --------------------------------- */
+  let currentLanguage = window.currentLanguage || "en";
+  let currentTheme = window.currentTheme || "light";
 
+  let profileData = null; // backend profile data
 
-    /* -------------------------------------------------- */
-    /* 1) GLOBAL STATE                                    */
-    /* -------------------------------------------------- */
-    if (!window.currentTheme) window.currentTheme = "light";
-    if (!window.currentLanguage) window.currentLanguage = "en";
+  /* 2) THEME + LANGUAGE ----------------------------- */
+  function applyTheme(theme) {
+    document.body.classList.toggle("theme-dark", theme === "dark");
+    currentTheme = theme;
+    window.currentTheme = theme;
+  }
 
+  function toggleTheme() {
+    applyTheme(currentTheme === "light" ? "dark" : "light");
+  }
 
-    /* -------------------------------------------------- */
-    /* 2) CROPS + FULL TRANSLATION SUPPORT               */
-    /* -------------------------------------------------- */
-    const cropsData = {
-        "Rice": {
-            bn: "ধান",
-            subs: {
-                "Aman": "অমন",
-                "Boro": "বোরো",
-                "Aus": "আউস"
-            }
-        },
-        "Potato": {
-            bn: "আলু",
-            subs: {
-                "Kufri Jyoti": "কুফরি জ্যোতি",
-                "Kufri Sindhuri": "কুফরি সিন্দুরি"
-            }
-        },
-        "Jute": {
-            bn: "পাট",
-            subs: {
-                "Capsularis": "ক্যাপসুলারিস",
-                "Olitorius": "অলিটোরিয়াস"
-            }
-        },
-        "Vegetables": {
-            bn: "শাকসবজি",
-            subs: {
-                "Brinjal": "বেগুন",
-                "Tomato": "টমেটো",
-                "Okra": "ঢেঁড়স"
-            }
-        },
-        "Pulses": {
-            bn: "ডাল",
-            subs: {
-                "Moong": "মুগ",
-                "Masoor": "মসুর",
-                "Urad": "উড়দ"
-            }
-        }
-    };
+  function applyLanguage(lang) {
+    currentLanguage = lang;
+    window.currentLanguage = lang;
 
+    document.body.classList.toggle("lang-bn", lang === "bn");
+    const t = translations[lang];
 
-    /* -------------------------------------------------- */
-    /* 3) THEME + LANGUAGE FUNCTIONS                      */
-    /* -------------------------------------------------- */
-    function applyTheme(theme) {
-        document.body.classList.toggle("theme-dark", theme === "dark");
-        window.currentTheme = theme;
-    }
-
-    function toggleTheme() {
-        window.currentTheme =
-            window.currentTheme === "light" ? "dark" : "light";
-        applyTheme(window.currentTheme);
-    }
-
-    function applyLanguage(lang) {
-        document.body.classList.toggle("lang-bn", lang === "bn");
-        window.currentLanguage = lang;
-
-        const t = window.translations?.[lang];
-
-        if (t) {
-            document.querySelectorAll("[data-text]").forEach(el => {
-                const key = el.getAttribute("data-text");
-                if (t[key]) el.textContent = t[key];
-            });
-        }
-
-        const langBtn = document.getElementById("langToggle");
-        const mobileBtn = document.getElementById("mobileLangToggle");
-
-        if (langBtn) langBtn.textContent = (lang === "en" ? "বাংলা" : "English");
-        if (mobileBtn) mobileBtn.textContent = (lang === "en" ? "বাংলা" : "English");
-
-        /* Refresh crops after language is applied */
-        populateCrops();
-        renderSubcategories();
-    }
-
-    function toggleLanguage() {
-        window.currentLanguage =
-            window.currentLanguage === "en" ? "bn" : "en";
-        applyLanguage(window.currentLanguage);
-    }
-
-
-    /* -------------------------------------------------- */
-    /* 4) DOM ELEMENTS                                    */
-    /* -------------------------------------------------- */
-    const districtSelect = document.getElementById('districtSelect');
-    const blockSelect = document.getElementById('blockSelect');
-    const cropsChecklist = document.getElementById('cropsChecklist');
-    const cropSubcategories = document.getElementById('cropSubcategories');
-
-    const totalReceivable = document.getElementById('totalReceivable');
-    const totalReleased = document.getElementById('totalReleased');
-    const totalPending = document.getElementById('totalPending');
-    const lastTransaction = document.getElementById('lastTransaction');
-
-    const photoInput = document.getElementById('photoInput');
-    const photoImg = document.getElementById('photoImg');
-    const photoEmpty = document.getElementById('photoEmpty');
-
-    const btnUpload = document.getElementById('btnUpload');
-    const btnReplace = document.getElementById('btnReplace');
-    const btnDelete = document.getElementById('btnDelete');
-
-    const infoName = document.getElementById('infoName');
-    const infoPhone = document.getElementById('infoPhone');
-    const infoLocation = document.getElementById('infoLocation');
-
-
-    /* -------------------------------------------------- */
-    /* 5) EDIT / SAVE SYSTEM                              */
-    /* -------------------------------------------------- */
-    const profileState = {
-        name: "",
-        phone: "+91 9XXXXXXXXX",
-        district: "",
-        block: "",
-        village: "",
-        pincode: "",
-        landSize: "",
-        croppingPattern: "",
-        crops: [],
-        photo: null
-    };
-
-    function toggleEdit(section, editing, revert = false) {
-        const form = document.querySelector(`.form-${section}`);
-        if (!form) return;
-
-        form.dataset.editing = editing ? "true" : "false";
-
-        form.querySelectorAll("input, select").forEach(inp => {
-            if (!inp.classList.contains("input-locked"))
-                inp.disabled = !editing;
-        });
-
-        const actions = form.querySelector(".form-actions");
-        if (actions) actions.hidden = !editing;
-
-        const editBtn = document.querySelector(`.btn-edit[data-section="${section}"]`);
-        if (editBtn) editBtn.style.display = editing ? "none" : "inline-flex";
-
-        if (revert) restoreSection(section);
-    }
-
-    function restoreSection(section) {
-        if (section === "basic") {
-            document.getElementById('farmerName').value = profileState.name;
-            document.getElementById('village').value = profileState.village;
-            document.getElementById('pincode').value = profileState.pincode;
-
-            districtSelect.value = profileState.district;
-            districtSelect.dispatchEvent(new Event("change"));
-
-            blockSelect.value = profileState.block;
-        }
-
-        if (section === "land") {
-            document.getElementById('landSize').value = profileState.landSize;
-            document.getElementById('croppingPattern').value = profileState.croppingPattern;
-
-            Object.keys(cropsData).forEach(crop => {
-                const box = document.getElementById("crop_" + crop.replace(/\s+/g, "_"));
-                if (box) box.checked = profileState.crops.includes(crop);
-            });
-
-            renderSubcategories();
-        }
-    }
-
-    function saveSection(section) {
-        if (section === "basic") {
-            profileState.name = document.getElementById('farmerName').value;
-            profileState.village = document.getElementById('village').value;
-            profileState.pincode = document.getElementById('pincode').value;
-            profileState.district = districtSelect.value;
-            profileState.block = blockSelect.value;
-        }
-
-        if (section === "land") {
-            profileState.landSize = document.getElementById('landSize').value;
-            profileState.croppingPattern = document.getElementById('croppingPattern').value;
-
-            profileState.crops = Array.from(
-                cropsChecklist.querySelectorAll("input:checked")
-            ).map(el => el.value);
-        }
-
-        infoName.textContent = profileState.name || "—";
-        infoPhone.textContent = profileState.phone;
-        infoLocation.textContent = `${profileState.district} ${profileState.block}`;
-
-        toggleEdit(section, false);
-    }
-
-
-    /* -------------------------------------------------- */
-    /* 6) DISTRICT + BLOCK                                 */
-    /* -------------------------------------------------- */
-    const districtBlockData = {
-        "North 24 Parganas": ["Barasat I", "Barasat II", "Bongaon", "Habra"],
-        "South 24 Parganas": ["Alipore Sadar", "Canning", "Baruipur", "Diamond Harbour"],
-        "Murshidabad": ["Berhampore", "Domkal", "Jangipur"]
-    };
-
-    function populateDistricts() {
-        districtSelect.innerHTML =
-            `<option value="">Select district</option>` +
-            Object.keys(districtBlockData)
-                .map(d => `<option value="${d}">${d}</option>`).join("");
-    }
-
-    districtSelect.addEventListener("change", () => {
-        const d = districtSelect.value;
-
-        blockSelect.innerHTML =
-            `<option value="">Select block</option>` +
-            (districtBlockData[d] || [])
-                .map(b => `<option value="${b}">${b}</option>`).join("");
+    document.querySelectorAll("[data-text]").forEach((el) => {
+      const key = el.getAttribute("data-text");
+      if (t[key]) el.textContent = t[key];
     });
 
+    const langBtn = document.getElementById("langToggle");
+    const mobileLangBtn = document.getElementById("mobileLangToggle");
 
-    /* -------------------------------------------------- */
-    /* 7) CROPS + SUBCATEGORY RENDERING                   */
-    /* -------------------------------------------------- */
-    function populateCrops() {
-        cropsChecklist.innerHTML = "";
+    langBtn.textContent = lang === "en" ? "বাংলা" : "English";
+    mobileLangBtn.textContent = lang === "en" ? "বাংলা" : "English";
+  }
 
-        Object.keys(cropsData).forEach(crop => {
-            const id = "crop_" + crop.replace(/\s+/g, "_");
+  function toggleLanguage() {
+    applyLanguage(currentLanguage === "en" ? "bn" : "en");
+  }
 
-            const nameToShow =
-                (window.currentLanguage === "bn")
-                    ? `${cropsData[crop].bn} (${crop})`
-                    : `${crop} (${cropsData[crop].bn})`;
+  /* 3) DOM REFS ------------------------------- */
+  const phoneInput = document.getElementById("phone");
+  const roleInput = document.getElementById("role");
+  const nameInput = document.getElementById("farmerName");
+  const districtInput = document.getElementById("district");
+  const blockInput = document.getElementById("block");
+  const villageInput = document.getElementById("village");
+  const pinInput = document.getElementById("pinCode");
 
-            const label = document.createElement("label");
-            label.innerHTML = `
-                <input type="checkbox" id="${id}" value="${crop}">
-                <span>${nameToShow}</span>
-            `;
+  const walletTotalEl = document.getElementById("walletTotal");
+  const walletAvailableEl = document.getElementById("walletAvailable");
+  const walletLockedEl = document.getElementById("walletLocked");
 
-            cropsChecklist.appendChild(label);
+  const landsListEl = document.getElementById("landsList");
 
-            document.getElementById(id)
-                .addEventListener("change", renderSubcategories);
-        });
+  const photoInput = document.getElementById("photoInput");
+  const photoImg = document.getElementById("photoImg");
+  const photoEmpty = document.getElementById("photoEmpty");
+  const btnUpload = document.getElementById("btnUpload");
+  const btnReplace = document.getElementById("btnReplace");
+  const btnDelete = document.getElementById("btnDelete");
+
+  const infoName = document.getElementById("infoName");
+  const infoPhone = document.getElementById("infoPhone");
+  const infoLocation = document.getElementById("infoLocation");
+
+  /* 4) EDIT / SAVE BASIC ---------------------------- */
+  function toggleEditBasic(editing, revert = false) {
+    const form = document.querySelector(".form-basic");
+    form.dataset.editing = editing ? "true" : "false";
+
+    nameInput.disabled = !editing;
+
+    const actions = form.querySelector(".form-actions");
+    actions.hidden = !editing;
+
+    const editBtn = document.querySelector('.btn-edit[data-section="basic"]');
+    editBtn.style.display = editing ? "none" : "inline-flex";
+
+    if (revert && profileData) {
+      nameInput.value = profileData.farmerName;
+    }
+  }
+
+  async function saveBasicProfile() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expired");
+      window.location.href = "/login.html";
+      return;
     }
 
-    function renderSubcategories() {
-        const selected = Array.from(
-            cropsChecklist.querySelectorAll("input:checked")
-        ).map(i => i.value);
+    const payload = {
+      farmerName: nameInput.value.trim(),
+    };
 
-        if (selected.length === 0) {
-            cropSubcategories.innerHTML =
-                `<div class="subcategory-empty">${
-                    window.currentLanguage === "bn"
-                        ? "উপবিভাগ দেখতে ফসল নির্বাচন করুন"
-                        : "Select crops to see subcategories"
-                }</div>`;
-            return;
-        }
+    try {
+      const res = await fetch("http://localhost:8080/api/profile/farmer", {
+        method: "PUT",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-        cropSubcategories.innerHTML = "";
+      if (!res.ok) {
+        throw new Error("Update failed");
+      }
 
-        selected.forEach(crop => {
-            const group = document.createElement("div");
-            group.className = "subcategory-group";
+      await loadFarmerProfile();
+      toggleEditBasic(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile");
+    }
+  }
 
-            const titleText =
-                window.currentLanguage === "bn"
-                    ? `${cropsData[crop].bn} (${crop})`
-                    : `${crop} (${cropsData[crop].bn})`;
+  /* 5) LOAD PROFILE ---------------------------- */
+  async function loadFarmerProfile() {
+    try {
+      const token = localStorage.getItem("token");
 
-            const title = document.createElement("div");
-            title.style.fontWeight = "600";
-            title.textContent = titleText;
-            group.appendChild(title);
+      const response = await fetch("http://localhost:8080/api/profile/farmer", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
 
-            Object.keys(cropsData[crop].subs).forEach(sub => {
-                const subName =
-                    window.currentLanguage === "bn"
-                        ? `${cropsData[crop].subs[sub]} (${sub})`
-                        : `${sub} (${cropsData[crop].subs[sub]})`;
+      if (!response.ok) throw new Error("Failed to fetch profile");
 
-                const el = document.createElement("label");
-                el.innerHTML = `<input type="checkbox" value="${sub}"> ${subName}`;
-                group.appendChild(el);
-            });
+      const data = await response.json();
+      profileData = data;
 
-            cropSubcategories.appendChild(group);
-        });
+      populateProfile(data);
+    } catch (err) {
+      console.error("Profile load failed", err);
+    }
+  }
+
+  function populateProfile(data) {
+    phoneInput.value = data.phone;
+    roleInput.value = data.role;
+    nameInput.value = data.farmerName;
+    districtInput.value = data.districtName;
+    blockInput.value = data.blockName;
+    villageInput.value = data.village;
+    pinInput.value = data.pinCode;
+
+    infoName.textContent = data.farmerName;
+    infoPhone.textContent = data.phone;
+    infoLocation.textContent =
+      `${data.village}, ${data.blockName}, ${data.districtName}`;
+
+    walletTotalEl.textContent = "₹ " + (data.totalLimit ?? 0);
+    walletAvailableEl.textContent = "₹ " + (data.availableBalance ?? 0);
+    walletLockedEl.textContent = "₹ " + (data.lockedAmount ?? 0);
+
+    renderLands(data.lands || []);
+
+    if (data.landPhotoUrl) {
+      photoImg.src = data.landPhotoUrl;
+      photoImg.hidden = false;
+      photoEmpty.hidden = true;
+
+      btnUpload.hidden = true;
+      btnReplace.hidden = false;
+      btnDelete.hidden = false;
+    } else {
+      photoImg.hidden = true;
+      photoEmpty.hidden = false;
+
+      btnUpload.hidden = false;
+      btnReplace.hidden = true;
+      btnDelete.hidden = true;
+    }
+  }
+
+  /* 6) RENDER LAND CARDS ---------------------------- */
+  function renderLands(lands) {
+    landsListEl.innerHTML = "";
+
+    if (lands.length === 0) {
+      landsListEl.innerHTML =
+        `<p class="empty-text">${translations[currentLanguage].noLands}</p>`;
+      return;
     }
 
+    lands.forEach((land, i) => {
+      const card = document.createElement("div");
+      card.className = "land-item";
 
-    /* -------------------------------------------------- */
-    /* 8) PHOTO HANDLING                                  */
-    /* -------------------------------------------------- */
-    function onPhotoSelected(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+      card.innerHTML = `
+        <div class="land-header">
+          <span class="land-title">Land #${i + 1}</span>
+          <span class="land-size">${land.size} acres</span>
+        </div>
+        <div class="land-row">
+          <span class="land-label">Pattern:</span>
+          <span class="land-value">${land.croppingPattern ?? "-"}</span>
+        </div>
+        <div class="land-row">
+          <span class="land-label">Crops:</span>
+          <span class="land-value">${(land.crops || []).join(", ")}</span>
+        </div>
+      `;
 
-        const url = URL.createObjectURL(file);
+      landsListEl.appendChild(card);
+    });
+  }
 
-        photoImg.src = url;
-        photoImg.hidden = false;
-        photoEmpty.hidden = true;
+  /* 7) PHOTO (frontend only for now) ---------------- */
+  function onPhotoSelected(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-        btnUpload.hidden = true;
-        btnReplace.hidden = false;
-        btnDelete.hidden = false;
+    const url = URL.createObjectURL(file);
+    photoImg.src = url;
 
-        profileState.photo = url;
-    }
+    photoImg.hidden = false;
+    photoEmpty.hidden = true;
 
-    function onDeletePhoto() {
-        photoImg.src = "";
-        photoImg.hidden = true;
-        photoEmpty.hidden = false;
+    btnUpload.hidden = true;
+    btnReplace.hidden = false;
+    btnDelete.hidden = false;
+  }
 
-        btnReplace.hidden = true;
-        btnDelete.hidden = true;
-        btnUpload.hidden = false;
+  function onDeletePhoto() {
+    photoImg.hidden = true;
+    photoEmpty.hidden = false;
 
-        delete profileState.photo;
-    }
+    btnUpload.hidden = false;
+    btnReplace.hidden = true;
+    btnDelete.hidden = true;
+  }
 
+  /* 8) INIT ----------------------------------------- */
+  function initPage() {
+    applyTheme(currentTheme);
+    applyLanguage(currentLanguage);
+    loadFarmerProfile();
+  }
 
-    /* -------------------------------------------------- */
-    /* 9) WALLET                                          */
-    /* -------------------------------------------------- */
-    function initWallet() {
-        totalReceivable.textContent = "₹ 12,450";
-        totalReleased.textContent = "₹ 9,000";
-        totalPending.textContent = "₹ 3,450";
-        lastTransaction.textContent = "2025-11-25";
-    }
+  /* 9) EVENT LISTENERS ------------------------------ */
+  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
+  document.getElementById("mobileThemeToggle")?.addEventListener("click", toggleTheme);
 
+  document.getElementById("langToggle")?.addEventListener("click", toggleLanguage);
+  document.getElementById("mobileLangToggle")?.addEventListener("click", toggleLanguage);
 
-    /* -------------------------------------------------- */
-    /* 10) INIT                                           */
-    /* -------------------------------------------------- */
-    function initPage() {
-        applyTheme(window.currentTheme);
-        applyLanguage(window.currentLanguage);
+  document.getElementById("mobileMenuBtn")?.addEventListener("click", () => {
+    document.getElementById("mobileMenu").classList.toggle("open");
+  });
 
-        populateDistricts();
-        populateCrops();
-        renderSubcategories();
-        initWallet();
+  document.querySelector('.btn-edit[data-section="basic"]')
+    ?.addEventListener("click", () => toggleEditBasic(true));
 
-        infoName.textContent = "—";
-        infoPhone.textContent = profileState.phone;
-        infoLocation.textContent = "—";
-    }
+  document.querySelector('.btn-cancel[data-section="basic"]')
+    ?.addEventListener("click", () => toggleEditBasic(false, true));
 
+  document.querySelector('.btn-save[data-section="basic"]')
+    ?.addEventListener("click", saveBasicProfile);
 
-    /* -------------------------------------------------- */
-    /* 11) EVENT LISTENERS                                */
-    /* -------------------------------------------------- */
-    document.querySelectorAll(".btn-edit")
-        .forEach(btn => btn.addEventListener("click",
-            () => toggleEdit(btn.dataset.section, true)));
+  photoInput?.addEventListener("change", onPhotoSelected);
+  btnUpload?.addEventListener("click", () => photoInput.click());
+  btnReplace?.addEventListener("click", () => photoInput.click());
+  btnDelete?.addEventListener("click", onDeletePhoto);
 
-    document.querySelectorAll(".btn-cancel")
-        .forEach(btn => btn.addEventListener("click",
-            () => toggleEdit(btn.dataset.section, false, true)));
-
-    document.querySelectorAll(".btn-save")
-        .forEach(btn => btn.addEventListener("click",
-            () => saveSection(btn.dataset.section)));
-
-    photoInput.addEventListener("change", onPhotoSelected);
-
-    btnUpload.addEventListener("click", () => photoInput.click());
-    btnReplace.addEventListener("click", () => photoInput.click());
-    btnDelete.addEventListener("click", onDeletePhoto);
-
-    document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
-    document.getElementById("mobileThemeToggle")?.addEventListener("click", toggleTheme);
-    document.getElementById("langToggle")?.addEventListener("click", toggleLanguage);
-    document.getElementById("mobileLangToggle")?.addEventListener("click", toggleLanguage);
-
-    document.getElementById("mobileMenuBtn")
-        ?.addEventListener("click", () => {
-            document.getElementById("mobileMenu").classList.toggle("open");
-        });
-
-    document.addEventListener("DOMContentLoaded", initPage);
-
+  document.addEventListener("DOMContentLoaded", initPage);
 })();

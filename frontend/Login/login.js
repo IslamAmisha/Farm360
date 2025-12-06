@@ -149,11 +149,14 @@ form.addEventListener("submit", async function (e) {
 
     // REDIRECT BASED ON USER ROLE
     setTimeout(() => {
-      if (data.role === "pending") {
+
+      const role = data.role?.toLowerCase(); 
+
+      if (role === "pending") {
         window.location.href = "../Registration/user-register.html";
-      } else if (data.role === "farmer") {
+      } else if (role === "farmer") {
         window.location.href = "../Farmer/Farmer-Dashboard/farmer-dashboard.html";
-      } else if (data.role === "buyer") {
+      } else if (role === "buyer") {
         window.location.href = "../Buyer/Buyer-Dashboard/buyer-dashboard.html";
       }
     }, 1000);
