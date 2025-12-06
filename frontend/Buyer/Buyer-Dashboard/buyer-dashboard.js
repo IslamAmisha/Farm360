@@ -1,11 +1,16 @@
-/* ============================================
-<<<<<<< Updated upstream
-   BUYER DASHBOARD JS  (BACKEND-INTEGRATED)
-   Buyer sees: Available FARMERS
-=======
-   BUYER DASHBOARD JS (Updated for new sidebar)
->>>>>>> Stashed changes
-============================================ */
+(function protectBuyerDashboard() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  // If not logged in OR wrong role OR missing data → block access
+  if (!token || !userId || role !== "buyer") {
+    alert("User not found or unauthorized access!");
+    localStorage.clear();
+    window.location.href = "../../Login/login.html"; 
+    return;
+  }
+})();
 
 const buyerDashboardTranslations = {
   en: {
@@ -19,14 +24,12 @@ const buyerDashboardTranslations = {
 
     dashboard: "Dashboard",
     sidebarDashboard: "Dashboard",
-    sidebarLandFarmers: "Land & Farmers",
-    sidebarProposals: "Proposals / Requests",
-    sidebarNegotiation: "Negotiation / Messages",
+    sidebarFarmers: "Farmers",
+    sidebarProfile: "My Profile",
+    sidebarRequests: "Requests",
     sidebarAgreements: "Agreements",
-    sidebarEscrowWallet: "Escrow & Wallet",
-    sidebarInputSupply: "Input Supply",
-    sidebarCultivation: "Cultivation / Harvest",
-    sidebarLogistics: "Delivery / Logistics",
+    sidebarPayments: "Payments",
+    sidebarNotifications: "Notifications",
     sidebarSettings: "Settings",
     sidebarLogout: "Logout",
 
@@ -45,6 +48,7 @@ const buyerDashboardTranslations = {
 
     summaryAgreements: "Agreements",
     summaryRequests: "Requests",
+    summaryPayments: "Payments",
     summaryProgress: "Progress",
 
     farmerProfiles: "Available Farmers",
@@ -84,18 +88,16 @@ const buyerDashboardTranslations = {
 
     dashboard: "ড্যাশবোর্ড",
     sidebarDashboard: "ড্যাশবোর্ড",
-    sidebarLandFarmers: "ভূমি ও চাষি",
-    sidebarProposals: "অনুরোধ / প্রস্তাবনা",
-    sidebarNegotiation: "আলোচনা / বার্তা",
+    sidebarFarmers: "চাষিরা",
+    sidebarProfile: "আমার প্রোফাইল",
+    sidebarRequests: "অনুরোধ",
     sidebarAgreements: "চুক্তি",
-    sidebarEscrowWallet: "ইস্ক্রো ও ওয়ালেট",
-    sidebarInputSupply: "ইনপুট সাপ্লাই",
-    sidebarCultivation: "চাষ / ফসল",
-    sidebarLogistics: "সরবরাহ / লজিস্টিক্স",
+    sidebarPayments: "পেমেন্ট",
+    sidebarNotifications: "বিজ্ঞপ্তি",
     sidebarSettings: "সেটিংস",
     sidebarLogout: "লগআউট",
 
-    dashboardTitle: "ওভারভিউ",
+    dashboardTitle: "ক্রেতার ড্যাশবোর্ডওভারভিউ",
     dashboardSubtitle:
       "আপনার চুক্তি দেখুন, চাষিদের খুঁজুন এবং সহযোগিতা করুন।",
 
@@ -110,6 +112,7 @@ const buyerDashboardTranslations = {
 
     summaryAgreements: "মোট চুক্তি",
     summaryRequests: "মোট অনুরোধ",
+    summaryPayments: "মোট পেমেন্ট",
     summaryProgress: "অগ্রগতি",
 
     farmerProfiles: "উপলব্ধ চাষি",
@@ -145,7 +148,6 @@ if (typeof translations !== "undefined") {
   Object.assign(translations.bn, buyerDashboardTranslations.bn);
 }
 
-<<<<<<< Updated upstream
 const BUYER_API_BASE_URL = "http://localhost:8080";
 
 /* ============================================
@@ -155,20 +157,6 @@ const BUYER_API_BASE_URL = "http://localhost:8080";
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
   const role = (localStorage.getItem("role") || "").toLowerCase();
-=======
-// 2) FARMERS DATA (same as before)
-const farmersData = [
-  { id: 1, name: "Rakesh Das", bnName: "রাকেশ দাস", village: "Bara Village", crops: ["Rice", "Wheat"], location: "Nadia", bnLocation: "নদিয়া", thumbsUp: 51, thumbsDown: 9 },
-  { id: 2, name: "Soma Mondal", bnName: "সোমা মন্ডল", village: "Dakshin Para", crops: ["Potato", "Tomato"], location: "Howrah", bnLocation: "হাওড়া", thumbsUp: 32, thumbsDown: 7 },
-  { id: 3, name: "Ajoy Manna", bnName: "অজয় মান্না", village: "Majher Para", crops: ["Corn", "Onion"], location: "Burdwan", bnLocation: "বর্ধমান", thumbsUp: 44, thumbsDown: 10 },
-  { id: 4, name: "Lata Soren", bnName: "লতা সরেন", village: "North Colony", crops: ["Rice", "Tomato"], location: "Bankura", bnLocation: "বাঁকুড়া", thumbsUp: 29, thumbsDown: 6 },
-];
-
-// 3) Rating
-function getThumbRating(farmer) {
-  return `<div class="thumb-line">👍 ${farmer.thumbsUp}</div><div class="thumb-line">👎 ${farmer.thumbsDown}</div>`;
-}
->>>>>>> Stashed changes
 
   // If not logged in OR wrong role OR missing data → block access
   if (!token || !userId || role !== "buyer") {
@@ -182,7 +170,6 @@ function getThumbRating(farmer) {
 
 function getBuyerText() {
   const lang = window.currentLanguage || "en";
-<<<<<<< Updated upstream
   const t =
     (window.translations && window.translations[lang]) ||
     buyerDashboardTranslations[lang];
@@ -207,9 +194,6 @@ function getThumbRatingForFarmer(ratingUp, ratingDown) {
 // Render farmers from backend
 function renderFarmers(list) {
   const { lang, t } = getBuyerText();
-=======
-  const t = (window.translations && window.translations[lang]) || buyerDashboardTranslations[lang];
->>>>>>> Stashed changes
   const container = document.getElementById("farmersGrid");
   if (!container) return;
 
@@ -252,7 +236,6 @@ function renderFarmers(list) {
         .join(", ");
 
       return `
-<<<<<<< Updated upstream
       <div class="farmer-card buyer-card" data-receiver-id="${f.userId}">
         <h3>${f.name}</h3>
 
@@ -263,14 +246,8 @@ function renderFarmers(list) {
         <p class="buyer-company">${f.villageOrCity || ""}</p>
         <p class="buyer-location">📍 ${locationText}</p>
 
-=======
-      <div class="farmer-card buyer-card">
-        <h3>${lang === "bn" ? f.bnName : f.name}</h3>
-        <div class="buyer-rating">${getThumbRating(f)}</div>
-        <p class="buyer-company">${f.village}</p>
-        <p class="buyer-location">📍 ${lang === "bn" ? f.bnLocation : f.location}</p>
->>>>>>> Stashed changes
         <div class="buyer-crops">${cropBadges}</div>
+
         <div class="buyer-buttons">
           <button class="btn-request"
                   data-text="btnRequest"
@@ -283,7 +260,6 @@ function renderFarmers(list) {
     })
     .join("");
 
-<<<<<<< Updated upstream
   if (typeof updateTranslatedText === "function") {
     updateTranslatedText();
   }
@@ -344,7 +320,7 @@ async function loadFarmers() {
   }
 }
 
-
+// Send request from buyer to farmer
 async function sendRequestToFarmer(receiverUserId, buttonEl) {
   const { token, userId } = getAuthInfo();
   const { t } = getBuyerText();
@@ -425,38 +401,6 @@ function syncBuyerDashboardLanguage() {
   }
 
   loadFarmers();
-=======
-// 5) Filters
-function applyFilters() {
-  const searchText = document.getElementById("farmerSearch").value.toLowerCase();
-  const cropFilter = document.getElementById("cropFilter").value;
-
-  let filtered = farmersData;
-  if (searchText) {
-    filtered = filtered.filter(
-      (f) => f.name.toLowerCase().includes(searchText) ||
-             f.bnName.toLowerCase().includes(searchText) ||
-             f.village.toLowerCase().includes(searchText)
-    );
-  }
-
-  if (cropFilter) {
-    filtered = filtered.filter((f) => f.crops.some((c) => c.toLowerCase() === cropFilter));
-  }
-
-  renderFarmers(filtered);
-  if (typeof updateTranslatedText === "function") updateTranslatedText();
-}
-
-// 6) Language sync
-function syncBuyerDashboardLanguage() {
-  renderFarmers(farmersData);
-  const lang = window.currentLanguage || "en";
-  const t = (window.translations && window.translations[lang]) || buyerDashboardTranslations[lang];
-  const search = document.getElementById("farmerSearch");
-  if (search) search.placeholder = t.searchPlaceholder;
-  if (typeof updateTranslatedText === "function") updateTranslatedText();
->>>>>>> Stashed changes
 }
 
 // Language toggle listeners
@@ -468,20 +412,12 @@ document.getElementById("mobileLangToggle")?.addEventListener("click", () => {
   setTimeout(syncBuyerDashboardLanguage, 0);
 });
 
-<<<<<<< Updated upstream
 // Sidebar toggle
-=======
-// 7) Sidebar toggle
->>>>>>> Stashed changes
 document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   document.querySelector(".sidebar")?.classList.toggle("collapsed");
 });
 
-<<<<<<< Updated upstream
 // Init
-=======
-// 8) Init
->>>>>>> Stashed changes
 document.addEventListener("DOMContentLoaded", () => {
   const { t } = getBuyerText();
   const search = document.getElementById("farmerSearch");
