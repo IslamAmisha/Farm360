@@ -1,6 +1,7 @@
 package com.Farm360.model;
 
 
+import com.Farm360.model.land.LandEntity;
 import com.Farm360.model.master.block.BlockEntity;
 import com.Farm360.model.master.crop.CropEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
@@ -12,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -63,4 +65,9 @@ public class FarmerEntity {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LandEntity> lands = new ArrayList<>();
+
+
 }

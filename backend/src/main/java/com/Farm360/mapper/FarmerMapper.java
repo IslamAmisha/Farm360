@@ -1,7 +1,7 @@
 package com.Farm360.mapper;
 
-import com.Farm360.dto.request.FarmerRegisterRQ;
-import com.Farm360.dto.response.FarmerRS;
+import com.Farm360.dto.request.Farmer.FarmerRegisterRQ;
+import com.Farm360.dto.response.Farmer.FarmerRS;
 import com.Farm360.model.FarmerEntity;
 import com.Farm360.model.master.crop.CropEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;

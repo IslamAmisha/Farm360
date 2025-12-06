@@ -5,7 +5,7 @@ import com.Farm360.model.master.city.CityEntity;
 import com.Farm360.model.master.crop.CropEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import com.Farm360.model.master.district.DistrictEntity;
-import com.Farm360.repository.*;
+import com.Farm360.repository.master.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ public class MasterServiceImpl implements MasterService{
     @Autowired
     private BlockRepo blockRepo;
     @Autowired
-    private  CityRepo cityRepo;
+    private CityRepo cityRepo;
     @Autowired
     private CropRepo cropRepo;
     @Autowired
