@@ -110,7 +110,9 @@ sidebarLogout: "Logout",
     sidebarDashboard: "ড্যাশবোর্ড",
 sidebarMyProfile: "আমার প্রোফাইল",
 sidebarLandsBuyers: "জমি ও ক্রেতা",
-sidebarProposalsRequests: "প্রস্তাব / অনুরোধ",
+sidebarRequests: "Requests",
+sidebarProposals: "Proposals",
+
 sidebarNegotiation: "আলোচনা / বার্তা",
 sidebarAgreements: "চুক্তি",
 sidebarWallet: "ওয়ালেট",
@@ -135,7 +137,9 @@ sidebarLogout: "লগআউট",
     cropAll: "সব ফসল",
 
     summaryAgreements: "মোট চুক্তি",
-    summaryProposals: "মোট প্রস্তাব",
+    sidebarRequests: "অনুরোধ",
+sidebarProposals: "প্রস্তাব",
+
     summaryPayments: "মোট পেমেন্ট",
     summaryProgress: "অগ্রগতি",
 
@@ -382,6 +386,18 @@ function syncDashboardLanguage() {
 
   loadBuyers();
 }
+
+// Requests page link
+document.getElementById("farmerRequestsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Request/farmer-request.html";
+});
+
+// Proposals page link
+document.getElementById("farmerProposalsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Proposals/farmer-proposals.html"; 
+  // (or your actual proposals page)
+});
+
 
 document.getElementById("langToggle")?.addEventListener("click", () =>
   setTimeout(syncDashboardLanguage, 0)

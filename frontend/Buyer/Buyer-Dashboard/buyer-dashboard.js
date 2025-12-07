@@ -44,7 +44,8 @@ const buyerDashboardTranslations = {
     sidebarDashboard: "Dashboard",
     sidebarMyProfile: "My Profile",
     sidebarLandFarmers: "Land & Farmers",
-    sidebarProposals: "Proposals / Requests",
+    sidebarRequests: "Requests",
+sidebarProposals: "Proposals",
     sidebarNegotiation: "Negotiation / Messages",
     sidebarAgreements: "Agreements",
     sidebarEscrowWallet: "Escrow & Wallet",
@@ -106,7 +107,9 @@ const buyerDashboardTranslations = {
     sidebarDashboard: "ড্যাশবোর্ড",
     sidebarMyProfile: "আমার প্রোফাইল",
     sidebarLandFarmers: "জমি ও চাষি",
-    sidebarProposals: "প্রস্তাব / অনুরোধ",
+    sidebarRequests: "অনুরোধ",
+sidebarProposals: "প্রস্তাব",
+
     sidebarNegotiation: "আলোচনা / বার্তা",
     sidebarAgreements: "চুক্তি",
     sidebarEscrowWallet: "এসক্রো ও ওয়ালেট",
@@ -329,6 +332,17 @@ function syncBuyerDashboardLanguage() {
   if (search) search.placeholder = t.searchPlaceholder;
   loadFarmers();
 }
+
+// OPEN REQUEST PAGE
+document.getElementById("buyerRequestsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Buyer-Request/buyer-request.html";
+});
+
+// OPEN PROPOSALS PAGE
+document.getElementById("buyerProposalsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Buyer-Proposals/buyer-proposals.html";
+});
+
 
 /*******************************
   EVENT BINDINGS
