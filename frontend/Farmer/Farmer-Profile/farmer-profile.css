@@ -408,3 +408,45 @@ body.theme-dark .btn-outline:hover {
 body.theme-dark .photo-empty {
   color: var(--muted-foreground);
 }
+.land-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.land-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.land-size {
+  color: var(--foreground);
+}
+
+.land-pattern {
+  padding: 3px 8px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.land-row {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.land-label {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.land-value {
+  color: var(--foreground);
+}

@@ -11,13 +11,34 @@
   }
 })();
 
+/* ---------------------------------------------- */
+/* MASTER CROPS + SUBCATEGORIES                    */
+/* ---------------------------------------------- */
+let MASTER_CROPS = [];
+let MASTER_SUBCATS = {};
+let currentProfile = {}; // store buyer profile
 
+async function loadMasterData() {
+  // Load all crops
+  MASTER_CROPS = await fetch("http://localhost:8080/master/crops")
+    .then((r) => r.json())
+    .catch(() => []);
+
+  // Preload subcategories grouped per crop
+  for (const crop of MASTER_CROPS) {
+    MASTER_SUBCATS[crop.id] = await fetch(
+      `http://localhost:8080/master/subcategories/${crop.id}`
+    )
+      .then((r) => r.json())
+      .catch(() => []);
+  }
+}
+
+/* ---------------------------------------------- */
+/* MAIN SCRIPT                                     */
+/* ---------------------------------------------- */
 (function () {
   const API_BASE = "http://localhost:8080/api/profile/buyer";
-
-  /* ------------------------------ */
-  /* TRANSLATIONS                   */
-  /* ------------------------------ */
 
   const buyerTranslations = {
     en: {
@@ -42,6 +63,8 @@
       phoneLabel: "Phone:",
       locationLabel: "Location:",
       businessTypeShort: "Business Type:",
+      cropsLabel: "Crops",
+      cropSubLabel: "Crop Subcategories",
     },
     bn: {
       walletBalance: "ওয়ালেট ব্যালেন্স",
@@ -65,18 +88,41 @@
       phoneLabel: "ফোন:",
       locationLabel: "অবস্থান:",
       businessTypeShort: "ব্যবসার ধরন:",
+      cropsLabel: "ফসল",
+      cropSubLabel: "ফসলের উপশ্রেণী",
     },
   };
 
-  if (!window.currentTheme) window.currentTheme = "light";
-  if (!window.currentLanguage) window.currentLanguage = "en";
+  // share with global translations if landing-page.js exists
+  if (typeof translations !== "undefined") {
+    Object.assign(translations.en, buyerTranslations.en);
+    Object.assign(translations.bn, buyerTranslations.bn);
+  }
 
-  /* ------------------------------ */
-  /* APPLY LANGUAGE                 */
-  /* ------------------------------ */
+  if (!window.currentLanguage) window.currentLanguage = "en";
+  if (!window.currentTheme) window.currentTheme = "light";
+
+  /* ---------------------- */
+  /* THEME + LANGUAGE       */
+  /* ---------------------- */
+
+  function applyTheme(theme) {
+    document.body.classList.remove("theme-light", "theme-dark");
+    document.body.classList.add(theme === "dark" ? "theme-dark" : "theme-light");
+    window.currentTheme = theme;
+  }
+
+  function toggleTheme() {
+    const next = window.currentTheme === "dark" ? "light" : "dark";
+    applyTheme(next);
+  }
 
   function applyLanguage(lang) {
+    window.currentLanguage = lang;
     const t = buyerTranslations[lang];
+
+    document.body.classList.toggle("lang-bn", lang === "bn");
+
     document.querySelectorAll("[data-text]").forEach((el) => {
       const key = el.getAttribute("data-text");
       if (t[key]) el.textContent = t[key];
@@ -86,10 +132,12 @@
     if (langBtn) langBtn.textContent = lang === "en" ? "বাংলা" : "English";
   }
 
-  /* ------------------------------ */
-  /* DOM ELEMENTS (loaded later)    */
-  /* ------------------------------ */
+  function toggleLanguage() {
+    const next = window.currentLanguage === "en" ? "bn" : "en";
+    applyLanguage(next);
+  }
 
+  /* ELEMENT REFS */
   let phoneEl,
     roleEl,
     nameEl,
@@ -99,48 +147,40 @@
     cityEl,
     villageEl,
     pinEl;
-
   let businessNameEl,
     businessTypeEl,
     businessScaleEl,
-    businessAgeEl,
-    payTaxEl,
+    businessAgeEl;
+  let payTaxEl,
     gstEl,
     licEl,
     wareNameEl,
     wareLocationEl,
     annualPurchaseEl;
-
   let balEl,
     escEl,
     cropsChecklist,
-    cropSubcategories,
-    photoInput,
+    cropSubcategories;
+  let photoInput,
     photoImg,
     photoEmpty,
     btnUpload,
     btnReplace,
     btnDelete;
-
   let sidebarName, sidebarPhone, sidebarLocation, sidebarBusiness;
 
-  /* ------------------------------ */
-  /* LOAD PROFILE                   */
-  /* ------------------------------ */
-
+  /* ---------------------------------------------- */
+  /* LOAD PROFILE                                   */
+  /* ---------------------------------------------- */
   async function loadProfile() {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Session expired.");
-        return;
-      }
-
       const res = await fetch(API_BASE, {
         headers: { Authorization: "Bearer " + token },
       });
-
       const data = await res.json();
+
+      currentProfile = data; // store globally
 
       /* BASIC INFO */
       phoneEl.value = data.phone;
@@ -159,6 +199,7 @@
       businessTypeEl.value = data.businessType || "";
       businessScaleEl.value = data.businessScale || "";
       businessAgeEl.value = data.businessAge || "";
+
       wareNameEl.value = data.warehouseName || "";
       wareLocationEl.value = data.warehouseLocation || "";
       annualPurchaseEl.value = data.annualPurchase || "";
@@ -190,17 +231,110 @@
         photoImg.hidden = true;
         photoEmpty.hidden = false;
         btnUpload.hidden = false;
+        btnReplace.hidden = true;
+        btnDelete.hidden = true;
       }
 
+      /* VIEW MODE CROPS */
+      renderViewModeCrops(data.crops || []);
+      renderViewModeSubcategories(data.cropSubcategories || []);
     } catch (err) {
       console.error("Failed to load profile:", err);
     }
   }
 
-  /* ------------------------------ */
-  /* SAVE SECTION                   */
-  /* ------------------------------ */
+  /* ---------------------------------------------- */
+  /* VIEW MODE RENDERING                             */
+  /* ---------------------------------------------- */
+  function renderViewModeCrops(crops) {
+    cropsChecklist.innerHTML = "";
+    if (!crops.length) {
+      cropsChecklist.innerHTML = "<i>No crops selected</i>";
+      return;
+    }
+    crops.forEach((crop) => {
+      const div = document.createElement("div");
+      div.className = "crop-tag";
+      div.textContent = crop;
+      cropsChecklist.appendChild(div);
+    });
+  }
 
+  function renderViewModeSubcategories(list) {
+    cropSubcategories.innerHTML = "";
+    if (!list.length) {
+      cropSubcategories.innerHTML = "<i>No subcategories selected</i>";
+      return;
+    }
+    list.forEach((sub) => {
+      const div = document.createElement("div");
+      div.className = "subcat-tag";
+      div.textContent = sub;
+      cropSubcategories.appendChild(div);
+    });
+  }
+
+  /* ---------------------------------------------- */
+  /* EDIT MODE RENDERING                             */
+  /* ---------------------------------------------- */
+  function renderEditModeCrops() {
+    cropsChecklist.innerHTML = "";
+    cropSubcategories.innerHTML = "";
+
+    const selected = currentProfile.crops || [];
+
+    MASTER_CROPS.forEach((crop) => {
+      const wrap = document.createElement("label");
+      wrap.className = "crop-check";
+
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.value = crop.id;
+      chk.checked = selected.includes(crop.name);
+
+      chk.addEventListener("change", renderEditModeSubcategories);
+
+      wrap.appendChild(chk);
+      wrap.append(" " + crop.name);
+
+      cropsChecklist.appendChild(wrap);
+    });
+
+    renderEditModeSubcategories();
+  }
+
+  function renderEditModeSubcategories() {
+    cropSubcategories.innerHTML = "";
+
+    const selectedCropIds = [
+      ...cropsChecklist.querySelectorAll("input:checked"),
+    ].map((i) => Number(i.value));
+
+    const savedSubs = currentProfile.cropSubcategories || [];
+
+    selectedCropIds.forEach((cropId) => {
+      const subs = MASTER_SUBCATS[cropId] || [];
+
+      subs.forEach((sub) => {
+        const wrap = document.createElement("label");
+        wrap.className = "subcat-check";
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.value = sub.id;
+
+        chk.checked = savedSubs.includes(sub.name);
+
+        wrap.appendChild(chk);
+        wrap.append(" " + sub.name);
+        cropSubcategories.appendChild(wrap);
+      });
+    });
+  }
+
+  /* ---------------------------------------------- */
+  /* SAVE                                           */
+  /* ---------------------------------------------- */
   async function save(section) {
     const token = localStorage.getItem("token");
     let body = {};
@@ -211,29 +345,25 @@
 
     if (section === "business") {
       body.businessName = businessNameEl.value.trim();
-
-      body.businessType = businessTypeEl.value
-        ? businessTypeEl.value.toUpperCase()
-        : null;
-
-      body.businessScale = businessScaleEl.value
-        ? businessScaleEl.value.toUpperCase()
-        : null;
-
-      body.businessAge = businessAgeEl.value
-        ? businessAgeEl.value.toUpperCase()
-        : null;
-
-      body.annualPurchase = annualPurchaseEl.value
-        ? annualPurchaseEl.value.toUpperCase()
-        : null;
-
+      body.businessType = businessTypeEl.value?.toUpperCase() || null;
+      body.businessScale = businessScaleEl.value?.toUpperCase() || null;
+      body.businessAge = businessAgeEl.value?.toUpperCase() || null;
+      body.annualPurchase = annualPurchaseEl.value?.toUpperCase() || null;
       body.warehouseName = wareNameEl.value.trim();
       body.warehouseLocation = wareLocationEl.value.trim();
-
       body.paysTax = payTaxEl.checked;
       body.gstRegistered = gstEl.checked;
       body.hasLicence = licEl.checked;
+    }
+
+    if (section === "crops") {
+      body.cropIds = [...cropsChecklist.querySelectorAll("input:checked")].map(
+        (i) => Number(i.value)
+      );
+
+      body.subcategoryIds = [
+        ...cropSubcategories.querySelectorAll("input:checked"),
+      ].map((i) => Number(i.value));
     }
 
     try {
@@ -248,65 +378,20 @@
 
       await loadProfile();
       toggleEdit(section, false);
-
     } catch (err) {
       console.error("Save failed:", err);
     }
   }
 
-  /* ------------------------------ */
-  /* PHOTO UPLOAD                   */
-  /* ------------------------------ */
-
-  photoInput?.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const token = localStorage.getItem("token");
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch(API_BASE + "/aadhaar", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + token },
-      body: formData,
-    });
-
-    const url = await res.text();
-    photoImg.src = url;
-    photoImg.hidden = false;
-    photoEmpty.hidden = true;
-
-    btnUpload.hidden = true;
-    btnReplace.hidden = false;
-    btnDelete.hidden = false;
-  });
-
-  btnDelete?.addEventListener("click", async () => {
-    const token = localStorage.getItem("token");
-
-    await fetch(API_BASE + "/aadhaar", {
-      method: "DELETE",
-      headers: { Authorization: "Bearer " + token },
-    });
-
-    photoImg.hidden = true;
-    photoEmpty.hidden = false;
-
-    btnUpload.hidden = false;
-    btnReplace.hidden = true;
-    btnDelete.hidden = true;
-  });
-
-  /* ------------------------------ */
-  /* TOGGLE EDIT                    */
-  /* ------------------------------ */
-
+  /* ---------------------------------------------- */
+  /* TOGGLE EDIT                                     */
+  /* ---------------------------------------------- */
   function toggleEdit(section, editing) {
     const form = document.querySelector(`.form-${section}`);
     const actions = form.querySelector(".form-actions");
-    const editBtn = document.querySelector(`.btn-edit[data-section="${section}"]`);
+    const editBtn = document.querySelector(
+      `.btn-edit[data-section="${section}"]`
+    );
 
     actions.hidden = !editing;
     editBtn.style.display = editing ? "none" : "inline-flex";
@@ -315,13 +400,22 @@
       if (inp.classList.contains("input-locked")) return;
       inp.disabled = !editing;
     });
+
+    if (section === "crops" && editing) {
+      renderEditModeCrops();
+    }
+    if (section === "crops" && !editing) {
+      renderViewModeCrops(currentProfile.crops || []);
+      renderViewModeSubcategories(currentProfile.cropSubcategories || []);
+    }
   }
 
-  /* ------------------------------ */
-  /* INIT PAGE                      */
-  /* ------------------------------ */
-
-  function initPage() {
+  /* ---------------------------------------------- */
+  /* INIT PAGE                                      */
+  /* ---------------------------------------------- */
+  async function initPage() {
+    // theme + lang first
+    applyTheme(window.currentTheme);
     applyLanguage(window.currentLanguage);
 
     /* Get elements after page loads */
@@ -364,7 +458,7 @@
     btnReplace = document.getElementById("btnReplace");
     btnDelete = document.getElementById("btnDelete");
 
-    /* Edit buttons */
+    /* Edit Button Handlers */
     document.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", () =>
         toggleEdit(btn.dataset.section, true)
@@ -376,17 +470,68 @@
       );
     });
     document.querySelectorAll(".btn-save").forEach((btn) => {
-      btn.addEventListener("click", () =>
-        save(btn.dataset.section)
-      );
+      btn.addEventListener("click", () => save(btn.dataset.section));
     });
 
-    loadProfile();
+    /* Theme + Lang buttons */
+    document
+      .getElementById("themeToggle")
+      ?.addEventListener("click", toggleTheme);
+    document
+      .getElementById("langToggle")
+      ?.addEventListener("click", toggleLanguage);
+
+    /* Photo handlers (now after refs are set) */
+    photoInput?.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(API_BASE + "/aadhaar", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token },
+        body: formData,
+      });
+
+      const url = await res.text();
+      photoImg.src = url;
+      photoImg.hidden = false;
+      photoEmpty.hidden = true;
+
+      btnUpload.hidden = true;
+      btnReplace.hidden = false;
+      btnDelete.hidden = false;
+    });
+
+    btnDelete?.addEventListener("click", async () => {
+      const token = localStorage.getItem("token");
+
+      await fetch(API_BASE + "/aadhaar", {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      photoImg.hidden = true;
+      photoEmpty.hidden = false;
+
+      btnUpload.hidden = false;
+      btnReplace.hidden = true;
+      btnDelete.hidden = true;
+    });
+
+    btnUpload?.addEventListener("click", () => photoInput?.click());
+    btnReplace?.addEventListener("click", () => photoInput?.click());
+
+    await loadMasterData();
+    await loadProfile();
   }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initPage);
   } else {
     initPage();
   }
-
 })();

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Farm360 — Manage Lands</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared theme (same as other pages) -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- OPTIONAL: your existing farmer-profile.css (for card look) -->
+    <link rel="stylesheet" href="../Farmer-Profile/farmer-profile.css" />
+
+    <!-- Small extra styles just for this page -->
+    <style>
+      body {
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Noto Sans Bengali", sans-serif;
+      }
+
+      .lands-shell {
+        max-width: 1100px;
+        margin: 32px auto;
+        padding: 0 20px 40px;
+      }
+
+      .lands-header {
+        margin-bottom: 18px;
+      }
+
+      .lands-header h1 {
+        font-size: 24px;
+        margin: 0 0 4px;
+      }
+
+      .lands-header p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted-foreground);
+      }
+
+      .lands-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 18px;
+      }
+
+      .card {
+        background: var(--card);
+        color: var(--card-foreground);
+        border-radius: 1rem;
+        padding: 14px;
+        border: 1px solid var(--border);
+        box-shadow: 0 8px 22px rgba(2, 6, 23, 0.06);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .card-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .card-header small {
+        font-size: 12px;
+        color: var(--muted-foreground);
+      }
+
+      .lands-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .land-row {
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.4fr) auto;
+        gap: 6px 10px;
+        align-items: center;
+        background: var(--background);
+      }
+
+      .land-main {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .land-meta {
+        font-size: 12px;
+        color: var(--muted-foreground);
+      }
+
+      .land-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+
+      .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .btn-sm-danger {
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        border: none;
+        padding: 8px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: var(--foreground);
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .form-row {
+        margin-bottom: 12px;
+      }
+
+      .form-row label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: var(--muted-foreground);
+      }
+
+      .form-row input,
+      .form-row select {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--input-background);
+        color: var(--foreground);
+        font-size: 14px;
+      }
+
+      .form-help {
+        font-size: 11px;
+        color: var(--muted-foreground);
+        margin-top: 4px;
+      }
+
+      .crops-checklist,
+      .subcategories-checklist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .crops-checklist label,
+      .subcategories-checklist label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--muted);
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .badge-pattern {
+        display: inline-flex;
+        padding: 2px 8px;
+        font-size: 11px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.08);
+        color: var(--primary);
+      }
+
+      @media (max-width: 900px) {
+        .lands-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER (same style as other pages) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../../Landing-page/landing-page.html" data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Modules/modules.html"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Insights/insights.html"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Support/support.html"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="lands-shell">
+      <div class="lands-header">
+        <h1 data-text="landsTitle">Manage Lands</h1>
+        <p data-text="landsSubtitle">
+          Add or update your cultivated lands, cropping pattern, crops and
+          subcategories.
+        </p>
+      </div>
+
+      <div class="lands-layout">
+        <!-- LEFT: EXISTING LANDS LIST -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h3 data-text="landsListTitle">Existing Lands</h3>
+              <small data-text="landsListSubtitle">
+                Lands already registered under your profile.
+              </small>
+            </div>
+            <button id="btnNewLand" class="btn-primary" data-text="btnAddLand">
+              Add New Land
+            </button>
+          </div>
+
+          <div id="landsList" class="lands-list">
+            <p id="landsEmpty" data-text="noLands">
+              No lands added yet. Click “Add New Land” to create one.
+            </p>
+          </div>
+        </section>
+
+        <!-- RIGHT: FORM (ADD / EDIT) -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h3 id="formTitle" data-text="formTitleNew">Add New Land</h3>
+              <small id="formSubtitle" data-text="formSubtitleNew">
+                Enter land size, cropping pattern, crops and subcategories.
+              </small>
+            </div>
+          </div>
+
+          <form id="landForm">
+            <div class="form-row">
+              <label for="landSize" data-text="landSizeLabel"
+                >Land Size (acres)</label
+              >
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                id="landSize"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="croppingPattern" data-text="patternLabel"
+                >Cropping Pattern</label
+              >
+              <select id="croppingPattern" required>
+                <option value="" data-text="patternSelect">
+                  Select pattern
+                </option>
+                <option value="SINGLE" data-text="patternSingle">
+                  SINGLE (1 crop)
+                </option>
+                <option value="DOUBLE" data-text="patternDouble">
+                  DOUBLE (2 crops)
+                </option>
+                <option value="TRIPLE" data-text="patternTriple">
+                  TRIPLE (3 crops)
+                </option>
+              </select>
+              <div class="form-help" data-text="patternHelp">
+                Cropping pattern is decided when you add the land and cannot be
+                edited later.
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label data-text="cropsLabel">Crops</label>
+              <div
+                id="cropsChecklist"
+                class="crops-checklist"
+                data-empty-text="cropsEmpty"
+              ></div>
+              <div class="form-help" data-text="cropsHelp">
+                You can select up to 1, 2 or 3 different crops depending on the
+                chosen pattern.
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label data-text="subcategoriesLabel">Crop Subcategories</label>
+              <div
+                id="subcategoriesChecklist"
+                class="subcategories-checklist"
+                data-empty-text="subcategoriesEmpty"
+              ></div>
+              <div class="form-help" data-text="subcategoriesHelp">
+                Choose one or more specific subcategories (varieties) from the
+                selected crops.
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-outline"
+                id="btnCancelForm"
+                data-text="btnCancel"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn-primary"
+                id="btnSaveForm"
+                data-text="btnSave"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="farmer-land.js"></script>
+  </body>
+</html>

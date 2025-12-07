@@ -54,6 +54,17 @@
       farmerNameLabel: "Name:",
       phoneLabel: "Phone:",
       locationLabel: "Location:",
+
+      // new labels for land cards
+      landTitlePrefix: "Land",
+      landSizeUnit: "acres",
+      landLabelPattern: "Cropping Pattern",
+      landLabelCrops: "Crops / Subcategories",
+
+      // OPTIONAL: if your enum names look like SINGLE, DOUBLE, TRIPLE, etc.
+      cropping_SINGLE: "Single crop",
+      cropping_DOUBLE: "Double crop",
+      cropping_TRIPLE: "Triple crop",
     },
 
     bn: {
@@ -95,6 +106,17 @@
       farmerNameLabel: "নাম:",
       phoneLabel: "ফোন:",
       locationLabel: "অবস্থান:",
+
+      // new labels for land cards
+      landTitlePrefix: "জমি",
+      landSizeUnit: "একর",
+      landLabelPattern: "ফসল চক্র / প্যাটার্ন",
+      landLabelCrops: "ফসল / উপশ্রেণী",
+
+      // OPTIONAL: enum-friendly labels
+      cropping_SINGLE: "এক ফসলি",
+      cropping_DOUBLE: "দুই ফসলি",
+      cropping_TRIPLE: "তিন ফসলি",
     },
   };
 
@@ -103,6 +125,10 @@
   let currentTheme = window.currentTheme || "light";
 
   let profileData = null; // backend profile data
+
+  function t() {
+    return translations[currentLanguage] || translations.en;
+  }
 
   /* 2) THEME + LANGUAGE ----------------------------- */
   function applyTheme(theme) {
@@ -120,22 +146,25 @@
     window.currentLanguage = lang;
 
     document.body.classList.toggle("lang-bn", lang === "bn");
-    const t = translations[lang];
+    const tr = t();
 
     document.querySelectorAll("[data-text]").forEach((el) => {
       const key = el.getAttribute("data-text");
-      if (t[key]) el.textContent = t[key];
+      if (tr[key]) el.textContent = tr[key];
     });
 
     const langBtn = document.getElementById("langToggle");
     const mobileLangBtn = document.getElementById("mobileLangToggle");
 
-    langBtn.textContent = lang === "en" ? "বাংলা" : "English";
-    mobileLangBtn.textContent = lang === "en" ? "বাংলা" : "English";
+    if (langBtn) langBtn.textContent = lang === "en" ? "বাংলা" : "English";
+    if (mobileLangBtn)
+      mobileLangBtn.textContent = lang === "en" ? "বাংলা" : "English";
   }
 
   function toggleLanguage() {
     applyLanguage(currentLanguage === "en" ? "bn" : "en");
+    // re-render lands in new language
+    if (profileData) renderLands(profileData.lands || []);
   }
 
   /* 3) DOM REFS ------------------------------- */
@@ -276,40 +305,49 @@
     }
   }
 
-  /* 6) RENDER LAND CARDS ---------------------------- */
-  function renderLands(lands) {
-    landsListEl.innerHTML = "";
-
-    if (lands.length === 0) {
-      landsListEl.innerHTML =
-        `<p class="empty-text">${translations[currentLanguage].noLands}</p>`;
-      return;
-    }
-
-    lands.forEach((land, i) => {
-      const card = document.createElement("div");
-      card.className = "land-item";
-
-      card.innerHTML = `
-        <div class="land-header">
-          <span class="land-title">Land #${i + 1}</span>
-          <span class="land-size">${land.size} acres</span>
-        </div>
-        <div class="land-row">
-          <span class="land-label">Pattern:</span>
-          <span class="land-value">${land.croppingPattern ?? "-"}</span>
-        </div>
-        <div class="land-row">
-          <span class="land-label">Crops:</span>
-          <span class="land-value">${(land.crops || []).join(", ")}</span>
-        </div>
-      `;
-
-      landsListEl.appendChild(card);
-    });
+  /* 6) CROPPING PATTERN LABEL ----------------------- */
+  function formatCroppingPattern(enumValue) {
+    if (!enumValue) return "-";
+    const key = "cropping_" + enumValue; // e.g. cropping_SINGLE
+    const tr = t();
+    return tr[key] || enumValue; // fallback: show raw enum if no translation
   }
 
-  /* 7) PHOTO (frontend only for now) ---------------- */
+  /* 7) RENDER LAND CARDS ---------------------------- */
+ function renderLands(lands) {
+  const tr = t();
+  landsListEl.innerHTML = "";
+
+  if (!lands || lands.length === 0) {
+    landsListEl.innerHTML =
+      `<p class="empty-text">${tr.noLands}</p>`;
+    return;
+  }
+
+  lands.forEach((land) => {
+    const card = document.createElement("div");
+    card.className = "land-card";
+
+    const cropsText = (land.crops || []).join(", ");
+
+    card.innerHTML = `
+      <div class="land-top">
+        <span class="land-size">${land.size} ${tr.landSizeUnit}</span>
+        <span class="land-pattern">${formatCroppingPattern(land.croppingPattern)}</span>
+      </div>
+
+      <div class="land-row">
+        <span class="land-label">${tr.landLabelCrops}:</span>
+        <span class="land-value">${cropsText || "-"}</span>
+      </div>
+    `;
+
+    landsListEl.appendChild(card);
+  });
+}
+
+
+  /* 8) PHOTO (frontend only for now) ---------------- */
   function onPhotoSelected(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -323,6 +361,10 @@
     btnUpload.hidden = true;
     btnReplace.hidden = false;
     btnDelete.hidden = false;
+
+    // NOTE: currently this is only frontend preview.
+    // If later you add /api/profile/farmer/land-photo,
+    // you can POST formData here similar to buyer Aadhaar upload.
   }
 
   function onDeletePhoto() {
@@ -332,16 +374,18 @@
     btnUpload.hidden = false;
     btnReplace.hidden = true;
     btnDelete.hidden = true;
+
+    // Same note as above: here you can call DELETE API when available.
   }
 
-  /* 8) INIT ----------------------------------------- */
+  /* 9) INIT ----------------------------------------- */
   function initPage() {
     applyTheme(currentTheme);
     applyLanguage(currentLanguage);
     loadFarmerProfile();
   }
 
-  /* 9) EVENT LISTENERS ------------------------------ */
+  /* 10) EVENT LISTENERS ----------------------------- */
   document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
   document.getElementById("mobileThemeToggle")?.addEventListener("click", toggleTheme);
 
@@ -352,13 +396,16 @@
     document.getElementById("mobileMenu").classList.toggle("open");
   });
 
-  document.querySelector('.btn-edit[data-section="basic"]')
+  document
+    .querySelector('.btn-edit[data-section="basic"]')
     ?.addEventListener("click", () => toggleEditBasic(true));
 
-  document.querySelector('.btn-cancel[data-section="basic"]')
+  document
+    .querySelector('.btn-cancel[data-section="basic"]')
     ?.addEventListener("click", () => toggleEditBasic(false, true));
 
-  document.querySelector('.btn-save[data-section="basic"]')
+  document
+    .querySelector('.btn-save[data-section="basic"]')
     ?.addEventListener("click", saveBasicProfile);
 
   photoInput?.addEventListener("change", onPhotoSelected);
