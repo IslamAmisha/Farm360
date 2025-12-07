@@ -29,6 +29,7 @@ public class LandEntity {
     @Column(nullable = false)
     private Double size;
 
+    @Builder.Default
     @OneToMany(mappedBy = "land", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LandCropEntity> landCrops = new ArrayList<>();
 }
