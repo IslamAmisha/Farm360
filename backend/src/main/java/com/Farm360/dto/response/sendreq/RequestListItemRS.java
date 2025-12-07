@@ -21,4 +21,11 @@ public class RequestListItemRS {
 
     private String status; // PENDING / ACCEPTED / REJECTED
     private String createdAt;
+
+    private String companyName;
+    private String district;
+    private String city;
+    private int thumbsUp;
+    private int thumbsDown;
+
 }

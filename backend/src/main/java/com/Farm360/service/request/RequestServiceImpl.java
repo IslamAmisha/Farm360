@@ -100,6 +100,37 @@ public class RequestServiceImpl implements RequestService {
                     item.setSenderName(getName(req.getSender()));
                     item.setSenderRole(req.getSender().getRole().name());
 
+                    if (req.getSender().getBuyer() != null) {
+
+                        var b = req.getSender().getBuyer();
+
+                        // Company = businessName
+                        item.setCompanyName(b.getBusinessName());
+
+                        // City + District
+                        item.setCity(b.getCity() != null ? b.getCity().getName() : "");
+                        item.setDistrict(b.getDistrict() != null ? b.getDistrict().getName() : "");
+
+                        // Ratings not available yet
+                        item.setThumbsUp(0);
+                        item.setThumbsDown(0);
+
+                    } else if (req.getSender().getFarmer() != null) {
+
+                        var f = req.getSender().getFarmer();
+
+                        // CompanyName = farmerName
+                        item.setCompanyName(f.getFarmerName());
+
+                        // Village + District (no city)
+                        item.setCity(f.getVillage() != null ? f.getVillage() : "");
+                        item.setDistrict(f.getDistrict() != null ? f.getDistrict().getName() : "");
+
+                        item.setThumbsUp(0);
+                        item.setThumbsDown(0);
+                    }
+
+                    // Receiver
                     item.setReceiverId(req.getReceiver().getId());
                     item.setReceiverName(getName(req.getReceiver()));
                     item.setReceiverRole(req.getReceiver().getRole().name());
@@ -113,6 +144,8 @@ public class RequestServiceImpl implements RequestService {
 
         return rs;
     }
+
+
 
     @Override
     public RequestListRS getOutgoingRequests(Long userId) {
@@ -135,6 +168,30 @@ public class RequestServiceImpl implements RequestService {
                     item.setReceiverName(getName(req.getReceiver()));
                     item.setReceiverRole(req.getReceiver().getRole().name());
 
+                    // -----------------------------------
+                    //   RECEIVER = BUYER OR FARMER
+                    // -----------------------------------
+                    if (req.getReceiver().getBuyer() != null) {
+
+                        var b = req.getReceiver().getBuyer();
+
+                        item.setCompanyName(b.getBusinessName());
+                        item.setCity(b.getCity() != null ? b.getCity().getName() : "");
+                        item.setDistrict(b.getDistrict() != null ? b.getDistrict().getName() : "");
+                        item.setThumbsUp(0);
+                        item.setThumbsDown(0);
+
+                    } else if (req.getReceiver().getFarmer() != null) {
+
+                        var f = req.getReceiver().getFarmer();
+
+                        item.setCompanyName(f.getFarmerName());
+                        item.setCity(f.getVillage() != null ? f.getVillage() : "");
+                        item.setDistrict(f.getDistrict() != null ? f.getDistrict().getName() : "");
+                        item.setThumbsUp(0);
+                        item.setThumbsDown(0);
+                    }
+
                     item.setStatus(req.getStatus().name());
                     item.setCreatedAt(req.getCreatedAt().toString());
 
@@ -144,6 +201,7 @@ public class RequestServiceImpl implements RequestService {
 
         return rs;
     }
+
 
     private String getName(UserEntity user) {
         if (user.getFarmer() != null) {
