@@ -26,118 +26,281 @@ function logoutUser() {
   });
 }
 
-// 1) Extend translations
+
 const buyerDashboardTranslations = {
-  en: { /* ...existing translations... */ },
-  bn: { /* ...existing translations... */ }
+  en: {
+  
+    dashboard: "Dashboard",
+
+    navHome: "Home",
+    navModules: "Modules",
+    navAbout: "About",
+    navInsights: "Insights",
+    navSupport: "Support",
+
+    /* ---------------------------------------
+       SIDEBAR
+    ----------------------------------------*/
+    sidebarDashboard: "Dashboard",
+    sidebarMyProfile: "My Profile",
+    sidebarLandFarmers: "Land & Farmers",
+    sidebarProposals: "Proposals / Requests",
+    sidebarNegotiation: "Negotiation / Messages",
+    sidebarAgreements: "Agreements",
+    sidebarEscrowWallet: "Escrow & Wallet",
+    sidebarInputSupply: "Input Supply",
+    sidebarCultivation: "Cultivation / Harvest",
+    sidebarLogistics: "Delivery / Logistics",
+    sidebarSettings: "Settings",
+    sidebarLogout: "Logout",
+
+  
+    dashboardTitle: "Overview",
+    dashboardSubtitle:
+      "View your agreements, find farmers and collaborate effectively.",
+
+    searchLabel: "Search farmers",
+    searchPlaceholder: "Search farmers...",
+    filterApply: "Apply",
+
+    filterSeason: "Season",
+    seasonAll: "All Seasons",
+
+    filterCropType: "Crop",
+    cropAll: "All Crops",
+
+    crop_rice: "Rice",
+    crop_wheat: "Wheat",
+    crop_potato: "Potato",
+    crop_tomato: "Tomato",
+    crop_corn: "Corn",
+    crop_onion: "Onion",
+
+  
+    season_kharif: "Kharif",
+    season_rabi: "Rabi",
+    season_summer: "Summer",
+
+    farmerProfiles: "Available Farmers",
+    farmerProfilesSubtitle:
+      "Connect with farmers cultivating your preferred crops.",
+
+    btnRequest: "Request",
+    btnDetails: "Details",
+
+    msgLoginRequired: "Please login again. User info not found.",
+    msgNoFarmers: "No farmers found for the selected filters.",
+  },
+
+  bn: {
+   
+    dashboard: "ড্যাশবোর্ড",
+
+    navHome: "হোম",
+    navModules: "মডিউল",
+    navAbout: "আমাদের সম্পর্কে",
+    navInsights: "তথ্য ও বিশ্লেষণ",
+    navSupport: "সহায়তা",
+
+   
+    sidebarDashboard: "ড্যাশবোর্ড",
+    sidebarMyProfile: "আমার প্রোফাইল",
+    sidebarLandFarmers: "জমি ও চাষি",
+    sidebarProposals: "প্রস্তাব / অনুরোধ",
+    sidebarNegotiation: "আলোচনা / বার্তা",
+    sidebarAgreements: "চুক্তি",
+    sidebarEscrowWallet: "এসক্রো ও ওয়ালেট",
+    sidebarInputSupply: "ইনপুট সরবরাহ",
+    sidebarCultivation: "চাষ / ফসল সংগ্রহ",
+    sidebarLogistics: "ডেলিভারি / লজিস্টিক্স",
+    sidebarSettings: "সেটিংস",
+    sidebarLogout: "লগআউট",
+
+    dashboardTitle: "ওভারভিউ",
+    dashboardSubtitle:
+      "আপনার চুক্তি দেখুন, চাষিদের খুঁজুন এবং সহজে সহযোগিতা করুন।",
+
+    /* ---------------------------------------
+       SEARCH + FILTERS
+    ----------------------------------------*/
+    searchLabel: "চাষি খুঁজুন",
+    searchPlaceholder: "চাষি খুঁজুন...",
+    filterApply: "ফিল্টার প্রয়োগ",
+
+    filterSeason: "মৌসুম",
+    seasonAll: "সব মৌসুম",
+
+    filterCropType: "ফসল",
+    cropAll: "সব ফসল",
+
+    /* ---------------------------------------
+       CROPS
+    ----------------------------------------*/
+    crop_rice: "চাল",
+    crop_wheat: "গম",
+    crop_potato: "আলু",
+    crop_tomato: "টমেটো",
+    crop_corn: "ভুট্টা",
+    crop_onion: "পেঁয়াজ",
+
+    /* ---------------------------------------
+       SEASONS
+    ----------------------------------------*/
+    season_kharif: "খরিফ",
+    season_rabi: "রবি",
+    season_summer: "গ্রীষ্ম",
+
+    /* ---------------------------------------
+       FARMER LIST SECTION
+    ----------------------------------------*/
+    farmerProfiles: "উপলব্ধ চাষি",
+    farmerProfilesSubtitle:
+      "আপনার পছন্দের ফসলের চাষিদের সাথে সংযোগ করুন।",
+
+    /* ---------------------------------------
+       BUTTONS
+    ----------------------------------------*/
+    btnRequest: "অনুরোধ",
+    btnDetails: "বিস্তারিত",
+
+    /* ---------------------------------------
+       MESSAGES
+    ----------------------------------------*/
+    msgLoginRequired: "অনুগ্রহ করে আবার লগইন করুন।",
+    msgNoFarmers: "এই ফিল্টার অনুযায়ী কোনো চাষি পাওয়া যায়নি।",
+  },
 };
 
-// merge into global system
+
+// OPEN BUYER PROFILE PAGE
+document.getElementById("buyerProfileMenu")?.addEventListener("click", () => {
+  window.location.href = "../Buyer-Profile/buyer-profile.html";
+});
+
+
+// merge into global translations if available
 if (typeof translations !== "undefined") {
   Object.assign(translations.en, buyerDashboardTranslations.en);
   Object.assign(translations.bn, buyerDashboardTranslations.bn);
 }
 
-// 2) FARMERS DATA
-const farmersData = [
-  { id: 1, name: "Rakesh Das", bnName: "রাকেশ দাস", village: "Bara Village", crops: ["Rice", "Wheat"], location: "Nadia", bnLocation: "নদিয়া", thumbsUp: 51, thumbsDown: 9 },
-  { id: 2, name: "Soma Mondal", bnName: "সোমা মন্ডল", village: "Dakshin Para", crops: ["Potato", "Tomato"], location: "Howrah", bnLocation: "হাওড়া", thumbsUp: 32, thumbsDown: 7 },
-  { id: 3, name: "Ajoy Manna", bnName: "অজয় মান্না", village: "Majher Para", crops: ["Corn", "Onion"], location: "Burdwan", bnLocation: "বর্ধমান", thumbsUp: 44, thumbsDown: 10 },
-  { id: 4, name: "Lata Soren", bnName: "লতা সরেন", village: "North Colony", crops: ["Rice", "Tomato"], location: "Bankura", bnLocation: "বাঁকুড়া", thumbsUp: 29, thumbsDown: 6 },
-];
+const API_BASE_URL = "http://localhost:8080";
 
-// 3) Rating
-function getThumbRating(farmer) {
-  return `<div class="thumb-line">👍 ${farmer.thumbsUp}</div><div class="thumb-line">👎 ${farmer.thumbsDown}</div>`;
+
+function getDashText() {
+  const lang = window.currentLanguage || "en";
+  const t =
+    (window.translations && window.translations[lang]) ||
+    buyerDashboardTranslations[lang];
+  return { lang, t };
 }
 
-// 4) Render farmers
+function getAuthInfo() {
+  return {
+    token: localStorage.getItem("token"),
+    userId: localStorage.getItem("userId"),
+    role: localStorage.getItem("role"),
+  };
+}
+
+function getThumbRating(up, down) {
+  return `
+    <div class="thumb-line">👍 ${up ?? 0}</div>
+    <div class="thumb-line">👎 ${down ?? 0}</div>
+  `;
+}
+
+/*******************************
+  RENDER FARMERS  (LIKE FARMER RENDERS BUYERS)
+*******************************/
 function renderFarmers(list) {
-  const lang = window.currentLanguage || "en";
-  const t = (window.translations && window.translations[lang]) || buyerDashboardTranslations[lang];
+  const { t } = getDashText();
   const container = document.getElementById("farmersGrid");
   if (!container) return;
 
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div class="farmer-card empty-card">
+        <p>${t.msgNoFarmers}</p>
+      </div>`;
+    return;
+  }
+
   container.innerHTML = list
     .map((f) => {
-      const cropBadges = f.crops
+      // crops: backend field should be `crops` (like buyers endpoint)
+      const cropBadges = (f.crops || [])
         .map((c) => {
-          const key = "crop_" + c.toLowerCase();
-          const label = (t && t[key]) || c;
-          return `<span class="crop-badge" data-text="${key}">${label}</span>`;
+          const key = "crop_" + String(c).toLowerCase();
+          const label = t[key] || c;
+          return `<span class="crop-badge">${label}</span>`;
         })
         .join("");
 
-      const btnReq = t.btnRequest;
-      const btnDet = t.btnDetails;
+      // location: use villageOrCity + district (same as farmer dashboard buyers)
+      const location = [f.villageOrCity, f.district]
+        .filter(Boolean)
+        .join(", ");
 
       return `
-      <div class="farmer-card buyer-card" data-farmer-id="${f.id}">
-        <h3>${lang === "bn" ? f.bnName : f.name}</h3>
-        <div class="buyer-rating">${getThumbRating(f)}</div>
-        <p class="buyer-company">${f.village}</p>
-        <p class="buyer-location">📍 ${lang === "bn" ? f.bnLocation : f.location}</p>
-        <div class="buyer-crops">${cropBadges}</div>
-        <div class="buyer-buttons">
-          <button class="btn-request" data-text="btnRequest">${btnReq}</button>
-          <button class="btn-details" data-text="btnDetails">${btnDet}</button>
+        <div class="farmer-card buyer-card" data-farmer-id="${f.userId}">
+          <h3>${f.name}</h3>
+
+          <div class="buyer-rating">
+            ${getThumbRating(f.ratingUp, f.ratingDown)}
+          </div>
+
+          <p class="buyer-company">${f.villageOrCity || ""}</p>
+          <p class="buyer-location">📍 ${location}</p>
+
+          <div class="buyer-crops">${cropBadges}</div>
+
+          <div class="buyer-buttons">
+            <button class="btn-request" data-text="btnRequest">${t.btnRequest}</button>
+            <button class="btn-details" data-text="btnDetails">${t.btnDetails}</button>
+          </div>
         </div>
-      </div>`;
+      `;
     })
     .join("");
-}
 
-// 5) Filters
-function applyFilters() {
-  const searchText = document.getElementById("farmerSearch").value.toLowerCase();
-  const cropFilter = document.getElementById("cropFilter").value;
-
-  let filtered = farmersData;
-  if (searchText) {
-    filtered = filtered.filter(
-      (f) => f.name.toLowerCase().includes(searchText) ||
-             f.bnName.toLowerCase().includes(searchText) ||
-             f.village.toLowerCase().includes(searchText)
-    );
-  }
-
-  if (cropFilter) {
-    filtered = filtered.filter((f) => f.crops.some((c) => c.toLowerCase() === cropFilter));
-  }
-
-  renderFarmers(filtered);
   if (typeof updateTranslatedText === "function") updateTranslatedText();
 }
 
-// 6) Language sync
-function syncBuyerDashboardLanguage() {
-  renderFarmers(farmersData);
-  const lang = window.currentLanguage || "en";
-  const t = (window.translations && window.translations[lang]) || buyerDashboardTranslations[lang];
-  const search = document.getElementById("farmerSearch");
-  if (search) search.placeholder = t.searchPlaceholder;
-  if (typeof updateTranslatedText === "function") updateTranslatedText();
-}
 
-// 7) Load farmers dynamically from backend
 async function loadFarmers() {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-  const container = document.getElementById("farmersGrid");
-  const { t } = (window.translations && window.translations[window.currentLanguage || "en"]) || buyerDashboardTranslations.en;
+  const { token, userId } = getAuthInfo();
+  const { t } = getDashText();
 
   if (!token || !userId) return alert(t.msgLoginRequired);
 
-  container.innerHTML = `<div class="farmer-card loading-card"><div class="loader"></div></div>`;
+  const search =
+    document.getElementById("farmerSearch")?.value.trim().toLowerCase() || "";
+  const crop = document.getElementById("cropFilter")?.value || "";
+
+  const params = new URLSearchParams();
+  params.append("buyerUserId", userId);
+  if (search) params.append("search", search);
+  if (crop) params.append("crop", crop);
+
+  const container = document.getElementById("farmersGrid");
+  container.innerHTML = `
+    <div class="buyer-card loading-card">
+      <div class="loader"></div>
+    </div>
+  `;
 
   try {
-    const resp = await fetch(`http://localhost:8080/dashboard/farmers?buyerUserId=${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    });
+    const resp = await fetch(
+      `${API_BASE_URL}/dashboard/farmers?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+      }
+    );
 
     if (!resp.ok) {
       console.error("Load error:", resp.status);
@@ -145,6 +308,7 @@ async function loadFarmers() {
     }
 
     const data = await resp.json();
+    // EXPECTS: data.users = [ { userId, name, villageOrCity, district, crops[], ratingUp, ratingDown } ]
     renderFarmers(data.users || []);
   } catch (e) {
     console.error("Load error:", e);
@@ -152,20 +316,47 @@ async function loadFarmers() {
   }
 }
 
-// Event listeners
-document.getElementById("langToggle")?.addEventListener("click", () => setTimeout(syncBuyerDashboardLanguage, 0));
-document.getElementById("mobileLangToggle")?.addEventListener("click", () => setTimeout(syncBuyerDashboardLanguage, 0));
-document.getElementById("sidebarToggle")?.addEventListener("click", () => document.querySelector(".sidebar")?.classList.toggle("collapsed"));
+/*******************************
+  FILTER + LANGUAGE
+*******************************/
+function applyFilters() {
+  loadFarmers();
+}
 
-// 8) Init
+function syncBuyerDashboardLanguage() {
+  const { t } = getDashText();
+  const search = document.getElementById("farmerSearch");
+  if (search) search.placeholder = t.searchPlaceholder;
+  loadFarmers();
+}
+
+/*******************************
+  EVENT BINDINGS
+*******************************/
+document.getElementById("langToggle")?.addEventListener("click", () =>
+  setTimeout(syncBuyerDashboardLanguage, 0)
+);
+document
+  .getElementById("mobileLangToggle")
+  ?.addEventListener("click", () =>
+    setTimeout(syncBuyerDashboardLanguage, 0)
+  );
+
+document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+  document.querySelector(".sidebar")?.classList.toggle("collapsed");
+});
+
 document.addEventListener("DOMContentLoaded", () => {
-  syncBuyerDashboardLanguage();
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
-    applyFilters();
-    loadFarmers();
-  });
+  const { t } = getDashText();
+  const search = document.getElementById("farmerSearch");
+  if (search) search.placeholder = t.searchPlaceholder;
+
+  document
+    .getElementById("applyFiltersBtn")
+    ?.addEventListener("click", applyFilters);
+
   document.querySelector(".logout")?.addEventListener("click", logoutUser);
 
-  // load farmers on page load
+  // initial load
   loadFarmers();
 });

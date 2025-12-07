@@ -39,16 +39,18 @@ const dashboardTranslations = {
     dashboard: "Dashboard",
 
     sidebarDashboard: "Dashboard",
-    sidebarLandsBuyers: "My Lands & Buyers",
-    sidebarProposalsRequests: "Proposals / Requests",
-    sidebarNegotiation: "Negotiation / Messages",
-    sidebarAgreements: "Agreements",
-    sidebarWallet: "Wallet",
-    sidebarInputSupply: "Input Supply",
-    sidebarCultivationHarvest: "Cultivation / Harvest",
-    sidebarDelivery: "Delivery / Logistics",
-    sidebarSettings: "Settings",
-    sidebarLogout: "Logout",
+sidebarMyProfile: "My Profile",
+sidebarLandsBuyers: "My Lands & Buyers",
+sidebarProposalsRequests: "Proposals / Requests",
+sidebarNegotiation: "Negotiation / Messages",
+sidebarAgreements: "Agreements",
+sidebarWallet: "Wallet",
+sidebarInputSupply: "Input Supply",
+sidebarCultivationHarvest: "Cultivation / Harvest",
+sidebarDelivery: "Delivery / Logistics",
+sidebarSettings: "Settings",
+sidebarLogout: "Logout",
+
 
     dashboardTitle: "Overview",
     dashboardSubtitle:
@@ -106,16 +108,18 @@ const dashboardTranslations = {
     dashboard: "ড্যাশবোর্ড",
 
     sidebarDashboard: "ড্যাশবোর্ড",
-    sidebarLandsBuyers: "জমি ও ক্রেতা",
-    sidebarProposalsRequests: "প্রস্তাব / অনুরোধ",
-    sidebarNegotiation: "আলোচনা / বার্তা",
-    sidebarAgreements: "চুক্তি",
-    sidebarWallet: "ওয়ালেট",
-    sidebarInputSupply: "ইনপুট সরবরাহ",
-    sidebarCultivationHarvest: "চাষ / ফসল সংগ্রহ",
-    sidebarDelivery: "ডেলিভারি / লজিস্টিক্স",
-    sidebarSettings: "সেটিংস",
-    sidebarLogout: "লগআউট",
+sidebarMyProfile: "আমার প্রোফাইল",
+sidebarLandsBuyers: "জমি ও ক্রেতা",
+sidebarProposalsRequests: "প্রস্তাব / অনুরোধ",
+sidebarNegotiation: "আলোচনা / বার্তা",
+sidebarAgreements: "চুক্তি",
+sidebarWallet: "ওয়ালেট",
+sidebarInputSupply: "ইনপুট সরবরাহ",
+sidebarCultivationHarvest: "চাষ / ফসল সংগ্রহ",
+sidebarDelivery: "ডেলিভারি / লজিস্টিক্স",
+sidebarSettings: "সেটিংস",
+sidebarLogout: "লগআউট",
+
 
     dashboardTitle: "ওভারভিউ",
     dashboardSubtitle:
@@ -161,6 +165,12 @@ const dashboardTranslations = {
     msgRequestFailed: "অনুরোধ পাঠাতে ব্যর্থ হয়েছে, আবার চেষ্টা করুন।",
   },
 };
+
+// Handle My Profile button click
+document.getElementById("farmerProfileMenu")?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Profile/farmer-profile.html";
+});
+
 
 // Merge translations
 if (typeof translations !== "undefined") {

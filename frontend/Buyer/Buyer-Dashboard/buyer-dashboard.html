@@ -36,11 +36,36 @@
         </div>
 
         <nav class="nav-links">
-          <a href="../../Landing-page/landing-page.html#hero" class="nav-item" data-text="navHome">Home</a>
-          <a href="../../Landing-page/landing-page.html#modules" class="nav-item" data-text="navModules">Modules</a>
-          <a href="../../Landing-page/landing-page.html#about" class="nav-item" data-text="navAbout">About</a>
-          <a href="../../Landing-page/landing-page.html#data-insights" class="nav-item" data-text="navInsights">Insights</a>
-          <a href="../../Landing-page/landing-page.html#multilingual-support" class="nav-item" data-text="navSupport">Support</a>
+          <a
+            href="../../Landing-page/landing-page.html#hero"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#modules"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#data-insights"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#multilingual-support"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
         </nav>
 
         <div class="header-right">
@@ -56,12 +81,26 @@
       </div>
 
       <div id="mobileMenu" class="mobile-menu">
-        <a href="../../Landing-page/landing-page.html#hero" class="mobile-item" data-text="navHome">Home</a>
-        <a href="#dashboard" class="mobile-item" data-text="sidebarDashboard">Dashboard</a>
-        <a href="../../Landing-page/landing-page.html#about" class="mobile-item" data-text="navAbout">About</a>
+        <a
+          href="../../Landing-page/landing-page.html#hero"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a href="#dashboard" class="mobile-item" data-text="sidebarDashboard"
+          >Dashboard</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
 
         <div class="mobile-controls">
-          <button id="mobileThemeToggle" class="mobile-theme-btn">Toggle Theme</button>
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
           <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
         </div>
       </div>
@@ -79,66 +118,73 @@
         </div>
 
         <nav class="sidebar-menu">
-          <!-- Core Dashboard -->
+          <!-- 1. Dashboard -->
           <a class="menu-item active">
             <span class="material-icons">dashboard</span>
             <span data-text="sidebarDashboard">Dashboard</span>
           </a>
 
-          <!-- Buyer-friendly Land & Farmers -->
+          <!-- 2. My Profile (NEW) -->
+          <a class="menu-item" id="buyerProfileMenu">
+            <span class="material-icons">account_circle</span>
+            <span data-text="sidebarMyProfile">My Profile</span>
+          </a>
+
+          <!-- 3. Land & Farmers -->
           <a class="menu-item">
             <span class="material-icons">landscape</span>
             <span data-text="sidebarLandFarmers">Land & Farmers</span>
           </a>
 
-          <!-- Proposals & Requests -->
+          <!-- 4. Proposals -->
           <a class="menu-item">
             <span class="material-icons">description</span>
             <span data-text="sidebarProposals">Proposals / Requests</span>
           </a>
 
-          <!-- Negotiation / Messages -->
+          <!-- 5. Negotiation -->
           <a class="menu-item">
             <span class="material-icons">forum</span>
             <span data-text="sidebarNegotiation">Negotiation / Messages</span>
           </a>
 
-          <!-- Agreements -->
+          <!-- 6. Agreements -->
           <a class="menu-item">
             <span class="material-icons">handshake</span>
             <span data-text="sidebarAgreements">Agreements</span>
           </a>
 
-          <!-- Escrow & Wallet -->
+          <!-- 7. Wallet -->
           <a class="menu-item">
             <span class="material-icons">account_balance_wallet</span>
             <span data-text="sidebarEscrowWallet">Escrow & Wallet</span>
           </a>
 
-          <!-- Input Supply -->
+          <!-- 8. Input Supply -->
           <a class="menu-item">
             <span class="material-icons">shopping_cart</span>
             <span data-text="sidebarInputSupply">Input Supply</span>
           </a>
 
-          <!-- Cultivation / Harvest Tracking -->
+          <!-- 9. Cultivation -->
           <a class="menu-item">
             <span class="material-icons">agriculture</span>
             <span data-text="sidebarCultivation">Cultivation / Harvest</span>
           </a>
 
-          <!-- Delivery / Logistics -->
+          <!-- 10. Delivery -->
           <a class="menu-item">
             <span class="material-icons">local_shipping</span>
             <span data-text="sidebarLogistics">Delivery / Logistics</span>
           </a>
 
-          <!-- Settings / Logout -->
+          <!-- 11. Settings -->
           <a class="menu-item">
             <span class="material-icons">settings</span>
             <span data-text="sidebarSettings">Settings</span>
           </a>
 
+          <!-- 12. Logout -->
           <a class="menu-item logout">
             <span class="material-icons">logout</span>
             <span data-text="sidebarLogout">Logout</span>
@@ -159,7 +205,11 @@
         <section class="search-filter-panel">
           <div class="search-row">
             <div class="search-group">
-              <label for="farmerSearch" class="field-label" data-text="searchLabel">
+              <label
+                for="farmerSearch"
+                class="field-label"
+                data-text="searchLabel"
+              >
                 Search farmers
               </label>
               <div class="search-input-wrapper">
@@ -173,7 +223,11 @@
                 />
               </div>
             </div>
-            <button class="btn-primary apply-btn" id="applyFiltersBtn" data-text="filterApply">
+            <button
+              class="btn-primary apply-btn"
+              id="applyFiltersBtn"
+              data-text="filterApply"
+            >
               Apply
             </button>
           </div>
@@ -209,7 +263,9 @@
           <div class="summary-card">
             <div class="summary-icon summary-icon-green">📄</div>
             <div class="summary-content">
-              <div class="summary-label" data-text="summaryAgreements">Agreements</div>
+              <div class="summary-label" data-text="summaryAgreements">
+                Agreements
+              </div>
               <div class="summary-value">3</div>
             </div>
           </div>
@@ -217,7 +273,9 @@
           <div class="summary-card">
             <div class="summary-icon summary-icon-blue">📨</div>
             <div class="summary-content">
-              <div class="summary-label" data-text="summaryRequests">Requests</div>
+              <div class="summary-label" data-text="summaryRequests">
+                Requests
+              </div>
               <div class="summary-value">5</div>
             </div>
           </div>
@@ -225,7 +283,9 @@
           <div class="summary-card">
             <div class="summary-icon summary-icon-orange">💰</div>
             <div class="summary-content">
-              <div class="summary-label" data-text="summaryProgress">Progress</div>
+              <div class="summary-label" data-text="summaryProgress">
+                Progress
+              </div>
               <div class="summary-value">72%</div>
             </div>
           </div>
