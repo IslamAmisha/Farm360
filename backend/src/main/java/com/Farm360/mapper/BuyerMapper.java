@@ -5,6 +5,7 @@ import com.Farm360.dto.response.Buyer.BuyerRS;
 import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.master.crop.CropEntity;
 import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
+import com.Farm360.utils.SeasonType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -30,6 +31,8 @@ public interface BuyerMapper {
     @Mapping(source = "city.name", target = "city")
     @Mapping(source = "crops", target = "crops")
     @Mapping(source = "cropSubcategories", target = "cropSubcategories")
+    @Mapping(source = "contractModel", target = "contractModel")
+    @Mapping(source = "seasons", target = "seasons")
     BuyerRS mapEntityToRS(BuyerEntity entity);
 
 
@@ -44,6 +47,13 @@ public interface BuyerMapper {
         if (subs == null) return null;
         return subs.stream()
                 .map(CropSubCategoriesEntity::getName)
+                .collect(Collectors.toList());
+    }
+
+    default List<String> mapSeasons(List<SeasonType> seasons) {
+        if (seasons == null) return null;
+        return seasons.stream()
+                .map(Enum::name)
                 .collect(Collectors.toList());
     }
 }

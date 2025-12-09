@@ -31,7 +31,8 @@ public class BuyerProfileRS {
     private String warehouseName;
     private String warehouseLocation;
     private String annualPurchase;
-
+    private String contractModel;
+    private List<String> seasons;
 
     private String districtName;
     private String blockName;

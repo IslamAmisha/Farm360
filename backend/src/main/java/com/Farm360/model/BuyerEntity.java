@@ -70,6 +70,16 @@ public class BuyerEntity {
     @Enumerated(EnumType.STRING)
     private AnnualPurchase annualPurchase;
 
+    @Enumerated(EnumType.STRING)
+    private ContractModel contractModel;
+
+    @ElementCollection(targetClass = SeasonType.class, fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "buyer_seasons", joinColumns = @JoinColumn(name = "buyer_id"))
+    @Column(name = "season")
+    private List<SeasonType> seasons;
+
+
     @ManyToMany
     @JoinTable(
             name = "buyer_crops",

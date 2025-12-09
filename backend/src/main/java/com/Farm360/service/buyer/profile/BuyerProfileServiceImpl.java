@@ -11,10 +11,7 @@ import com.Farm360.repository.buyer.BuyerRepo;
 import com.Farm360.repository.master.CropRepo;
 import com.Farm360.repository.master.CropSubCategoriesRepo;
 
-import com.Farm360.utils.AnnualPurchase;
-import com.Farm360.utils.BusinessAge;
-import com.Farm360.utils.BusinessScale;
-import com.Farm360.utils.BusinessType;
+import com.Farm360.utils.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,6 +70,15 @@ public class BuyerProfileServiceImpl implements BuyerProfileService {
         rs.setWarehouseName(buyer.getWarehouseName());
         rs.setWarehouseLocation(buyer.getWarehouseLocation());
         rs.setAnnualPurchase(buyer.getAnnualPurchase() != null ? buyer.getAnnualPurchase().name() : null);
+        rs.setContractModel(
+                buyer.getContractModel() != null ? buyer.getContractModel().name() : null
+        );
+        rs.setSeasons(
+                buyer.getSeasons() != null ?
+                        buyer.getSeasons().stream().map(Enum::name).toList()
+                        : null
+        );
+
 
         // ADDRESS
         rs.setDistrictName(buyer.getDistrict().getName());
@@ -125,6 +131,16 @@ public class BuyerProfileServiceImpl implements BuyerProfileService {
 
         if (rq.getAnnualPurchase() != null)
             buyer.setAnnualPurchase(AnnualPurchase.valueOf(rq.getAnnualPurchase().toUpperCase()));
+        if (rq.getContractModel() != null)
+            buyer.setContractModel(ContractModel.valueOf(rq.getContractModel().toUpperCase()));
+        if (rq.getSeasons() != null) {
+            List<SeasonType> seasonEnums = rq.getSeasons()
+                    .stream()
+                    .map(s -> SeasonType.valueOf(s.toUpperCase()))
+                    .toList();
+            buyer.setSeasons(seasonEnums);
+        }
+
 
 
         /* SAFE BOOLEAN FIELDS */

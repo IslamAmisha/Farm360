@@ -27,6 +27,9 @@ public class BuyerProfileUpdateRQ {
     private String warehouseName;
     private String warehouseLocation;
     private String annualPurchase;
+    private String contractModel;
+    private List<String> seasons;
+
 
 
     private List<Long> cropIds;

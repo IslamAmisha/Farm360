@@ -33,6 +33,10 @@ public class BuyerRegisterRQ {
     private String warehouseName;
     private String warehouseLocation;
     private AnnualPurchase annualPurchase;
+    private ContractModel contractModel;
+    private List<SeasonType> seasons;
+
+
 
     // Crop Selections
     private List<Long> cropIds;

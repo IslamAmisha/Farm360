@@ -7,18 +7,44 @@ import java.util.List;
 @Data
 public class DashboardCardRS {
 
-    private Long userId;       // buyerId or farmerId
+    // Common user info
+    private Long userId;
     private String name;
     private String district;
     private String villageOrCity;
-    private String businessName;   // only for buyers
 
     private int ratingUp;
     private int ratingDown;
 
     private List<String> crops;
+    private List<String> subcategories;
 
+    // Request status
     private boolean canSendRequest;
     private String requestStatus; // NONE / PENDING / ACCEPTED
+
+    // Masked fields
+    private String maskedPhone;
+    private String maskedAadhaar;
+
+
+    // Buyer-specific fields
+    private String businessName;
+    private String businessType;
+    private String businessScale;
+    private String businessAge;
+
+    private String annualPurchase;
+    private String contractModel;
+    private List<String> seasons;
+
+    private String warehouseName;
+    private String warehouseLocation;
+
+
+    // Farmer-specific fields
+    private Double landSize;
+    private String croppingPattern;
+    private String pinCode;
 }
 

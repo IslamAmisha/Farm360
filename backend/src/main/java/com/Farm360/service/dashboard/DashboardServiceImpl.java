@@ -5,6 +5,7 @@ import com.Farm360.dto.response.dashboard.DashboardListRS;
 import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.FarmerEntity;
 import com.Farm360.model.master.crop.CropEntity;
+import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import com.Farm360.model.request.RequestEntity;
 import com.Farm360.repository.buyer.BuyerRepo;
 import com.Farm360.repository.farmer.FarmerRepo;
@@ -97,64 +98,115 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardCardRS card = new DashboardCardRS();
 
         card.setUserId(b.getUser().getId());
-
         card.setName(b.getFullName());
         card.setBusinessName(b.getBusinessName());
 
+        // Buyer business fields
+        card.setBusinessType(b.getBusinessType() != null ? b.getBusinessType().name() : null);
+        card.setBusinessScale(b.getBusinessScale() != null ? b.getBusinessScale().name() : null);
+        card.setBusinessAge(b.getBusinessAge() != null ? b.getBusinessAge().name() : null);
+
+        card.setAnnualPurchase(
+                b.getAnnualPurchase() != null ? b.getAnnualPurchase().name() : null
+        );
+
+        card.setContractModel(
+                b.getContractModel() != null ? b.getContractModel().name() : null
+        );
+
+        // Seasons
+        if (b.getSeasons() != null) {
+            card.setSeasons(b.getSeasons().stream().map(Enum::name).toList());
+        }
+
+        // Warehouse
+        card.setWarehouseName(b.getWarehouseName());
+        card.setWarehouseLocation(b.getWarehouseLocation());
+
+        // Location
         card.setDistrict(b.getDistrict().getName());
         card.setVillageOrCity(b.getCity() != null ? b.getCity().getName() : "-");
 
-        // Rating placeholders (fields not yet in DB)
+        // Crops
+        card.setCrops(
+                b.getCrops().stream().map(CropEntity::getName).toList()
+        );
+
+        card.setSubcategories(
+                b.getCropSubcategories().stream().map(CropSubCategoriesEntity::getName).toList()
+        );
+
+        // Masking
+        card.setMaskedPhone(maskPhone(b.getUser().getPhoneNumber()));
+        card.setMaskedAadhaar(maskAadhaar(b.getAadhaarNo()));
+
+        // Rating
         card.setRatingUp(0);
         card.setRatingDown(0);
 
-        card.setCrops(b.getCrops().stream()
-                .map(CropEntity::getName)
-                .toList());
+        // Request status
+        boolean exists =
+                requestRepo.existsBySender_IdAndReceiver_Id(farmerUserId, b.getUser().getId());
 
-        // Check if request exists
-        var req = requestRepo.existsBySender_IdAndReceiver_Id(farmerUserId, b.getUser().getId());
-
-        if (req) {
-            card.setCanSendRequest(false);
-            card.setRequestStatus("PENDING");
-        } else {
-            card.setCanSendRequest(true);
-            card.setRequestStatus("NONE");
-        }
+        card.setCanSendRequest(!exists);
+        card.setRequestStatus(exists ? "PENDING" : "NONE");
 
         return card;
     }
+
+
 
     private DashboardCardRS toFarmerCard(FarmerEntity f, Long buyerUserId) {
 
         DashboardCardRS card = new DashboardCardRS();
 
         card.setUserId(f.getUser().getId());
-
         card.setName(f.getFarmerName());
         card.setDistrict(f.getDistrict().getName());
         card.setVillageOrCity(f.getVillage());
+
+        // Farmer special fields
+        card.setLandSize(f.getLandSize());
+        card.setCroppingPattern(
+                f.getCroppingPattern() != null ? f.getCroppingPattern().name() : null
+        );
+        card.setPinCode(f.getPinCode());
+
+        // Crops
+        card.setCrops(
+                f.getCrops().stream().map(CropEntity::getName).toList()
+        );
+
+        card.setSubcategories(
+                f.getCropSubcategories().stream().map(CropSubCategoriesEntity::getName).toList()
+        );
+
+        // Masked phone / Aadhaar
+        card.setMaskedPhone(maskPhone(f.getUser().getPhoneNumber()));
 
         // Rating placeholders
         card.setRatingUp(0);
         card.setRatingDown(0);
 
-        card.setCrops(f.getCrops().stream()
-                .map(CropEntity::getName)
-                .toList());
+        // Request status
+        boolean exists =
+                requestRepo.existsBySender_IdAndReceiver_Id(buyerUserId, f.getUser().getId());
 
-        // Check if request exists
-        var req = requestRepo.existsBySender_IdAndReceiver_Id(buyerUserId, f.getUser().getId());
-
-        if (req) {
-            card.setCanSendRequest(false);
-            card.setRequestStatus("PENDING");
-        } else {
-            card.setCanSendRequest(true);
-            card.setRequestStatus("NONE");
-        }
+        card.setCanSendRequest(!exists);
+        card.setRequestStatus(exists ? "PENDING" : "NONE");
 
         return card;
     }
+
+
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 4) return "******";
+        return "******" + phone.substring(phone.length() - 4);
+    }
+
+    private String maskAadhaar(String aadhaar) {
+        if (aadhaar == null || aadhaar.length() < 4) return "************";
+        return "********" + aadhaar.substring(aadhaar.length() - 4);
+    }
+
 }

@@ -12,6 +12,7 @@ import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.repository.*;
 import com.Farm360.repository.buyer.BuyerRepo;
 import com.Farm360.repository.master.*;
+import com.Farm360.utils.ContractModel;
 import com.Farm360.utils.Role;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,10 +71,25 @@ public class BuyerServiceImpl implements BuyerService {
         // Map DTO → Entity
         BuyerEntity buyer = buyerMapper.mapToEntity(rq);
 
-        // Set master relations BEFORE saving
+        // Set master relations
         buyer.setDistrict(district);
         buyer.setBlock(block);
         buyer.setCity(city);
+
+        // Contract model + seasons validation
+        if (rq.getContractModel() == ContractModel.SEASONAL ||
+                rq.getContractModel() == ContractModel.BOTH) {
+
+            if (rq.getSeasons() == null || rq.getSeasons().isEmpty()) {
+                throw new RuntimeException("Please select at least one season for Seasonal/Both contract model.");
+            }
+
+        } else {
+            rq.setSeasons(null); // IGNORE seasons for ANNUAL
+        }
+
+        buyer.setContractModel(rq.getContractModel());
+        buyer.setSeasons(rq.getSeasons());
 
         // Crop relations
         if (rq.getCropIds() != null) {
@@ -93,10 +109,10 @@ public class BuyerServiceImpl implements BuyerService {
         wallet.setBuyer(buyer);
         buyer.setWallet(wallet);
 
-        // SAVE BUYER FIRST
+        // SAVE BUYER
         BuyerEntity savedBuyer = buyerRepo.save(buyer);
 
-        // UPDATE USER ROLE AFTER buyer is saved
+        // UPDATE USER ROLE
         user.setRole(Role.buyer);
         userRepo.save(user);
 

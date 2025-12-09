@@ -642,4 +642,658 @@
   color: var(--foreground);
 }
 
+/* =========================================
+   BUYER DETAILS POPUP
+========================================= */
+
+
+.buyer-modal-close:hover {
+  color: var(--foreground);
+}
+
+.buyer-modal-body {
+  margin-top: 0.5rem;
+}
+
+.buyer-modal-body .detail-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.buyer-modal-body .detail-label {
+  flex: 0 0 140px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.buyer-modal-body .detail-value {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+@media (max-width: 600px) {
+  .buyer-modal {
+    max-width: 90%;
+    padding: 1.25rem 1.3rem;
+  }
+
+  .buyer-modal-body .detail-label {
+    flex-basis: 110px;
+  }
+}
+/* --- MODAL OVERLAY --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* --- MODAL BOX --- */
+.modal-box {
+  background: var(--card);
+  padding: 22px;
+  width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+/* TITLE */
+.modal-title {
+  margin-top: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* CLOSE BUTTON */
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* BODY STYLES */
+.modal-body {
+  margin-top: 10px;
+}
+
+/* DETAIL ROW */
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.detail-value {
+  font-weight: 600;
+}
+
+/* DARK MODE FIXES */
+body.theme-dark .modal-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* =========================================
+   FARMER DETAILS MODAL (MATCH BUYER STYLE)
+========================================= */
+
+/* Fix: hide modal when 'hidden' attribute is present */
+#buyerDetailsModal[hidden] {
+  display: none !important;
+}
+
+/* Overlay same as buyer */
+#buyerDetailsModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Modal box styling same as buyer */
+#buyerDetailsModal .modal-box {
+  background: var(--card);
+  padding: 22px;
+  width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+/* Title */
+#buyerDetailsModal .modal-title {
+  margin-top: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+/* Close button */
+#buyerDetailsModal .modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground);
+}
+
+/* Body */
+#buyerDetailsModal .modal-body {
+  margin-top: 10px;
+}
+
+/* Detail rows */
+#buyerDetailsModal .detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+#buyerDetailsModal .detail-label {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+#buyerDetailsModal .detail-value {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* Dark mode fix */
+body.theme-dark #buyerDetailsModal .modal-box {
+  background: var(--card);
+  border-color: var(--border);
+}
+/* ------------------------------
+   FARMER DETAILS — PROFESSIONAL MODAL
+   SAME STYLE AS BUYER DASHBOARD
+--------------------------------*/
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Modal Box */
+.modal-box {
+  width: 720px;                  /* wider like buyer modal */
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+  padding: 26px 32px;
+  position: relative;
+}
+
+/* Close Button */
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+/* Title */
+.modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-subtitle {
+  font-size: 15px;
+  color: var(--muted-foreground);
+  margin-top: -4px;
+  margin-bottom: 22px;
+}
+
+/* Section Header */
+.section-header {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin: 24px 0 10px;
+  color: var(--foreground);
+}
+
+/* Card-style container */
+.info-card {
+  background: var(--secondary);
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+
+/* Two-column grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+}
+
+/* Row inside card */
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* LAND Card */
+.land-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  margin-bottom: 18px;
+}
+
+.land-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .modal-box {
+    width: 94%;
+    padding: 20px;
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------
+   FARMER DETAILS — PROFESSIONAL MODAL
+   SAME STYLE AS BUYER DASHBOARD
+--------------------------------*/
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Modal Box */
+.modal-box {
+  width: 720px;                  /* wider like buyer modal */
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+  padding: 26px 32px;
+  position: relative;
+}
+
+/* Close Button */
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+/* Title */
+.modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-subtitle {
+  font-size: 15px;
+  color: var(--muted-foreground);
+  margin-top: -4px;
+  margin-bottom: 22px;
+}
+
+/* Section Header */
+.section-header {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin: 24px 0 10px;
+  color: var(--foreground);
+}
+
+/* Card-style container */
+.info-card {
+  background: var(--secondary);
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+
+/* Two-column grid */
+/* GRID of information */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 26px;
+}
+
+/* Each row inside grid */
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  color: var(--muted-foreground);
+}
+
+.detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+
+/* LAND Card */
+.land-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  margin-bottom: 18px;
+}
+
+.land-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .modal-box {
+    width: 94%;
+    padding: 20px;
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Large Enterprise Modal (1000px width) */
+.wide-modal {
+  width: 1000px !important;
+  max-width: 95%;
+  padding: 28px 32px;
+  border-radius: 16px;
+}
+
+/* Section title */
+.section-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  margin: 22px 0 10px;
+}
+
+/* Card for grouping info */
+.info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 18px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  margin-bottom: 18px;
+}
+
+/* Grid inside card */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+
+/* Dark mode */
+body.theme-dark .info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+/* ---------------------------------------------------------
+   UNIVERSAL MODAL — CLEAN + ENTERPRISE STYLE (1000px WIDTH)
+----------------------------------------------------------*/
+
+/* Hide when HTML has "hidden" */
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+/* Background overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(75, 75, 75, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Base modal box */
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+  padding: 28px 32px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* ENTERPRISE — FULL WIDE MODAL */
+.wide-modal {
+  width: 1000px;
+  max-width: 95%;
+}
+
+/* Close button */
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  font-size: 26px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  opacity: 0.75;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+/* Title */
+.modal-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--foreground);
+}
+
+/* Sub title (optional) */
+.modal-subtitle {
+  font-size: 15px;
+  color: var(--muted-foreground);
+  margin-top: -4px;
+  margin-bottom: 22px;
+}
+
+/* ----- SECTION HEADER ----- */
+.section-header {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  margin: 26px 0 10px;
+}
+
+/* ----- CARD GROUP ----- */
+.info-card {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+/* GRID layout for fields */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 32px;
+}
+
+/* Each row inside grid */
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  color: var(--muted-foreground);
+}
+
+.detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* --- LAND CARD STYLING (optional) --- */
+.land-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.land-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .modal-box {
+    width: 94%;
+    padding: 22px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
