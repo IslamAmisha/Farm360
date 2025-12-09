@@ -1,6 +1,4 @@
-// ------------------------------------------------------
-// 0) PROTECT PAGE (Buyer Only)
-// ------------------------------------------------------
+//protect buyer
 (function protectBuyerRequest() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -14,17 +12,14 @@
   }
 })();
 
-// ------------------------------------------------------
-// 1) MAIN SCRIPT
-// ------------------------------------------------------
+//main script
 (function () {
   const API_BASE = "http://localhost:8080";
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  // ------------------------------------------------------
+
   // TRANSLATIONS
-  // ------------------------------------------------------
   const translations = {
     en: {
       brandName: "Farm360",
@@ -92,9 +87,7 @@
     return translations[currentLanguage];
   }
 
-  // ------------------------------------------------------
-  // THEME + LANGUAGE
-  // ------------------------------------------------------
+//theme and language
   function applyTheme(theme) {
     document.body.classList.toggle("theme-dark", theme === "dark");
     currentTheme = theme;
@@ -124,15 +117,13 @@
     applyLanguage(currentLanguage === "en" ? "bn" : "en");
   }
 
-  // ------------------------------------------------------
-  // STATE
-  // ------------------------------------------------------
+  //state
   let incoming = [];
   let outgoing = [];
 
-  // ------------------------------------------------------
+  
   // DOM ELEMENTS
-  // ------------------------------------------------------
+
   const incomingList = document.getElementById("incomingList");
   const outgoingList = document.getElementById("outgoingList");
   const incomingCount = document.getElementById("incomingCount");
@@ -141,9 +132,9 @@
   const tabIncoming = document.getElementById("tabIncoming");
   const tabOutgoing = document.getElementById("tabOutgoing");
 
-  // ------------------------------------------------------
+  
   // HELPERS
-  // ------------------------------------------------------
+
   function formatDate(str) {
     if (!str) return "—";
     const d = new Date(str);
@@ -154,9 +145,8 @@
     });
   }
 
-  // ------------------------------------------------------
+ 
   // API CALLS
-  // ------------------------------------------------------
 
   // Farmer → Buyer
   async function loadIncomingRequests() {
@@ -218,9 +208,7 @@
     renderAll();
   }
 
-  // ------------------------------------------------------
   // RENDERING
-  // ------------------------------------------------------
   function updateCounts() {
     incomingCount.textContent = incoming.length;
     outgoingCount.textContent = outgoing.length;
@@ -250,47 +238,43 @@
       card.className = "request-card";
 
       card.innerHTML = `
-        <div class="request-header">
-          <div class="request-user">
-            <div class="user-name">${req.senderName}</div>
-            <div class="user-company">${req.companyName || ""}</div>
-            <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
-            </div>
-            <div class="user-rating">
-              👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
-            </div>
-          </div>
+  <div class="request-row">
+    <div class="col-left">
+      <div class="user-name">${req.senderName}</div>
+      <div class="user-company">${req.companyName || ""}</div>
+      <div class="user-location">${req.city}, ${req.district}</div>
+      <div class="user-rating">👍 ${req.thumbsUp} &nbsp; 👎 ${req.thumbsDown}</div>
+    </div>
 
-          <div class="request-status ${statusClass}">
-            ${tr[`status${req.status}`]}
-          </div>
-        </div>
+    <div class="col-status ${statusClass}">
+      ${tr[`status${req.status}`]}
+    </div>
+  </div>
 
-        <div class="request-body">
-          <div class="request-dates">
-            <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
-          </div>
+  <div class="request-body">
+    <div class="request-dates">${tr.sentOn}: ${formatDate(req.createdAt)}</div>
 
-          <div class="request-actions">
-            ${
-              req.status === "PENDING"
-                ? `
-            <button class="btn-primary btn-accept" data-id="${req.requestId}">
-              ${tr.btnAccept}
-            </button>
-            <button class="btn-outline btn-reject" data-id="${req.requestId}">
-              ${tr.btnReject}
-            </button>
-            `
-                : ""
-            }
-            <button class="btn-outline btn-view" data-id="${req.requestId}">
-              ${tr.btnView}
-            </button>
-          </div>
-        </div>
-      `;
+    <div class="request-actions">
+      ${
+        req.status === "PENDING"
+          ? `
+        <button class="btn-accept" data-id="${req.requestId}">
+          ${tr.btnAccept}
+        </button>
+        <button class="btn-reject" data-id="${req.requestId}">
+          ${tr.btnReject}
+        </button>
+        `
+          : ""
+      }
+
+      <button class="btn-view" data-id="${req.requestId}">
+        ${tr.btnView}
+      </button>
+    </div>
+  </div>
+`;
+
 
       incomingList.appendChild(card);
     });
@@ -337,35 +321,36 @@
       card.className = "request-card";
 
       card.innerHTML = `
-        <div class="request-header">
-          <div class="request-user">
-            <div class="user-name">${req.receiverName}</div>
-            <div class="user-company">${req.companyName || ""}</div>
-            <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
-            </div>
-            <div class="user-rating">
-              👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
-            </div>
-          </div>
+  <div class="request-row">
+    <div class="col-left">
+      <div class="user-name">${req.receiverName}</div>
+      <div class="user-company">${req.companyName || ""}</div>
+      <div class="user-location">
+        ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
+      </div>
+      <div class="user-rating">
+        👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
+      </div>
+    </div>
 
-          <div class="request-status ${statusClass}">
-            ${tr[`status${req.status}`]}
-          </div>
-        </div>
+    <div class="col-status ${statusClass}">
+      ${tr[`status${req.status}`]}
+    </div>
+  </div>
 
-        <div class="request-body">
-          <div class="request-dates">
-            <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
-          </div>
+  <div class="request-body">
+    <div class="request-dates">
+      ${tr.sentOn}: ${formatDate(req.createdAt)}
+    </div>
 
-          <div class="request-actions">
-            <button class="btn-outline btn-view">
-              ${tr.btnView}
-            </button>
-          </div>
-        </div>
-      `;
+    <div class="request-actions">
+      <button class="btn-view" data-id="${req.requestId}">
+        ${tr.btnView}
+      </button>
+    </div>
+  </div>
+`;
+
 
       outgoingList.appendChild(card);
     });
@@ -377,9 +362,8 @@
     renderOutgoing();
   }
 
-  // ------------------------------------------------------
+  
   // TABS
-  // ------------------------------------------------------
   function switchTab(tab) {
     if (tab === "incoming") {
       incomingList.style.display = "flex";
@@ -394,9 +378,8 @@
     }
   }
 
-  // ------------------------------------------------------
+  
   // INIT
-  // ------------------------------------------------------
   document.addEventListener("DOMContentLoaded", async () => {
     applyTheme(currentTheme);
     applyLanguage(currentLanguage);

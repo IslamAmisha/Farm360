@@ -1,62 +1,257 @@
-/* Buyer Requests page styles — reuse look & feel from farmer-request */
-.request-page { background: var(--background); color: var(--foreground); }
-.container { max-width: 1100px; margin: 36px auto; padding: 0 28px; }
+/* ============================================
+   Buyer Requests Page — Matches Farmer Styling
+   ============================================ */
 
-.page-header { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:20px; border-radius:14px; background: linear-gradient(180deg, rgba(59,130,246,0.06), rgba(59,130,246,0.02)); border:1px solid var(--border); }
-.page-title { margin:0; font-size:24px; font-weight:700 }
-.page-subtitle { margin:0; color:var(--muted-foreground) }
-.header-stats-small { display:flex; gap:10px }
-.header-stats-small .stat-item { background:var(--card); padding:10px 12px; border-radius:8px; border:1px solid var(--border); text-align:center }
-.header-stats-small .stat-label { font-size:12px; color:var(--muted-foreground) }
-.header-stats-small .stat-value { font-weight:700; font-size:18px }
+.request-page { 
+  background: var(--background); 
+  color: var(--foreground); 
+}
+.container { 
+  max-width: 1100px; 
+  margin: 32px auto; 
+  padding: 0 20px; 
+}
 
-/* Tabs */
-.tabs { margin-top:20px; padding:16px; border-radius:14px; border:1px solid var(--border); background:var(--card) }
-.tab-buttons { display:flex; gap:10px; margin-bottom:14px }
-.tab-btn { padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; font-weight:700 }
-.tab-btn.active { background:var(--primary); color:var(--primary-foreground); border-color:transparent }
+/* --------------------------------------------
+   Page Header (Green Gradient like Farmer)
+--------------------------------------------- */
+.page-header { 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:center; 
+  gap:18px; 
+  padding:16px; 
+  border-radius:12px; 
+  background: linear-gradient(180deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03)); 
+  border:1px solid var(--border); 
+}
 
-.requests-list { display:flex; flex-direction:column; gap:20px }
+.page-title { 
+  margin:0; 
+  font-size:24px; 
+  font-weight:700;
+}
+.page-subtitle { 
+  margin:0; 
+  color:var(--muted-foreground);
+}
 
-/* request card laid out like a table row */
-.request-card { display:flex; flex-direction:column; background:var(--card); border-radius:14px; padding:18px; border:1px solid var(--border); box-shadow:0 8px 32px rgba(2,6,23,0.04); position:relative }
-.request-row { display:flex; gap:16px; align-items:flex-start; justify-content:space-between }
-.col-left { display:flex; gap:14px; align-items:flex-start; min-width:240px }
-.farmer-name { font-weight:700; font-size:15px }
-.farmer-role { font-size:13px; color:var(--muted-foreground); font-weight:600 }
-.col-mid { flex:1; color:var(--muted-foreground); font-size:14px; line-height:1.4 }
-.col-status { position:absolute; right:18px; top:18px; text-align:center }
+.header-stats-small { display:flex; gap:10px; }
+.header-stats-small .stat-item { 
+  background:var(--card); 
+  padding:10px 12px; 
+  border-radius:8px; 
+  border:1px solid var(--border); 
+  text-align:center; 
+}
+.stat-label { font-size:12px; color:var(--muted-foreground) }
+.stat-value { font-weight:700; font-size:18px }
 
-.sent-date, .response-date { margin-top:8px; color:var(--muted-foreground); font-size:13px }
+/* --------------------------------------------
+   Tabs
+--------------------------------------------- */
+.tabs { 
+  margin-top:18px; 
+  padding:12px; 
+  border-radius:12px; 
+  border:1px solid var(--border); 
+  background:var(--card); 
+}
 
-.meta-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:12px; border-top:1px solid var(--border); margin-top:12px }
-.meta-row .dates { color:var(--muted-foreground); font-size:13px }
-.meta-row .dates .sent-date, .meta-row .dates .response-date { margin:0 0 6px 0 }
+.tab-buttons { display:flex; gap:8px; margin-bottom:10px; }
 
-.request-card .request-actions { margin:0; display:flex; gap:8px }
+.tab-btn { 
+  padding:8px 14px; 
+  border-radius:8px; 
+  border:1px solid var(--border); 
+  background:transparent; 
+  cursor:pointer; 
+  font-weight:700; 
+}
 
-.farmer-meta { display:flex; flex-direction:column; gap:4px; margin-left:8px }
-.farmer-rating { color:var(--muted-foreground); font-weight:600; font-size:13px }
-.farmer-crop { font-size:13px; color:var(--muted-foreground); font-weight:700 }
+.tab-btn.active { 
+  background:var(--primary); 
+  color:var(--primary-foreground); 
+  border-color:transparent; 
+}
 
-.status-badge { padding:6px 10px; border-radius:18px; font-weight:700; display:inline-block }
-.status-pending { background: rgba(245,158,11,0.08); color:#f59e0b; border:1px solid rgba(245,158,11,0.12) }
-.status-accepted { background: rgba(16,185,129,0.08); color:#10b981; border:1px solid rgba(16,185,129,0.12) }
-.status-rejected { background: rgba(239,68,68,0.06); color:#ef4444; border:1px solid rgba(239,68,68,0.12) }
+/* ---------------------------------------------------
+   FIX: Dark-mode tabs text visible (your main issue)
+----------------------------------------------------- */
+body.theme-dark .tab-btn {
+  color: var(--primary-foreground) !important;
+  border-color: var(--border);
+}
 
-.request-actions { display:flex; gap:8px; align-items:center }
-.btn-accept { background:#10b981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700 }
-.btn-reject { background:transparent; color:#ef4444; border:1px solid rgba(239,68,68,0.12); padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700 }
-.btn-view { background:transparent; border:1px solid var(--border); padding:8px 12px; border-radius:8px; cursor:pointer }
+body.theme-dark .tab-btn.active {
+  background: var(--primary);
+  color: var(--primary-foreground) !important;
+}
 
-/* compact rows on small screens */
+/* --------------------------------------------
+   Lists
+--------------------------------------------- */
+.requests-list { 
+  display:flex; 
+  flex-direction:column; 
+  gap:14px;
+}
+
+/* --------------------------------------------
+   Request Cards 
+--------------------------------------------- */
+.request-card { 
+  background:var(--card); 
+  border-radius:12px; 
+  padding:14px; 
+  border:1px solid var(--border); 
+  box-shadow:0 6px 18px rgba(2,6,23,0.04); 
+}
+
+.request-header { 
+  display:flex; 
+  justify-content:space-between; 
+  gap:12px; 
+  align-items:flex-start; 
+}
+
+.user-name { font-weight:700; font-size:16px; }
+.user-company { font-size:14px; font-weight:600; margin-top:4px; }
+.user-location { font-size:13px; color:var(--muted-foreground); margin-top:4px; }
+
+.user-rating { 
+  font-size:13px; 
+  color:var(--muted-foreground); 
+  margin-top:6px;
+}
+
+/* Status Badge */
+.request-status { 
+  padding:6px 12px; 
+  border-radius:20px; 
+  font-weight:700; 
+}
+
+.request-status.pending {
+  background:rgba(245,158,11,0.08);
+  color:#f59e0b;
+  border:1px solid rgba(245,158,11,0.12);
+}
+
+.request-status.accepted {
+  background:rgba(16,185,129,0.08);
+  color:#10b981;
+  border:1px solid rgba(16,185,129,0.12);
+}
+
+.request-status.rejected {
+  background:rgba(239,68,68,0.06);
+  color:#ef4444;
+  border:1px solid rgba(239,68,68,0.12);
+}
+
+/* Body */
+.request-body { 
+  margin-top:12px; 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:center; 
+  gap:12px; 
+  border-top:1px solid var(--border); 
+  padding-top:12px; 
+}
+
+.request-dates { 
+  color:var(--muted-foreground); 
+  font-size:13px; 
+}
+
+/* Buttons */
+.request-actions { display:flex; gap:8px; }
+
+.btn-accept { 
+  background:#10b981; 
+  color:white; 
+  border:none; 
+  padding:8px 12px; 
+  border-radius:8px; 
+  cursor:pointer; 
+  font-weight:700; 
+}
+
+.btn-reject { 
+  background:transparent; 
+  color:#ef4444; 
+  border:1px solid rgba(239,68,68,0.12); 
+  padding:8px 12px; 
+  border-radius:8px; 
+  cursor:pointer; 
+  font-weight:700; 
+}
+
+.btn-view {
+  background:transparent; 
+  border:1px solid var(--border);
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+/* --------------------------------------------
+   Back Button (Green Same as Farmer)
+--------------------------------------------- */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1.5px solid #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+  color: #15803d;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.2s ease-in-out;
+}
+
+.back-btn:hover {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.back-arrow {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Dark Theme Back Button */
+body.theme-dark .back-btn {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+/* --------------------------------------------
+   Responsive
+--------------------------------------------- */
 @media (max-width:700px) {
-  .request-row { flex-direction:column; align-items:flex-start }
-  .col-left { min-width:unset }
+  .request-body { flex-direction:column; align-items:flex-start }
   .header-stats-small { display:none }
 }
 
-/* dark tweaks */
-body.theme-dark .page-header { background: linear-gradient(180deg, rgba(59,130,246,0.10), rgba(59,130,246,0.04)) }
-body.theme-dark .tabs { background:var(--card); border:1px solid var(--border) }
-body.theme-dark .request-card { background:var(--card); border:1px solid var(--border) }
+/* --------------------------------------------
+   Dark Mode (Reuse Variables)
+--------------------------------------------- */
+body.theme-dark .page-header { 
+  background: linear-gradient(180deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06));
+}
+body.theme-dark .tabs { 
+  background:var(--card); 
+  border:1px solid var(--border); 
+}
+body.theme-dark .request-card { 
+  background:var(--card); 
+  border:1px solid var(--border); 
+}

@@ -68,6 +68,7 @@
 
     <!-- MAIN -->
     <main class="profile-page container" id="profile">
+      <button id="backToDashboard" class="back-btn-card">‹ Back</button>
       <!-- Wallet -->
       <section class="wallet-summary card">
         <div class="wallet-grid">
@@ -277,6 +278,27 @@
                   <option value="LT10">Less than 10 tons</option>
                   <option value="T10TO100">10–100 tons</option>
                   <option value="GT100">More than 100 tons</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <label data-text="contractModelLabel">Contract Model</label>
+                <select id="contractModel" disabled>
+                  <option value="">Select</option>
+                  <option value="SEASONAL">Season Only</option>
+                  <option value="ANNUAL">Annual</option>
+                  <option value="BOTH">Both</option>
+                </select>
+              </div>
+
+              <div class="form-row" id="seasonRow" style="display: none">
+                <label data-text="seasonLabel">Select Seasons</label>
+                <select id="seasonSelect" multiple disabled size="3">
+                  <option value="KHARIF" data-text="seasonKharif">
+                    Kharif
+                  </option>
+                  <option value="RABI" data-text="seasonRabi">Rabi</option>
+                  <option value="ZAID" data-text="seasonZaid">Zaid</option>
                 </select>
               </div>
 

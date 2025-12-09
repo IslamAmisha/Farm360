@@ -1,12 +1,8 @@
-/* ============================
-   GLOBAL STATE
-============================ */
+//global state
 let currentLanguage = "en";
 let serverCaptcha = "";
 
-/* ============================
-   TRANSLATIONS
-============================ */
+//translation library
 const text = {
   en: {
     loginTitle: "Login",
@@ -37,9 +33,8 @@ function updateText() {
 }
 updateText();
 
-/* ============================
-   LANGUAGE TOGGLE
-============================ */
+//lang
+
 document.getElementById("langToggle").onclick = () => {
   currentLanguage = currentLanguage === "en" ? "bn" : "en";
   document.body.classList.toggle("lang-bn");
@@ -50,16 +45,12 @@ document.getElementById("langToggle").onclick = () => {
   updateText();
 };
 
-/* ============================
-   THEME TOGGLE
-============================ */
+//theme
 document.getElementById("themeToggle").onclick = () => {
   document.body.classList.toggle("theme-dark");
 };
 
-/* ============================
-   CAPTCHA FROM BACKEND
-============================ */
+//captcha
 async function loadCaptcha() {
   const phone = document.getElementById("phone").value.trim();
 
@@ -88,9 +79,7 @@ document.getElementById("phone").addEventListener("input", () => {
 /* Refresh button reloads captcha */
 document.getElementById("refreshCaptcha").onclick = loadCaptcha;
 
-/* ============================
-   LOGIN HANDLING
-============================ */
+//load handling
 const form = document.getElementById("loginForm");
 const phoneErr = document.getElementById("phoneErr");
 const captchaErr = document.getElementById("captchaErr");
@@ -167,9 +156,7 @@ form.addEventListener("submit", async function (e) {
   }
 });
 
-/* ============================
-   CLEAR BUTTON
-============================ */
+//clear button
 document.getElementById("clearBtn").onclick = () => {
   form.reset();
   phoneErr.textContent = "";

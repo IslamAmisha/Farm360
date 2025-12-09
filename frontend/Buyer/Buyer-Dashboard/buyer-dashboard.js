@@ -1,3 +1,4 @@
+
 (function protectBuyerDashboard() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -11,6 +12,7 @@
   }
 })();
 
+//logout
 function logoutUser() {
   const token = localStorage.getItem("token");
 
@@ -25,11 +27,10 @@ function logoutUser() {
     window.location.href = "../../Login/login.html";
   });
 }
-
+// TRANSLATIONS
 
 const buyerDashboardTranslations = {
   en: {
-  
     dashboard: "Dashboard",
 
     navHome: "Home",
@@ -38,14 +39,11 @@ const buyerDashboardTranslations = {
     navInsights: "Insights",
     navSupport: "Support",
 
-    /* ---------------------------------------
-       SIDEBAR
-    ----------------------------------------*/
     sidebarDashboard: "Dashboard",
     sidebarMyProfile: "My Profile",
     sidebarLandFarmers: "Land & Farmers",
     sidebarRequests: "Requests",
-sidebarProposals: "Proposals",
+    sidebarProposals: "Proposals",
     sidebarNegotiation: "Negotiation / Messages",
     sidebarAgreements: "Agreements",
     sidebarEscrowWallet: "Escrow & Wallet",
@@ -55,7 +53,6 @@ sidebarProposals: "Proposals",
     sidebarSettings: "Settings",
     sidebarLogout: "Logout",
 
-  
     dashboardTitle: "Overview",
     dashboardSubtitle:
       "View your agreements, find farmers and collaborate effectively.",
@@ -77,7 +74,6 @@ sidebarProposals: "Proposals",
     crop_corn: "Corn",
     crop_onion: "Onion",
 
-  
     season_kharif: "Kharif",
     season_rabi: "Rabi",
     season_summer: "Summer",
@@ -94,7 +90,6 @@ sidebarProposals: "Proposals",
   },
 
   bn: {
-   
     dashboard: "ড্যাশবোর্ড",
 
     navHome: "হোম",
@@ -103,13 +98,11 @@ sidebarProposals: "Proposals",
     navInsights: "তথ্য ও বিশ্লেষণ",
     navSupport: "সহায়তা",
 
-   
     sidebarDashboard: "ড্যাশবোর্ড",
     sidebarMyProfile: "আমার প্রোফাইল",
     sidebarLandFarmers: "জমি ও চাষি",
     sidebarRequests: "অনুরোধ",
-sidebarProposals: "প্রস্তাব",
-
+    sidebarProposals: "প্রস্তাব",
     sidebarNegotiation: "আলোচনা / বার্তা",
     sidebarAgreements: "চুক্তি",
     sidebarEscrowWallet: "এসক্রো ও ওয়ালেট",
@@ -123,9 +116,6 @@ sidebarProposals: "প্রস্তাব",
     dashboardSubtitle:
       "আপনার চুক্তি দেখুন, চাষিদের খুঁজুন এবং সহজে সহযোগিতা করুন।",
 
-    /* ---------------------------------------
-       SEARCH + FILTERS
-    ----------------------------------------*/
     searchLabel: "চাষি খুঁজুন",
     searchPlaceholder: "চাষি খুঁজুন...",
     filterApply: "ফিল্টার প্রয়োগ",
@@ -136,9 +126,6 @@ sidebarProposals: "প্রস্তাব",
     filterCropType: "ফসল",
     cropAll: "সব ফসল",
 
-    /* ---------------------------------------
-       CROPS
-    ----------------------------------------*/
     crop_rice: "চাল",
     crop_wheat: "গম",
     crop_potato: "আলু",
@@ -146,40 +133,36 @@ sidebarProposals: "প্রস্তাব",
     crop_corn: "ভুট্টা",
     crop_onion: "পেঁয়াজ",
 
-    /* ---------------------------------------
-       SEASONS
-    ----------------------------------------*/
     season_kharif: "খরিফ",
     season_rabi: "রবি",
     season_summer: "গ্রীষ্ম",
 
-    /* ---------------------------------------
-       FARMER LIST SECTION
-    ----------------------------------------*/
     farmerProfiles: "উপলব্ধ চাষি",
     farmerProfilesSubtitle:
       "আপনার পছন্দের ফসলের চাষিদের সাথে সংযোগ করুন।",
 
-    /* ---------------------------------------
-       BUTTONS
-    ----------------------------------------*/
     btnRequest: "অনুরোধ",
     btnDetails: "বিস্তারিত",
 
-    /* ---------------------------------------
-       MESSAGES
-    ----------------------------------------*/
     msgLoginRequired: "অনুগ্রহ করে আবার লগইন করুন।",
     msgNoFarmers: "এই ফিল্টার অনুযায়ী কোনো চাষি পাওয়া যায়নি।",
   },
 };
-
 
 // OPEN BUYER PROFILE PAGE
 document.getElementById("buyerProfileMenu")?.addEventListener("click", () => {
   window.location.href = "../Buyer-Profile/buyer-profile.html";
 });
 
+// OPEN REQUEST PAGE
+document.getElementById("buyerRequestsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Buyer-Request/buyer-request.html";
+});
+
+// OPEN PROPOSALS PAGE
+document.getElementById("buyerProposalsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Buyer-Proposals/buyer-proposals.html";
+});
 
 // merge into global translations if available
 if (typeof translations !== "undefined") {
@@ -188,7 +171,6 @@ if (typeof translations !== "undefined") {
 }
 
 const API_BASE_URL = "http://localhost:8080";
-
 
 function getDashText() {
   const lang = window.currentLanguage || "en";
@@ -213,9 +195,20 @@ function getThumbRating(up, down) {
   `;
 }
 
-/*******************************
-  RENDER FARMERS  (LIKE FARMER RENDERS BUYERS)
-*******************************/
+function maskPhone(phone) {
+  if (!phone) return "N/A";
+  const digits = String(phone).replace(/\D/g, "");
+  if (digits.length < 4) return "******";
+  const start = digits.slice(0, 2);
+  const end = digits.slice(-2);
+  return `${start}******${end}`;
+}
+
+// cache for farmer details
+let farmersCache = {};
+
+// RENDER FARMERS
+
 function renderFarmers(list) {
   const { t } = getDashText();
   const container = document.getElementById("farmersGrid");
@@ -231,7 +224,6 @@ function renderFarmers(list) {
 
   container.innerHTML = list
     .map((f) => {
-      // crops: backend field should be `crops` (like buyers endpoint)
       const cropBadges = (f.crops || [])
         .map((c) => {
           const key = "crop_" + String(c).toLowerCase();
@@ -240,10 +232,19 @@ function renderFarmers(list) {
         })
         .join("");
 
-      // location: use villageOrCity + district (same as farmer dashboard buyers)
       const location = [f.villageOrCity, f.district]
         .filter(Boolean)
         .join(", ");
+
+      // Detect already requested
+      const isRequested =
+        f.requestStatus === "PENDING" ||
+        f.requestStatus === "ACCEPTED" ||
+        f.alreadyRequested === true;
+
+      const requestButton = isRequested
+        ? `<button class="btn-request requested" disabled>✔ Requested</button>`
+        : `<button class="btn-request">${t.btnRequest}</button>`;
 
       return `
         <div class="farmer-card buyer-card" data-farmer-id="${f.userId}">
@@ -259,17 +260,42 @@ function renderFarmers(list) {
           <div class="buyer-crops">${cropBadges}</div>
 
           <div class="buyer-buttons">
-            <button class="btn-request" data-text="btnRequest">${t.btnRequest}</button>
-            <button class="btn-details" data-text="btnDetails">${t.btnDetails}</button>
+            ${requestButton}
+            <button class="btn-details">${t.btnDetails}</button>
           </div>
         </div>
       `;
     })
     .join("");
 
+  // Attach events
+  const cards = container.querySelectorAll(".farmer-card.buyer-card");
+  cards.forEach((card) => {
+    const farmerId = card.getAttribute("data-farmer-id");
+    const farmer = farmersCache[farmerId];
+
+    const reqBtn = card.querySelector(".btn-request");
+    const detBtn = card.querySelector(".btn-details");
+
+    if (reqBtn && !reqBtn.classList.contains("requested")) {
+      reqBtn.onclick = () => {
+        if (farmerId) sendRequestToFarmer(farmerId, reqBtn);
+      };
+    }
+
+    if (detBtn) {
+      detBtn.onclick = () => {
+        if (farmer) openFarmerDetails(farmer);
+      };
+    }
+  });
+
   if (typeof updateTranslatedText === "function") updateTranslatedText();
 }
 
+
+
+// LOAD FARMERS
 
 async function loadFarmers() {
   const { token, userId } = getAuthInfo();
@@ -307,21 +333,176 @@ async function loadFarmers() {
 
     if (!resp.ok) {
       console.error("Load error:", resp.status);
+      farmersCache = {};
       return renderFarmers([]);
     }
 
     const data = await resp.json();
-    // EXPECTS: data.users = [ { userId, name, villageOrCity, district, crops[], ratingUp, ratingDown } ]
+    farmersCache = {};
+    (data.users || []).forEach((f) => {
+      if (f && f.userId != null) {
+        farmersCache[String(f.userId)] = f;
+      }
+    });
+
     renderFarmers(data.users || []);
   } catch (e) {
     console.error("Load error:", e);
+    farmersCache = {};
     renderFarmers([]);
   }
 }
 
-/*******************************
-  FILTER + LANGUAGE
-*******************************/
+
+// SEND REQUEST
+
+async function sendRequestToFarmer(farmerId, btn) {
+  const { token, userId } = getAuthInfo();
+  const { t } = getDashText();
+
+  if (!token || !userId) return alert(t.msgLoginRequired);
+
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try {
+    const resp = await fetch(
+      `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ receiverId: farmerId }),
+      }
+    );
+
+    // No matter what, lock the button
+    btn.textContent = "✔ Requested";
+    btn.classList.add("requested");
+    btn.disabled = true;
+
+  } catch (e) {
+    console.error(e);
+    btn.textContent = t.btnRequest;
+    btn.disabled = false;
+  }
+}
+
+
+
+// POPUP DETAILS
+
+function openFarmerDetails(f) {
+  if (!f) return;
+
+  // Top header
+  document.getElementById("fd_name").textContent = f.name || "";
+  document.getElementById("fd_location").textContent =
+    `${f.villageOrCity || ""}${f.villageOrCity && f.district ? ", " : ""}${f.district || ""}`;
+
+  // Overview
+  const maskedPhone = maskPhone(f.phoneNumber || f.phone || null);
+
+  document.getElementById("fd_fullName").textContent = f.name || "";
+  document.getElementById("fd_phone").textContent = maskedPhone;
+  
+  // Address
+  document.getElementById("fd_district").textContent = f.district || "N/A";
+  document.getElementById("fd_block").textContent =
+    f.block || f.blockName || "N/A";
+  document.getElementById("fd_village").textContent =
+    f.villageOrCity || "N/A";
+  document.getElementById("fd_pin").textContent = f.pinCode || "N/A";
+
+  // Lands
+  const lands = f.lands || f.landList || f.landDetails || [];
+  let html = "";
+
+  if (!lands.length) {
+    const crops = (f.crops || []).join(", ") || "N/A";
+    const subs =
+      (f.subcategories || f.cropSubcategories || []).join(", ") || "N/A";
+
+    html = `
+      <div class="fd-land-card">
+        <div class="fd-land-header">
+          <span class="fd-land-title">Land 1</span>
+        </div>
+        <div class="fd-land-body">
+          <div class="fd-row">
+            <span class="fd-label">Size</span>
+            <span class="fd-value">${f.landSize || "N/A"} acres</span>
+          </div>
+          <div class="fd-row">
+            <span class="fd-label">Type</span>
+            <span class="fd-value">${f.croppingPattern || "N/A"}</span>
+          </div>
+          <div class="fd-row">
+            <span class="fd-label">Crops</span>
+            <span class="fd-value">${crops}</span>
+          </div>
+          <div class="fd-row">
+            <span class="fd-label">Subcategories</span>
+            <span class="fd-value">${subs}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    lands.forEach((land, idx) => {
+      const size = land.size || land.landSize || "N/A";
+      const type = land.type || land.croppingPattern || "N/A";
+      const crops = (land.crops || []).join(", ") || "N/A";
+      const subs =
+        (land.subcategories || land.subCats || land.cropSubcategories || [])
+          .join(", ") || "N/A";
+
+      html += `
+        <div class="fd-land-card">
+          <div class="fd-land-header">
+            <span class="fd-land-title">Land ${idx + 1}</span>
+          </div>
+          <div class="fd-land-body">
+            <div class="fd-row">
+              <span class="fd-label">Size</span>
+              <span class="fd-value">${size} acres</span>
+            </div>
+            <div class="fd-row">
+              <span class="fd-label">Type</span>
+              <span class="fd-value">${type}</span>
+            </div>
+            <div class="fd-row">
+              <span class="fd-label">Crops</span>
+              <span class="fd-value">${crops}</span>
+            </div>
+            <div class="fd-row">
+              <span class="fd-label">Subcategories</span>
+              <span class="fd-value">${subs}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("fd_lands").innerHTML = html;
+
+  // Show overlay
+  document.getElementById("farmerDetailsPopup").classList.remove("hidden");
+}
+
+
+
+
+function closeFarmerDetails() {
+  document.getElementById("farmerDetailsPopup").classList.add("hidden");
+}
+
+
+// FILTER + LANGUAGE
+
 function applyFilters() {
   loadFarmers();
 }
@@ -333,20 +514,9 @@ function syncBuyerDashboardLanguage() {
   loadFarmers();
 }
 
-// OPEN REQUEST PAGE
-document.getElementById("buyerRequestsMenu")?.addEventListener("click", () => {
-  window.location.href = "../Buyer-Request/buyer-request.html";
-});
 
-// OPEN PROPOSALS PAGE
-document.getElementById("buyerProposalsMenu")?.addEventListener("click", () => {
-  window.location.href = "../Buyer-Proposals/buyer-proposals.html";
-});
+// EVENTS
 
-
-/*******************************
-  EVENT BINDINGS
-*******************************/
 document.getElementById("langToggle")?.addEventListener("click", () =>
   setTimeout(syncBuyerDashboardLanguage, 0)
 );
@@ -371,6 +541,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelector(".logout")?.addEventListener("click", logoutUser);
 
-  // initial load
+  
+
   loadFarmers();
+
+  const overlay = document.getElementById("farmerDetailsPopup");
+  overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeFarmerDetails();
+    }
+  });
 });

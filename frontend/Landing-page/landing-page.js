@@ -1,14 +1,10 @@
-// ================================
+
 // GLOBAL STATE
-// ================================
 let currentLanguage = "en";
 let currentTheme = "light";
 let charts = [];
 
-
-// ================================
-// TRANSLATION MAP (UNCHANGED)
-// ================================
+//translation 
 const translations = {
   en: {
     heroHeading: "Connecting Farmers & Buyers for Smart Agriculture",
@@ -239,9 +235,7 @@ chartRegionalContribution: "আঞ্চলিক অবদান",
 };
 
 
-// ================================
-// APPLY THEME
-// ================================
+//apply theme
 function applyTheme(theme) {
   const body = document.body;
 
@@ -264,10 +258,8 @@ function applyTheme(theme) {
 }
 
 
+// LANGUAGE
 
-// ================================
-// APPLY LANGUAGE
-// ================================
 function applyLanguage(lang) {
   const body = document.body;
 
@@ -278,9 +270,8 @@ function applyLanguage(lang) {
 }
 
 
-// ================================
 // TRANSLATION UPDATE FUNCTION
-// ================================
+
 function updateTranslatedText() {
   document.querySelectorAll("[data-text]").forEach((el) => {
     const key = el.getAttribute("data-text");
@@ -293,18 +284,14 @@ function updateTranslatedText() {
 }
 
 
-// ================================
-// TOGGLE THEME
-// ================================
+//toggle theme
 function toggleTheme() {
   const newTheme = currentTheme === "light" ? "dark" : "light";
   applyTheme(newTheme);
 }
 
 
-// ================================
-// TOGGLE LANGUAGE
-// ================================
+//toggle lang
 function toggleLanguage() {
   const newLang = currentLanguage === "en" ? "bn" : "en";
 
@@ -319,18 +306,14 @@ function toggleLanguage() {
 }
 
 
-// ================================
-// MOBILE MENU
-// ================================
+//mobile menu
 function toggleMobileMenu() {
   mobileMenu.style.display =
     mobileMenu.style.display === "flex" ? "none" : "flex";
 }
 
 
-// ================================
-// EVENT LISTENERS
-// ================================
+//event listeners
 const themeToggle = document.getElementById("themeToggle");
 const mobileThemeToggle = document.getElementById("mobileThemeToggle");
 const langToggle = document.getElementById("langToggle");
@@ -352,9 +335,7 @@ footerLangToggle?.addEventListener("click", toggleLanguage);
 mobileMenuBtn?.addEventListener("click", toggleMobileMenu);
 
 
-// ================================
 // INITIAL LOAD
-// ================================
 window.addEventListener("DOMContentLoaded", () => {
   applyTheme(currentTheme);
   applyLanguage(currentLanguage);
@@ -362,9 +343,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initCharts();
 });
 
-// ================================
-// CHART COLOR HELPERS
-// ================================
+//chart colour helper
 function getChartColors() {
   const styles = getComputedStyle(document.body);
   const textColor =
@@ -430,9 +409,7 @@ function updateChartsTheme() {
 }
 
 
-// ================================
-// INIT CHARTS
-// ================================
+//init
 function initCharts() {
   const cropCanvas = document.getElementById("cropDistributionChart");
   if (!cropCanvas || typeof Chart === "undefined") return;

@@ -10,10 +10,7 @@
     return;
   }
 })();
-
-/* ---------------------------------------------- */
-/* MASTER CROPS + SUBCATEGORIES                    */
-/* ---------------------------------------------- */
+//master crop and its category
 let MASTER_CROPS = [];
 let MASTER_SUBCATS = {};
 let currentProfile = {}; // store buyer profile
@@ -34,9 +31,7 @@ async function loadMasterData() {
   }
 }
 
-/* ---------------------------------------------- */
-/* MAIN SCRIPT                                     */
-/* ---------------------------------------------- */
+//translations library
 (function () {
   const API_BASE = "http://localhost:8080/api/profile/buyer";
 
@@ -65,6 +60,13 @@ async function loadMasterData() {
       businessTypeShort: "Business Type:",
       cropsLabel: "Crops",
       cropSubLabel: "Crop Subcategories",
+
+      // NEW: contract + seasons
+      contractModelLabel: "Contract Model",
+      seasonLabel: "Select Seasons",
+      seasonKharif: "Kharif",
+      seasonRabi: "Rabi",
+      seasonZaid: "Zaid",
     },
     bn: {
       walletBalance: "ওয়ালেট ব্যালেন্স",
@@ -90,10 +92,17 @@ async function loadMasterData() {
       businessTypeShort: "ব্যবসার ধরন:",
       cropsLabel: "ফসল",
       cropSubLabel: "ফসলের উপশ্রেণী",
+
+      // NEW: contract + seasons
+      contractModelLabel: "চুক্তির ধরন",
+      seasonLabel: "মৌসুম নির্বাচন করুন",
+      seasonKharif: "খরিফ",
+      seasonRabi: "রবি",
+      seasonZaid: "জাইড",
     },
   };
 
-  // share with global translations if landing-page.js exists
+  // global translations if landing-page.js exists
   if (typeof translations !== "undefined") {
     Object.assign(translations.en, buyerTranslations.en);
     Object.assign(translations.bn, buyerTranslations.bn);
@@ -102,9 +111,7 @@ async function loadMasterData() {
   if (!window.currentLanguage) window.currentLanguage = "en";
   if (!window.currentTheme) window.currentTheme = "light";
 
-  /* ---------------------- */
-  /* THEME + LANGUAGE       */
-  /* ---------------------- */
+//theme language
 
   function applyTheme(theme) {
     document.body.classList.remove("theme-light", "theme-dark");
@@ -156,7 +163,10 @@ async function loadMasterData() {
     licEl,
     wareNameEl,
     wareLocationEl,
-    annualPurchaseEl;
+    annualPurchaseEl,
+    contractModelEl,
+    seasonRowEl,
+    seasonSelectEl;
   let balEl,
     escEl,
     cropsChecklist,
@@ -169,9 +179,7 @@ async function loadMasterData() {
     btnDelete;
   let sidebarName, sidebarPhone, sidebarLocation, sidebarBusiness;
 
-  /* ---------------------------------------------- */
-  /* LOAD PROFILE                                   */
-  /* ---------------------------------------------- */
+  //load profile
   async function loadProfile() {
     try {
       const token = localStorage.getItem("token");
@@ -185,11 +193,11 @@ async function loadMasterData() {
       /* BASIC INFO */
       phoneEl.value = data.phone;
       roleEl.value = "Buyer";
-      nameEl.value = data.fullName;
-      aadharEl.value = data.aadhaarNo;
+      nameEl.value = data.fullName || "";
+      aadharEl.value = data.aadhaarNo || "";
 
-      districtEl.value = data.districtName;
-      blockEl.value = data.blockName;
+      districtEl.value = data.districtName || "";
+      blockEl.value = data.blockName || "";
       cityEl.value = data.cityName || "";
       villageEl.value = data.village || "";
       pinEl.value = data.pinCode || "";
@@ -204,9 +212,30 @@ async function loadMasterData() {
       wareLocationEl.value = data.warehouseLocation || "";
       annualPurchaseEl.value = data.annualPurchase || "";
 
-      payTaxEl.checked = data.paysTax;
-      gstEl.checked = data.gstRegistered;
-      licEl.checked = data.hasLicence;
+      payTaxEl.checked = !!data.paysTax;
+      gstEl.checked = !!data.gstRegistered;
+      licEl.checked = !!data.hasLicence;
+
+      // CONTRACT MODEL
+      contractModelEl.value = data.contractModel || "";
+
+      // SEASONS (view in select, but disabled in view mode)
+      if (data.contractModel === "SEASONAL" || data.contractModel === "BOTH") {
+        seasonRowEl.style.display = "block";
+      } else {
+        seasonRowEl.style.display = "none";
+      }
+
+      // Clear previous selection
+      Array.from(seasonSelectEl.options).forEach((opt) => (opt.selected = false));
+      if (Array.isArray(data.seasons)) {
+        data.seasons.forEach((s) => {
+          const opt = Array.from(seasonSelectEl.options).find(
+            (o) => o.value === s
+          );
+          if (opt) opt.selected = true;
+        });
+      }
 
       /* WALLET */
       balEl.textContent = "₹ " + (data.balance ?? 0);
@@ -243,9 +272,7 @@ async function loadMasterData() {
     }
   }
 
-  /* ---------------------------------------------- */
-  /* VIEW MODE RENDERING                             */
-  /* ---------------------------------------------- */
+//view mode rendering
   function renderViewModeCrops(crops) {
     cropsChecklist.innerHTML = "";
     if (!crops.length) {
@@ -274,9 +301,7 @@ async function loadMasterData() {
     });
   }
 
-  /* ---------------------------------------------- */
-  /* EDIT MODE RENDERING                             */
-  /* ---------------------------------------------- */
+//edit mode rendering
   function renderEditModeCrops() {
     cropsChecklist.innerHTML = "";
     cropSubcategories.innerHTML = "";
@@ -322,7 +347,6 @@ async function loadMasterData() {
         const chk = document.createElement("input");
         chk.type = "checkbox";
         chk.value = sub.id;
-
         chk.checked = savedSubs.includes(sub.name);
 
         wrap.appendChild(chk);
@@ -332,9 +356,7 @@ async function loadMasterData() {
     });
   }
 
-  /* ---------------------------------------------- */
-  /* SAVE                                           */
-  /* ---------------------------------------------- */
+//save
   async function save(section) {
     const token = localStorage.getItem("token");
     let body = {};
@@ -349,11 +371,24 @@ async function loadMasterData() {
       body.businessScale = businessScaleEl.value?.toUpperCase() || null;
       body.businessAge = businessAgeEl.value?.toUpperCase() || null;
       body.annualPurchase = annualPurchaseEl.value?.toUpperCase() || null;
+
       body.warehouseName = wareNameEl.value.trim();
       body.warehouseLocation = wareLocationEl.value.trim();
       body.paysTax = payTaxEl.checked;
       body.gstRegistered = gstEl.checked;
       body.hasLicence = licEl.checked;
+
+      // NEW: contract model + seasons
+      const model = contractModelEl.value || null;
+      body.contractModel = model;
+
+      if (model === "SEASONAL" || model === "BOTH") {
+        body.seasons = Array.from(seasonSelectEl.selectedOptions).map(
+          (o) => o.value
+        );
+      } else {
+        body.seasons = [];
+      }
     }
 
     if (section === "crops") {
@@ -383,9 +418,7 @@ async function loadMasterData() {
     }
   }
 
-  /* ---------------------------------------------- */
-  /* TOGGLE EDIT                                     */
-  /* ---------------------------------------------- */
+//toggle edit
   function toggleEdit(section, editing) {
     const form = document.querySelector(`.form-${section}`);
     const actions = form.querySelector(".form-actions");
@@ -401,6 +434,26 @@ async function loadMasterData() {
       inp.disabled = !editing;
     });
 
+    if (section === "business") {
+      // Season row visibility in edit vs view
+      if (editing) {
+        const model = contractModelEl.value;
+        if (model === "SEASONAL" || model === "BOTH") {
+          seasonRowEl.style.display = "block";
+        } else {
+          seasonRowEl.style.display = "none";
+        }
+      } else {
+        // back to view mode – show based on saved profile
+        const model = currentProfile.contractModel;
+        if (model === "SEASONAL" || model === "BOTH") {
+          seasonRowEl.style.display = "block";
+        } else {
+          seasonRowEl.style.display = "none";
+        }
+      }
+    }
+
     if (section === "crops" && editing) {
       renderEditModeCrops();
     }
@@ -410,9 +463,9 @@ async function loadMasterData() {
     }
   }
 
-  /* ---------------------------------------------- */
-  /* INIT PAGE                                      */
-  /* ---------------------------------------------- */
+
+  // INIT PAGE  
+  
   async function initPage() {
     // theme + lang first
     applyTheme(window.currentTheme);
@@ -439,6 +492,9 @@ async function loadMasterData() {
     wareNameEl = document.getElementById("wareName");
     wareLocationEl = document.getElementById("wareLocation");
     annualPurchaseEl = document.getElementById("annualPurchase");
+    contractModelEl = document.getElementById("contractModel");
+    seasonRowEl = document.getElementById("seasonRow");
+    seasonSelectEl = document.getElementById("seasonSelect");
 
     balEl = document.getElementById("walletBalance");
     escEl = document.getElementById("walletEscrow");
@@ -457,6 +513,11 @@ async function loadMasterData() {
     btnUpload = document.getElementById("btnUpload");
     btnReplace = document.getElementById("btnReplace");
     btnDelete = document.getElementById("btnDelete");
+
+    const backBtn = document.getElementById("backToDashboard");
+    backBtn?.addEventListener("click", () => {
+      window.location.href = "../Buyer-Dashboard/buyer-dashboard.html";
+    });
 
     /* Edit Button Handlers */
     document.querySelectorAll(".btn-edit").forEach((btn) => {
@@ -524,6 +585,18 @@ async function loadMasterData() {
 
     btnUpload?.addEventListener("click", () => photoInput?.click());
     btnReplace?.addEventListener("click", () => photoInput?.click());
+
+    // Contract model change (only meaningful in edit mode)
+    contractModelEl?.addEventListener("change", () => {
+      if (contractModelEl.disabled) return; // ignore in view-mode
+      const model = contractModelEl.value;
+      if (model === "SEASONAL" || model === "BOTH") {
+        seasonRowEl.style.display = "block";
+      } else {
+        seasonRowEl.style.display = "none";
+        Array.from(seasonSelectEl.options).forEach((o) => (o.selected = false));
+      }
+    });
 
     await loadMasterData();
     await loadProfile();

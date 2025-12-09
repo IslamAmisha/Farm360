@@ -1,12 +1,8 @@
-// =========================
-// GLOBAL STATE
-// =========================
+//global state
 let currentLanguage = "en";
 let currentTheme = "light";
 
-// =========================
-// TRANSLATIONS
-// =========================
+//translation library
 const translations = {
   en: {
     pageTitle: "Farmer Registration",
@@ -48,26 +44,36 @@ const translations = {
   }
 };
 
-// =========================
-// TOAST
-// =========================
-function showToast(message, type = "info") {
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
+//popup
+function showPopup(type, message) {
+  const overlay = document.getElementById("resultPopup");
+  const icon = document.getElementById("popupIcon");
+  const title = document.getElementById("popupTitle");
+  const text = document.getElementById("popupText");
 
-  document.body.appendChild(toast);
+  if (type === "success") {
+    icon.innerHTML = "✔️";
+    icon.className = "popup-icon popup-success";
+    title.textContent = "Registration Successful!";
+    text.textContent = message;
+  } else {
+    icon.innerHTML = "❌";
+    icon.className = "popup-icon popup-error";
+    title.textContent = "Registration Failed";
+    text.textContent = message;
+  }
 
-  setTimeout(() => toast.classList.add("show"), 10);
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  overlay.classList.add("show");
+
+  if (type === "success") {
+    setTimeout(() => {
+      overlay.classList.remove("show");
+      window.location.href = "../../Login/login.html";
+    }, 2000);
+  }
 }
 
-// =========================
-// INIT
-// =========================
+//init
 document.addEventListener("DOMContentLoaded", () => {
   applyTheme(currentTheme);
   applyLanguage(currentLanguage);
@@ -76,21 +82,16 @@ document.addEventListener("DOMContentLoaded", () => {
   attachEvents();
 });
 
-// =========================
-// THEME
-// =========================
+//theme
 function applyTheme(theme) {
   document.body.classList.toggle("theme-dark", theme === "dark");
   currentTheme = theme;
 }
-
 function toggleTheme() {
   applyTheme(currentTheme === "light" ? "dark" : "light");
 }
 
-// =========================
-// LANGUAGE
-// =========================
+//language
 function applyLanguage(lang) {
   document.body.classList.toggle("lang-bn", lang === "bn");
   currentLanguage = lang;
@@ -105,14 +106,11 @@ function applyLanguage(lang) {
   document.getElementById("langToggle").textContent =
     lang === "en" ? "বাংলা" : "English";
 }
-
 function toggleLanguage() {
   applyLanguage(currentLanguage === "en" ? "bn" : "en");
 }
 
-// =========================
-// DISTRICTS → BLOCKS
-// =========================
+//district&block
 async function populateDistricts() {
   try {
     const res = await fetch("http://localhost:8080/master/districts");
@@ -124,8 +122,8 @@ async function populateDistricts() {
     districts.forEach(d =>
       select.innerHTML += `<option value="${d.id}">${d.name}</option>`
     );
-  } catch (e) {
-    showToast("Failed to load districts.", "error");
+  } catch {
+    showPopup("error", "Failed to load districts.");
   }
 }
 
@@ -147,14 +145,12 @@ async function updateBlocks() {
     );
 
     blockSelect.disabled = false;
-  } catch (e) {
-    showToast("Failed to load blocks.", "error");
+  } catch {
+    showPopup("error", "Failed to load blocks.");
   }
 }
 
-// =========================
-// CROPS (MULTI-DROPDOWN)
-// =========================
+//crop and its category
 async function populateCrops() {
   const select = document.getElementById("cropsSelect");
   select.innerHTML = "";
@@ -174,8 +170,8 @@ async function populateCrops() {
 
     select.addEventListener("change", updateSubcategories);
 
-  } catch (e) {
-    console.error("Failed to load crops", e);
+  } catch {
+    showPopup("error", "Failed to load crops.");
   }
 }
 
@@ -185,9 +181,6 @@ function getSelectedCrops() {
   ).map(o => parseInt(o.value));
 }
 
-// =========================
-// SUBCATEGORIES
-// =========================
 async function updateSubcategories() {
   const cropIds = getSelectedCrops();
   const subSelect = document.getElementById("cropSubcategory");
@@ -204,9 +197,7 @@ async function updateSubcategories() {
       const res = await fetch(`http://localhost:8080/master/subcategories/${id}`);
       const subs = await res.json();
 
-      subs.forEach(s => {
-        if (!subsMap.has(s.id)) subsMap.set(s.id, s);
-      });
+      subs.forEach(s => !subsMap.has(s.id) && subsMap.set(s.id, s));
     }
 
     Array.from(subsMap.values())
@@ -215,14 +206,12 @@ async function updateSubcategories() {
         subSelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
       });
 
-  } catch (e) {
-    showToast("Failed to load subcategories.", "error");
+  } catch {
+    showPopup("error", "Failed to load subcategories.");
   }
 }
 
-// =========================
-// PHOTO HANDLING
-// =========================
+//handle photo
 function handlePhotoInput(e) {
   const file = e.target.files[0];
   const preview = document.getElementById("photoPreview");
@@ -248,48 +237,25 @@ function removePhoto() {
   document.getElementById("photoPreviewWrap").classList.add("hidden");
 }
 
-
+//validation
 function validateForm() {
-  let ok = true;
-  const f = id => document.getElementById(id).value.trim();
+  const val = id => document.getElementById(id).value.trim();
 
-  if (!f("farmerName")) return showToast("Enter farmer name.", "error"), false;
-  if (!f("district")) return showToast("Select district.", "error"), false;
-  if (!f("block")) return showToast("Select block.", "error"), false;
-  if (!f("village")) return showToast("Enter village.", "error"), false;
-  if (!/^\d{6}$/.test(f("pin"))) return showToast("Enter valid PIN.", "error"), false;
-  if (!(parseFloat(f("landSize")) > 0))
-    return showToast("Enter valid land size.", "error"), false;
-  if (!f("croppingPattern"))
-    return showToast("Select cropping pattern.", "error"), false;
+  if (!val("farmerName")) return showPopup("error", "Enter farmer name."), false;
+  if (!val("district")) return showPopup("error", "Select district."), false;
+  if (!val("block")) return showPopup("error", "Select block."), false;
+  if (!val("village")) return showPopup("error", "Enter village."), false;
+  if (!/^\d{6}$/.test(val("pin"))) return showPopup("error", "Invalid PIN."), false;
+  if (!(parseFloat(val("landSize")) > 0)) return showPopup("error", "Invalid land size."), false;
+  if (!val("croppingPattern")) return showPopup("error", "Select cropping pattern."), false;
+  if (getSelectedCrops().length === 0) return showPopup("error", "Select at least one crop."), false;
 
-  if (getSelectedCrops().length === 0)
-    return showToast("Select at least one crop.", "error"), false;
-
-  if (document.getElementById("cropSubcategory").selectedOptions.length === 0)
-    return showToast("Select at least one subcategory.", "error"), false;
-
-  return ok;
+  return true;
 }
 
-
+//submit
 async function handleSubmit() {
-
-  // SHOW LOADING POPUP
-  const popup = document.getElementById("submitPopup");
-  const popupContent = document.getElementById("popupContent");
-  const popupMessage = document.getElementById("popupMessage");
-  const loader = document.getElementById("popupLoader");
-
-  popupContent.className = "popup-content"; // reset
-  loader.classList.remove("hidden");
-  popupMessage.textContent = "Submitting your profile...";
-  popup.classList.remove("hidden");
-
-  if (!validateForm()) {
-    popup.classList.add("hidden");
-    return;
-  }
+  if (!validateForm()) return;
 
   const payload = {
     farmerName: document.getElementById("farmerName").value.trim(),
@@ -313,7 +279,7 @@ async function handleSubmit() {
 
   const userId = localStorage.getItem("userId");
   if (!userId) {
-    popupError("User not logged in.");
+    showPopup("error", "User not logged in.");
     return;
   }
 
@@ -323,44 +289,19 @@ async function handleSubmit() {
       body: fd
     });
 
-    loader.classList.add("hidden");
-
     if (!res.ok) {
-      popupError("Registration Failed !");
+      showPopup("error", "Registration failed. Try again.");
       return;
     }
 
-    popupSuccess("Registration Successful!");
+    showPopup("success", "Your Farmer profile has been created!");
 
-  } catch (err) {
-    loader.classList.add("hidden");
-    popupError("Something went wrong.");
+  } catch {
+    showPopup("error", "Something went wrong.");
   }
 }
 
-// SUCCESS POPUP
-function popupSuccess(msg) {
-  const popup = document.getElementById("submitPopup");
-  const popupContent = document.getElementById("popupContent");
-  const popupMessage = document.getElementById("popupMessage");
-  popupContent.className = "popup-content popup-success";
-  popupMessage.textContent = msg;
-}
-
-// ERROR POPUP
-function popupError(msg) {
-  const popup = document.getElementById("submitPopup");
-  const popupContent = document.getElementById("popupContent");
-  const popupMessage = document.getElementById("popupMessage");
-  popupContent.className = "popup-content popup-error";
-  popupMessage.textContent = msg;
-}
-
-
-
-// =========================
-// EVENT BINDINGS
-// =========================
+//event
 function attachEvents() {
   document.getElementById("themeToggle").onclick = toggleTheme;
   document.getElementById("langToggle").onclick = toggleLanguage;

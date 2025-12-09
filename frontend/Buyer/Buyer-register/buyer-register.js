@@ -1,14 +1,10 @@
-/* ============================================================
-   GLOBAL STATE
-============================================================ */
+//global state
 let currentLanguage = "en";
 let currentTheme = "light";
 let selectedBuyerCrops = [];
 let aadhaarBase64 = null;
 
-/* ============================================================
-   TRANSLATIONS
-============================================================ */
+//translations library
 const translations = {
   en: {
     pageTitle: "Buyer Registration",
@@ -34,6 +30,13 @@ const translations = {
     warehouseNameLabel: "Warehouse Name",
     warehouseLocationLabel: "Warehouse Location",
     annualPurchaseLabel: "Annual Purchase",
+    contractModelLabel: "Contract Model",
+
+    // ⭐ NEW SEASON TRANSLATIONS (ENGLISH)
+    seasonLabel: "Select Season(s)",
+    seasonKharif: "Kharif",
+    seasonRabi: "Rabi",
+    seasonZaid: "Zaid",
 
     buyerCropsLabel: "Crops",
     buyerCropSubLabel: "Crop Subcategories",
@@ -65,6 +68,13 @@ const translations = {
     warehouseNameLabel: "গুদামের নাম",
     warehouseLocationLabel: "গুদামের অবস্থান",
     annualPurchaseLabel: "বার্ষিক ক্রয়",
+    contractModelLabel: "চুক্তির ধরন",
+
+    // ⭐ NEW SEASON TRANSLATIONS (BENGALI)
+    seasonLabel: "মৌসুম নির্বাচন করুন",
+    seasonKharif: "খরিফ",
+    seasonRabi: "রবি",
+    seasonZaid: "জাইড",
 
     buyerCropsLabel: "ফসল",
     buyerCropSubLabel: "ফসলের উপবিভাগ",
@@ -73,9 +83,36 @@ const translations = {
   }
 };
 
-/* ============================================================
-   INIT
-============================================================ */
+//pop-up
+function showPopup(type, message) {
+  const overlay = document.getElementById("resultPopup");
+  const icon = document.getElementById("popupIcon");
+  const title = document.getElementById("popupTitle");
+  const text = document.getElementById("popupText");
+
+  if (type === "success") {
+    icon.innerHTML = "✔️";
+    icon.className = "popup-icon popup-success";
+    title.textContent = "Registration Successful!";
+    text.textContent = message;
+  } else {
+    icon.innerHTML = "❌";
+    icon.className = "popup-icon popup-error";
+    title.textContent = "Registration Failed";
+    text.textContent = message;
+  }
+
+  overlay.classList.add("show");
+
+  if (type === "success") {
+    setTimeout(() => {
+      overlay.classList.remove("show");
+      window.location.href = "../../Login/login.html";
+    }, 2000);
+  }
+}
+
+//init
 document.addEventListener("DOMContentLoaded", () => {
   applyTheme(currentTheme);
   applyLanguage(currentLanguage);
@@ -84,32 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
   attachEvents();
 });
 
-/* ============================================================
-   POPUP SUCCESS & ERROR
-============================================================ */
-function popupSuccess(msg) {
-  const popupMessage = document.getElementById("popupMessage");
-  const popupContent = document.getElementById("popupContent");
-
-  popupMessage.textContent = msg;
-  popupContent.className = "popup-content success";
-
-  setTimeout(() => {
-    document.getElementById("submitPopup").classList.add("hidden");
-  }, 1500);
-}
-
-function popupError(msg) {
-  const popupMessage = document.getElementById("popupMessage");
-  const popupContent = document.getElementById("popupContent");
-
-  popupMessage.textContent = msg;
-  popupContent.className = "popup-content error";
-}
-
-/* ============================================================
-   THEME
-============================================================ */
+//theme
 function applyTheme(theme) {
   document.body.classList.toggle("theme-dark", theme === "dark");
   currentTheme = theme;
@@ -118,9 +130,7 @@ function toggleTheme() {
   applyTheme(currentTheme === "light" ? "dark" : "light");
 }
 
-/* ============================================================
-   LANGUAGE
-============================================================ */
+//language
 function applyLanguage(lang) {
   currentLanguage = lang;
   document.body.classList.toggle("lang-bn", lang === "bn");
@@ -137,9 +147,9 @@ function toggleLanguage() {
   applyLanguage(currentLanguage === "en" ? "bn" : "en");
 }
 
-/* ============================================================
-   DISTRICT → BLOCK → CITY
-============================================================ */
+
+   //DISTRICT → BLOCK → CITY
+
 async function loadDistricts() {
   const sel = document.getElementById("district");
   sel.innerHTML = `<option value="">Select district</option>`;
@@ -190,9 +200,7 @@ async function updateCities() {
   sel.disabled = false;
 }
 
-/* ============================================================
-   CROPS + SUBCATEGORIES
-============================================================ */
+//crop and its category
 async function loadCrops() {
   const sel = document.getElementById("buyerCropsSelect");
   sel.innerHTML = "";
@@ -260,9 +268,7 @@ async function updateSubcategories() {
   });
 }
 
-/* ============================================================
-   AADHAAR BASE64
-============================================================ */
+//aadhar handling
 function onAadharPhoto(e) {
   const file = e.target.files[0];
   const preview = document.getElementById("aadharPreview");
@@ -282,9 +288,20 @@ function onAadharPhoto(e) {
   reader.readAsDataURL(file);
 }
 
-/* ============================================================
-   VALIDATION
-============================================================ */
+//contract modal 
+function toggleSeasonField() {
+  const model = document.getElementById("contractModel").value;
+  const seasonGroup = document.getElementById("seasonGroup");
+
+  if (model === "SEASONAL" || model === "BOTH") {
+    seasonGroup.style.display = "block";
+  } else {
+    seasonGroup.style.display = "none";
+    document.getElementById("seasonSelect").selectedIndex = -1;
+  }
+}
+
+//VALIDATION
 function validateForm() {
   let ok = true;
 
@@ -307,36 +324,36 @@ function validateForm() {
     ok = false;
   }
 
+  const contractModel = document.getElementById("contractModel").value;
+
+  if (contractModel === "SEASONAL" || contractModel === "BOTH") {
+    const selectedSeasons = Array.from(
+      document.getElementById("seasonSelect").selectedOptions
+    ).map(o => o.value);
+
+    if (selectedSeasons.length === 0) {
+      document.getElementById("seasonErr").textContent =
+        "Select at least one season.";
+      ok = false;
+    }
+  }
+
   return ok;
 }
 
-/* ============================================================
-   SUBMIT
-============================================================ */
+//submit
 async function handleBuyerSubmit() {
 
-  // SHOW POPUP
-  const popup = document.getElementById("submitPopup");
-  const popupContent = document.getElementById("popupContent");
-  const popupMessage = document.getElementById("popupMessage");
-  const loader = document.getElementById("popupLoader");
+  if (!validateForm()) return;
 
-  popupContent.className = "popup-content"; 
-  loader.classList.remove("hidden");
-  popupMessage.textContent = "Submitting your profile...";
-  popup.classList.remove("hidden");
-
-  if (!validateForm()) {
-    popup.classList.add("hidden");
-    return;
-  }
-
-  // ============================================================
-  // ✅ FIXED APPROVAL COLLECTION (correct & safe)
-  // ============================================================
   const approvals = Array.from(
     document.querySelectorAll(".gov-approval:checked")
   ).map(cb => cb.value);
+
+  // ⭐ COLLECT SEASONS
+  const selectedSeasons = Array.from(
+    document.getElementById("seasonSelect").selectedOptions
+  ).map(o => o.value);
 
   const payload = {
     fullName: document.getElementById("fullName").value.trim(),
@@ -354,14 +371,17 @@ async function handleBuyerSubmit() {
     businessScale: document.getElementById("businessScale").value,
 
     paysTax: approvals.includes("Pay_Tax"),
-  gstRegistered: approvals.includes("GST_Registered"),
-  hasLicence: approvals.includes("Has_Licence"),
+    gstRegistered: approvals.includes("GST_Registered"),
+    hasLicence: approvals.includes("Has_Licence"),
 
     businessAge: document.getElementById("businessAge").value,
     warehouseName: document.getElementById("wareName").value.trim(),
     warehouseLocation: document.getElementById("wareLocation").value.trim(),
 
     annualPurchase: document.getElementById("annualPurchase").value,
+    contractModel: document.getElementById("contractModel").value,
+
+    seasons: selectedSeasons,   
 
     cropIds: selectedBuyerCrops,
     subcategoryIds: Array.from(
@@ -371,7 +391,7 @@ async function handleBuyerSubmit() {
 
   const userId = localStorage.getItem("userId");
   if (!userId) {
-    popupError("User not logged in.");
+    showPopup("error", "User not logged in.");
     return;
   }
 
@@ -382,24 +402,19 @@ async function handleBuyerSubmit() {
       body: JSON.stringify(payload)
     });
 
-    loader.classList.add("hidden");
-
     if (!res.ok) {
-      popupError("Registration Failed!");
+      showPopup("error", "Registration failed. Please try again.");
       return;
     }
 
-    popupSuccess("Registration Successful!");
+    showPopup("success", "Your buyer profile has been created successfully.");
 
   } catch (err) {
-    loader.classList.add("hidden");
-    popupError("Something went wrong.");
+    showPopup("error", "Something went wrong. Try again.");
   }
 }
 
-/* ============================================================
-   EVENTS
-============================================================ */
+//event
 function attachEvents() {
   document.getElementById("themeToggle").addEventListener("click", toggleTheme);
   document.getElementById("langToggle").addEventListener("click", toggleLanguage);
@@ -408,6 +423,8 @@ function attachEvents() {
   document.getElementById("block").addEventListener("change", updateCities);
 
   document.getElementById("aadharPhoto").addEventListener("change", onAadharPhoto);
+
+  document.getElementById("contractModel").addEventListener("change", toggleSeasonField);
 
   document.getElementById("buyerForm").addEventListener("submit", (e) => {
     e.preventDefault();

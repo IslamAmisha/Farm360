@@ -1,6 +1,4 @@
-// ------------------------------------------------------
-// 0) PROTECT PAGE (Farmer only)
-// ------------------------------------------------------
+//protect farmer 
 (function protectFarmerRequest() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -14,21 +12,16 @@
   }
 })();
 
-// ------------------------------------------------------
-// 1) MAIN SCRIPT
-// ------------------------------------------------------
+//main script
 (function () {
-  const API_BASE = "http://localhost:8080"; // change if needed
+  const API_BASE = "http://localhost:8080";
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  // ------------------------------------------------------
-  // 1. TRANSLATIONS (EN + BN)
-// ------------------------------------------------------
+ //translation library
   const translations = {
     en: {
       brandName: "Farm360",
-
       navHome: "Home",
       navModules: "Modules",
       navAbout: "About",
@@ -52,14 +45,12 @@
       btnReject: "Reject",
 
       sentOn: "Sent On",
-
       noIncoming: "No incoming requests",
       noOutgoing: "No outgoing requests",
     },
 
     bn: {
       brandName: "Farm360",
-
       navHome: "হোম",
       navModules: "মডিউল",
       navAbout: "সম্পর্কিত",
@@ -83,7 +74,6 @@
       btnReject: "প্রত্যাখ্যান",
 
       sentOn: "পাঠানো",
-
       noIncoming: "কোনো আসা অনুরোধ নেই",
       noOutgoing: "কোনো পাঠানো অনুরোধ নেই",
     },
@@ -93,12 +83,9 @@
   let currentTheme = window.currentTheme || "light";
 
   function t() {
-    return translations[currentLanguage] || translations.en;
+    return translations[currentLanguage];
   }
-
-  // ------------------------------------------------------
-  // 2. THEME + LANGUAGE HANDLING
-  // ------------------------------------------------------
+//theme+lang
   function applyTheme(theme) {
     document.body.classList.toggle("theme-dark", theme === "dark");
     currentTheme = theme;
@@ -114,40 +101,24 @@
     window.currentLanguage = lang;
 
     const tr = t();
-
     document.body.classList.toggle("lang-bn", lang === "bn");
 
-    // update all [data-text] labels
     document.querySelectorAll("[data-text]").forEach((el) => {
       const key = el.dataset.text;
       if (tr[key]) el.textContent = tr[key];
     });
 
-    // toggle button labels
-    const langBtn = document.getElementById("langToggle");
-    const mobileLangBtn = document.getElementById("mobileLangToggle");
-
-    if (langBtn) langBtn.textContent = lang === "en" ? "বাংলা" : "English";
-    if (mobileLangBtn)
-      mobileLangBtn.textContent = lang === "en" ? "বাংলা" : "English";
-
-    // re-render cards with new language
     renderAll();
   }
 
   function toggleLanguage() {
     applyLanguage(currentLanguage === "en" ? "bn" : "en");
   }
-
-  // ------------------------------------------------------
-  // 3. STATE
-  // ------------------------------------------------------
+//state
   let incoming = [];
   let outgoing = [];
 
-  // ------------------------------------------------------
-  // 4. DOM ELEMENTS
-  // ------------------------------------------------------
+  //dom Element
   const incomingList = document.getElementById("incomingList");
   const outgoingList = document.getElementById("outgoingList");
   const incomingCount = document.getElementById("incomingCount");
@@ -156,9 +127,7 @@
   const tabIncoming = document.getElementById("tabIncoming");
   const tabOutgoing = document.getElementById("tabOutgoing");
 
-  // ------------------------------------------------------
-  // 5. HELPERS
-  // ------------------------------------------------------
+//helper
   function formatDate(str) {
     if (!str) return "—";
     const d = new Date(str);
@@ -169,86 +138,71 @@
     });
   }
 
-  // ------------------------------------------------------
-  // 6. API CALLS
-  // ------------------------------------------------------
+//api calls
+
+  // Incoming for this farmer
   async function loadIncomingRequests() {
     try {
-      const res = await fetch(
-        `${API_BASE}/request/incoming?userId=${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await fetch(`${API_BASE}/request/incoming?userId=${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
+      console.log("Farmer incoming data:", data);
       incoming = data.requests || [];
-    } catch (err) {
-      console.error("Error loading incoming requests:", err);
+    } catch (e) {
       incoming = [];
+      console.error("Error incoming:", e);
     }
   }
 
+  // Outgoing by this farmer
   async function loadOutgoingRequests() {
     try {
-      const res = await fetch(
-        `${API_BASE}/request/outgoing?userId=${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await fetch(`${API_BASE}/request/outgoing?userId=${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
+      console.log("Farmer outgoing data:", data);
       outgoing = data.requests || [];
-    } catch (err) {
-      console.error("Error loading outgoing requests:", err);
+    } catch (e) {
       outgoing = [];
+      console.error("Error outgoing:", e);
     }
   }
 
-  async function handleAccept(requestId) {
+  async function handleAccept(id) {
     if (!confirm("Accept this request?")) return;
 
-    try {
-      await fetch(`${API_BASE}/request/update`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ requestId: requestId, action: "ACCEPT" }),
-      });
+    await fetch(`${API_BASE}/request/update`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ requestId: id, action: "ACCEPT" }),
+    });
 
-      await loadIncomingRequests();
-      renderAll();
-    } catch (err) {
-      console.error("Error accepting request:", err);
-      alert("Something went wrong while accepting the request.");
-    }
+    await loadIncomingRequests();
+    renderAll();
   }
 
-  async function handleReject(requestId) {
+  async function handleReject(id) {
     if (!confirm("Reject this request?")) return;
 
-    try {
-      await fetch(`${API_BASE}/request/update`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ requestId: requestId, action: "REJECT" }),
-      });
+    await fetch(`${API_BASE}/request/update`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ requestId: id, action: "REJECT" }),
+    });
 
-      await loadIncomingRequests();
-      renderAll();
-    } catch (err) {
-      console.error("Error rejecting request:", err);
-      alert("Something went wrong while rejecting the request.");
-    }
+    await loadIncomingRequests();
+    renderAll();
   }
 
-  // ------------------------------------------------------
-  // 7. RENDERING
-  // ------------------------------------------------------
+  // RENDERING
   function updateCounts() {
     incomingCount.textContent = incoming.length;
     outgoingCount.textContent = outgoing.length;
@@ -261,10 +215,7 @@
 
     if (!incoming.length) {
       incomingList.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">📥</div>
-          <div class="empty-state-title">${tr.noIncoming}</div>
-        </div>
+        <div class="empty-state">📥 ${tr.noIncoming}</div>
       `;
       return;
     }
@@ -286,16 +237,15 @@
             <div class="user-name">${req.senderName}</div>
             <div class="user-company">${req.companyName || ""}</div>
             <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${
-        req.district || ""
-      }
+              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
             </div>
             <div class="user-rating">
               👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
             </div>
           </div>
+
           <div class="request-status ${statusClass}">
-            ${tr[`status${req.status}`] || req.status}
+            ${t()[`status${req.status}`]}
           </div>
         </div>
 
@@ -314,9 +264,12 @@
             <button class="btn-outline btn-reject" data-id="${req.requestId}">
               ${tr.btnReject}
             </button>
-          `
+            `
                 : ""
             }
+            <button class="btn-outline btn-view" data-id="${req.requestId}">
+              ${tr.btnView}
+            </button>
           </div>
         </div>
       `;
@@ -324,17 +277,22 @@
       incomingList.appendChild(card);
     });
 
-    // wire buttons
-    incomingList.querySelectorAll(".btn-accept").forEach((btn) =>
-      btn.addEventListener("click", (e) =>
-        handleAccept(e.target.getAttribute("data-id"))
-      )
-    );
-    incomingList.querySelectorAll(".btn-reject").forEach((btn) =>
-      btn.addEventListener("click", (e) =>
-        handleReject(e.target.getAttribute("data-id"))
-      )
-    );
+    // attach events
+    incomingList
+      .querySelectorAll(".btn-accept")
+      .forEach((btn) =>
+        btn.addEventListener("click", (e) =>
+          handleAccept(e.target.dataset.id)
+        )
+      );
+
+    incomingList
+      .querySelectorAll(".btn-reject")
+      .forEach((btn) =>
+        btn.addEventListener("click", (e) =>
+          handleReject(e.target.dataset.id)
+        )
+      );
   }
 
   // OUTGOING (Farmer → Buyer)
@@ -344,10 +302,7 @@
 
     if (!outgoing.length) {
       outgoingList.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">📤</div>
-          <div class="empty-state-title">${tr.noOutgoing}</div>
-        </div>
+        <div class="empty-state">📤 ${tr.noOutgoing}</div>
       `;
       return;
     }
@@ -369,16 +324,15 @@
             <div class="user-name">${req.receiverName}</div>
             <div class="user-company">${req.companyName || ""}</div>
             <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${
-        req.district || ""
-      }
+              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
             </div>
             <div class="user-rating">
               👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
             </div>
           </div>
+
           <div class="request-status ${statusClass}">
-            ${tr[`status${req.status}`] || req.status}
+            ${t()[`status${req.status}`]}
           </div>
         </div>
 
@@ -386,8 +340,9 @@
           <div class="request-dates">
             <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
           </div>
+
           <div class="request-actions">
-            <button class="btn-outline">
+            <button class="btn-outline btn-view">
               ${tr.btnView}
             </button>
           </div>
@@ -404,9 +359,9 @@
     renderOutgoing();
   }
 
-  // ------------------------------------------------------
-  // 8. TAB SWITCH
-  // ------------------------------------------------------
+ 
+  // TABS
+ 
   function switchTab(tab) {
     if (tab === "incoming") {
       incomingList.style.display = "flex";
@@ -421,29 +376,8 @@
     }
   }
 
-  // ------------------------------------------------------
-  // 9. EVENT LISTENERS & INIT
-  // ------------------------------------------------------
-  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
-  document
-    .getElementById("mobileThemeToggle")
-    ?.addEventListener("click", toggleTheme);
-
-  document
-    .getElementById("langToggle")
-    ?.addEventListener("click", () => toggleLanguage());
-  document
-    .getElementById("mobileLangToggle")
-    ?.addEventListener("click", () => toggleLanguage());
-
-  document.getElementById("mobileMenuBtn")?.addEventListener("click", () => {
-    const menu = document.getElementById("mobileMenu");
-    if (!menu) return;
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-  });
-
-  tabIncoming?.addEventListener("click", () => switchTab("incoming"));
-  tabOutgoing?.addEventListener("click", () => switchTab("outgoing"));
+  
+  // INIT
 
   document.addEventListener("DOMContentLoaded", async () => {
     applyTheme(currentTheme);
@@ -452,7 +386,28 @@
     await loadIncomingRequests();
     await loadOutgoingRequests();
 
+    console.log("Farmer incoming length:", incoming.length);
+    console.log("Farmer outgoing length:", outgoing.length);
+
     renderAll();
     switchTab("incoming");
+  });
+
+  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
+  document
+    .getElementById("mobileThemeToggle")
+    ?.addEventListener("click", toggleTheme);
+
+  document.getElementById("langToggle")?.addEventListener("click", toggleLanguage);
+  document
+    .getElementById("mobileLangToggle")
+    ?.addEventListener("click", toggleLanguage);
+
+  tabIncoming?.addEventListener("click", () => switchTab("incoming"));
+  tabOutgoing?.addEventListener("click", () => switchTab("outgoing"));
+
+  document.getElementById("mobileMenuBtn")?.addEventListener("click", () => {
+    const menu = document.getElementById("mobileMenu");
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
   });
 })();

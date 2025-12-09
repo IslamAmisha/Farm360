@@ -450,3 +450,25 @@ body.theme-dark .photo-empty {
 .land-value {
   color: var(--foreground);
 }
+
+/* Back button (profile page) */
+.back-btn-card {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--primary);
+  background: var(--primary-bg, rgba(34,197,94,0.12));
+  border: 1px solid var(--primary);
+  border-radius: 0.55rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.back-btn-card:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: translateX(-2px);
+}
+

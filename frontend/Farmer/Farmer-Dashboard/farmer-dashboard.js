@@ -184,6 +184,9 @@ if (typeof translations !== "undefined") {
 
 const API_BASE_URL = "http://localhost:8080";
 
+let buyerDetailsModal, buyerDetailsBody, buyerModalCloseBtn;
+
+
 function getDashText() {
   const lang = window.currentLanguage || "en";
   const t =
@@ -206,6 +209,33 @@ function getThumbRating(up, down) {
     <div class="thumb-line">👎 ${down ?? 0}</div>
   `;
 }
+function maskPhone(phone) {
+  if (!phone) return "-";
+  const digits = String(phone).replace(/\D/g, "");
+  if (digits.length < 6) return "******";
+  const start = digits.slice(0, 2);
+  const end = digits.slice(-2);
+  return `${start}******${end}`;
+}
+
+function maskAadhaar(aadhaar) {
+  if (!aadhaar) return "N/A";
+  const digits = String(aadhaar).replace(/\D/g, "");
+  if (digits.length < 4) return "XXXX-XXXX-XXXX";
+  return `XXXX-XXXX-${digits.slice(-4)}`;
+}
+
+
+function detailRow(label, value) {
+  if (!value) return "";
+  return `
+    <div class="detail-row">
+      <div class="detail-label">${label}</div>
+      <div class="detail-value">${value}</div>
+    </div>
+  `;
+}
+
 
 function renderBuyers(list) {
   const { t } = getDashText();
@@ -221,58 +251,151 @@ function renderBuyers(list) {
     return;
   }
 
-  container.innerHTML = list
-    .map((b) => {
-      const cropBadges = (b.crops || [])
-        .map((c) => {
-          const key = "crop_" + String(c).toLowerCase();
-          const label = t[key] || c;
-          return `<span class="crop-badge">${label}</span>`;
-        })
-        .join("");
+  container.innerHTML = "";
 
-      let requestLabel = t.btnRequest;
-      let disabled = false;
+  list.forEach((b) => {
+    // badges
+    const cropBadges = (b.crops || [])
+      .map((c) => {
+        const key = "crop_" + String(c).toLowerCase();
+        const label = t[key] || c;
+        return `<span class="crop-badge">${label}</span>`;
+      })
+      .join("");
 
-      if (!b.canSendRequest) {
-        if (b.requestStatus === "PENDING") requestLabel = t.btnRequested;
-        else if (b.requestStatus === "ACCEPTED") requestLabel = t.btnConnected;
-        disabled = true;
-      }
+    // request button state
+    let requestLabel = t.btnRequest;
+    let disabled = false;
+    if (!b.canSendRequest) {
+      if (b.requestStatus === "PENDING") requestLabel = t.btnRequested;
+      else if (b.requestStatus === "ACCEPTED") requestLabel = t.btnConnected;
+      disabled = true;
+    }
 
-      const location = [b.villageOrCity, b.district]
-        .filter(Boolean)
-        .join(", ");
+    const location = [b.villageOrCity, b.district].filter(Boolean).join(", ");
 
-      return `
-        <div class="buyer-card" data-receiver-id="${b.userId}">
-          <h3>${b.name}</h3>
+    // create card element
+    const card = document.createElement("div");
+    card.className = "buyer-card";
+    card.dataset.receiverId = b.userId;
 
-          <div class="buyer-rating">${getThumbRating(
-            b.ratingUp,
-            b.ratingDown
-          )}</div>
+    card.innerHTML = `
+      <h3>${b.name}</h3>
 
-          <p class="buyer-company">${b.businessName || ""}</p>
-          <p class="buyer-location">📍 ${location}</p>
+      <div class="buyer-rating">
+        ${getThumbRating(b.ratingUp, b.ratingDown)}
+      </div>
 
-          <div class="buyer-crops">${cropBadges}</div>
+      <p class="buyer-company">${b.businessName || ""}</p>
+      <p class="buyer-location">📍 ${location}</p>
 
-          <div class="buyer-buttons">
-            <button class="btn-request" ${disabled ? "disabled" : ""}>
-              ${requestLabel}
-            </button>
-            <button class="btn-details">${t.btnDetails}</button>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
+      <div class="buyer-crops">${cropBadges}</div>
 
-  if (typeof updateTranslatedText === "function") updateTranslatedText();
+      <div class="buyer-buttons buyer-actions">
+        <button class="btn-request" ${disabled ? "disabled" : ""}>
+          ${requestLabel}
+        </button>
+        <button class="btn-details">
+          ${t.btnDetails}
+        </button>
+      </div>
+    `;
 
-  attachRequestButtonHandlers();
+    const reqBtn = card.querySelector(".btn-request");
+    const detailsBtn = card.querySelector(".btn-details");
+
+    if (reqBtn && !disabled) {
+      reqBtn.addEventListener("click", () => {
+        const receiver = card.getAttribute("data-receiver-id");
+        if (receiver) sendRequestToBuyer(receiver, reqBtn);
+      });
+    }
+
+    if (detailsBtn) {
+      detailsBtn.addEventListener("click", () => openBuyerDetailsModal(b));
+    }
+
+    container.appendChild(card);
+  });
+
+  if (typeof updateTranslatedText === "function") {
+    updateTranslatedText();
+  }
 }
+
+function openBuyerDetailsModal(buyer) {
+  if (!buyerDetailsModal || !buyerDetailsBody) return;
+
+  const maskedPhone =
+    buyer.maskedPhone || maskPhone(buyer.phoneNumber || buyer.phone);
+
+  const maskedAadhaar =
+    buyer.maskedAadhaar || maskAadhaar(buyer.aadhaarNo || buyer.aadhaar);
+
+  const seasons = Array.isArray(buyer.seasons)
+    ? buyer.seasons.join(", ")
+    : (buyer.seasons || "N/A");
+
+  const crops = Array.isArray(buyer.crops)
+    ? buyer.crops.join(", ")
+    : (buyer.crops || "N/A");
+
+  const subcats = Array.isArray(buyer.cropSubcategories || buyer.subcategories)
+    ? (buyer.cropSubcategories || buyer.subcategories).join(", ")
+    : (buyer.cropSubcategories || buyer.subcategories || "N/A");
+
+ buyerDetailsBody.innerHTML = `
+  <div class="section-header">BUYER OVERVIEW</div>
+  <div class="info-card">
+    <div class="details-grid">
+      ${detailRow("Name", buyer.name)}
+      ${detailRow("Business Name", buyer.businessName)}
+      ${detailRow("Phone", maskedPhone)}
+      ${detailRow("Aadhaar", maskedAadhaar)}
+    </div>
+  </div>
+
+  <div class="section-header">LOCATION</div>
+  <div class="info-card">
+    <div class="details-grid">
+      ${detailRow("District", buyer.district)}
+      ${detailRow("Village / City", buyer.villageOrCity)}
+      ${detailRow("Warehouse Name", buyer.warehouseName)}
+      ${detailRow("Warehouse Location", buyer.warehouseLocation)}
+    </div>
+  </div>
+
+  <div class="section-header">BUSINESS INFORMATION</div>
+  <div class="info-card">
+    <div class="details-grid">
+      ${detailRow("Business Type", buyer.businessType)}
+      ${detailRow("Business Scale", buyer.businessScale)}
+      ${detailRow("Annual Purchase", buyer.annualPurchase)}
+      ${detailRow("Contract Model", buyer.contractModel)}
+    </div>
+  </div>
+
+  <div class="section-header">CROPS & SEASONS</div>
+  <div class="info-card">
+    <div class="details-grid">
+      ${detailRow("Seasons", seasons)}
+      ${detailRow("Crops", crops)}
+      ${detailRow("Crop Subcategories", subcats)}
+    </div>
+  </div>
+`;
+
+
+
+  buyerDetailsModal.hidden = false;
+}
+
+
+
+function closeBuyerModal() {
+  if (buyerDetailsModal) buyerDetailsModal.hidden = true;
+}
+
 
 async function loadBuyers() {
   const { token, userId } = getAuthInfo();
@@ -415,9 +538,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const search = document.getElementById("buyerSearch");
   if (search) search.placeholder = t.searchPlaceholder;
 
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", applyFilters);
+  buyerDetailsModal = document.getElementById("buyerDetailsModal");
+  buyerDetailsBody = document.getElementById("buyerDetailsBody");
+  buyerModalCloseBtn = document.getElementById("buyerModalCloseBtn");
+
+  buyerModalCloseBtn?.addEventListener("click", closeBuyerModal);
+
+  // close when clicking outside modal box
+  buyerDetailsModal?.addEventListener("click", (e) => {
+    if (e.target === buyerDetailsModal) {
+      closeBuyerModal();
+    }
+  });
+
+  document
+    .getElementById("applyFiltersBtn")
+    ?.addEventListener("click", applyFilters);
 
   document.querySelector(".logout")?.addEventListener("click", logoutUser);
-  
+
   loadBuyers();
 });

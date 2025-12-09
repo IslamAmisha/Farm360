@@ -1,6 +1,4 @@
-// -------------------------------------------
-// 0) PROTECT PAGE (farmer only)
-// -------------------------------------------
+//protect farmer
 (function protectFarmerLandPage() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -16,9 +14,7 @@
 (function () {
   const API_BASE = "http://localhost:8080";
 
-  // -----------------------------------------
-  // 1) TRANSLATIONS
-  // -----------------------------------------
+  // TRANSLATIONS
   const tAll = {
     en: {
       brandName: "Farm360",
@@ -175,9 +171,7 @@
     document.body.classList.toggle("theme-light", theme === "light");
   }
 
-  // -----------------------------------------
-  // 2) DOM REFS
-  // -----------------------------------------
+  //dom refs
   const landsListEl = document.getElementById("landsList");
   const landsEmptyEl = document.getElementById("landsEmpty");
 
@@ -191,9 +185,7 @@
   const btnNewLand = document.getElementById("btnNewLand");
   const btnCancelForm = document.getElementById("btnCancelForm");
 
-  // -----------------------------------------
-  // 3) STATE
-  // -----------------------------------------
+ //state
   let farmerId = null;
   let lands = []; // { landId, size, croppingPattern, crops[] } (from profile)
   let cropsMaster = []; // [{id, name}]
@@ -205,9 +197,7 @@
     return tAll[lang];
   }
 
-  // -----------------------------------------
-  // 4) LOAD DATA
-  // -----------------------------------------
+ //load data
   async function loadProfileAndLands() {
     const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE}/api/profile/farmer`, {
@@ -255,9 +245,7 @@
     return arr;
   }
 
-  // -----------------------------------------
-  // 5) RENDER LANDS LIST
-  // -----------------------------------------
+//render land list
   function renderLands() {
     landsListEl.innerHTML = "";
     if (!lands || lands.length === 0) {
@@ -310,9 +298,7 @@
     });
   }
 
-  // -----------------------------------------
-  // 6) RENDER CROPS + SUBCATEGORIES
-  // -----------------------------------------
+ //crops and its category
   function renderCropsChecklist(selectedCropIds = []) {
     const tObj = t();
     cropsChecklist.innerHTML = "";
@@ -472,9 +458,7 @@
     await renderSubcategoriesChecklist(selectedNames);
   }
 
-  // -----------------------------------------
-  // 8) EVENT HANDLERS
-  // -----------------------------------------
+ //event handler
   function onCropToggle(e) {
     // enforce pattern limit
     const pattern = patternSelect.value;
@@ -529,7 +513,7 @@
 
       await createLand(size, pattern, selectedSubIds);
     } else {
-      // EDIT: pattern is fixed, only size & subcategories allowed
+    
       if (selectedSubIds.length === 0) {
         alert(tObj.msgNeedSubcategories);
         return;
@@ -538,9 +522,7 @@
     }
   }
 
-  // -----------------------------------------
-  // 9) API CALLS
-  // -----------------------------------------
+ //api calls
   async function createLand(size, pattern, subIds) {
     const token = localStorage.getItem("token");
     try {
@@ -561,7 +543,7 @@
       );
 
       if (!res.ok) throw new Error("Create failed");
-      const rs = await res.json(); // LandRS: {landId,size,crops[]}
+      const rs = await res.json(); 
 
       // push into state with known pattern
       lands.push({
@@ -649,30 +631,7 @@
   }
 }
 
-
-  // -----------------------------------------
-  // 🔧 IMPORTANT BACKEND FIX FOR PATTERN
-  // -----------------------------------------
-  // In LandServiceImpl.updateLand, BEFORE clearing land.getLandCrops(), keep
-  // the old croppingPattern and set it on the new LandCropEntity objects:
-  //
-  // CroppingPattern pattern = land.getLandCrops().isEmpty()
-  //      ? null
-  //      : land.getLandCrops().get(0).getCroppingPattern();
-  //
-  // land.getLandCrops().clear();
-  // for (CropSubCategoriesEntity sub : subs) {
-  //     LandCropEntity lc = LandCropEntity.builder()
-  //           .land(land)
-  //           .cropSubCategory(sub)
-  //           .croppingPattern(pattern)   // <--- keep old pattern
-  //           .build();
-  //     land.getLandCrops().add(lc);
-  // }
-
-  // -----------------------------------------
-  // 10) INIT + EVENTS
-  // -----------------------------------------
+//init 
   function init() {
     applyTheme(theme);
     applyLanguage(lang);

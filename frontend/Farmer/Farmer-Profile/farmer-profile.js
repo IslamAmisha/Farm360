@@ -13,7 +13,7 @@
 })();
 
 (function () {
-  /* 0) TRANSLATIONS --------------------------------- */
+  // TRANSLATIONS 
   const translations = {
     en: {
       brandName: "Farm360",
@@ -107,20 +107,20 @@
       phoneLabel: "ফোন:",
       locationLabel: "অবস্থান:",
 
-      // new labels for land cards
+      
       landTitlePrefix: "জমি",
       landSizeUnit: "একর",
       landLabelPattern: "ফসল চক্র / প্যাটার্ন",
       landLabelCrops: "ফসল / উপশ্রেণী",
 
-      // OPTIONAL: enum-friendly labels
+      
       cropping_SINGLE: "এক ফসলি",
       cropping_DOUBLE: "দুই ফসলি",
       cropping_TRIPLE: "তিন ফসলি",
     },
   };
 
-  /* 1) GLOBAL STATE --------------------------------- */
+ // GLOBAL STATE 
   let currentLanguage = window.currentLanguage || "en";
   let currentTheme = window.currentTheme || "light";
 
@@ -130,7 +130,7 @@
     return translations[currentLanguage] || translations.en;
   }
 
-  /* 2) THEME + LANGUAGE ----------------------------- */
+  //THEME &LANGUAGE 
   function applyTheme(theme) {
     document.body.classList.toggle("theme-dark", theme === "dark");
     currentTheme = theme;
@@ -163,11 +163,11 @@
 
   function toggleLanguage() {
     applyLanguage(currentLanguage === "en" ? "bn" : "en");
-    // re-render lands in new language
+    //
     if (profileData) renderLands(profileData.lands || []);
   }
 
-  /* 3) DOM REFS ------------------------------- */
+  // DOM REFS 
   const phoneInput = document.getElementById("phone");
   const roleInput = document.getElementById("role");
   const nameInput = document.getElementById("farmerName");
@@ -192,7 +192,14 @@
   const infoPhone = document.getElementById("infoPhone");
   const infoLocation = document.getElementById("infoLocation");
 
-  /* 4) EDIT / SAVE BASIC ---------------------------- */
+  // BACK TO DASHBOARD
+const backBtn = document.getElementById("backToDashboard");
+backBtn?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Dashboard/farmer-dashboard.html";
+});
+
+
+  //EDIT / SAVE BASIC 
   function toggleEditBasic(editing, revert = false) {
     const form = document.querySelector(".form-basic");
     form.dataset.editing = editing ? "true" : "false";
@@ -244,7 +251,7 @@
     }
   }
 
-  /* 5) LOAD PROFILE ---------------------------- */
+//LOAD PROFILE 
   async function loadFarmerProfile() {
     try {
       const token = localStorage.getItem("token");
@@ -305,7 +312,7 @@
     }
   }
 
-  /* 6) CROPPING PATTERN LABEL ----------------------- */
+   //CROPPING PATTERN LABEL 
   function formatCroppingPattern(enumValue) {
     if (!enumValue) return "-";
     const key = "cropping_" + enumValue; // e.g. cropping_SINGLE
@@ -313,7 +320,7 @@
     return tr[key] || enumValue; // fallback: show raw enum if no translation
   }
 
-  /* 7) RENDER LAND CARDS ---------------------------- */
+  // RENDER LAND CARDS 
  function renderLands(lands) {
   const tr = t();
   landsListEl.innerHTML = "";
@@ -347,7 +354,7 @@
 }
 
 
-  /* 8) PHOTO (frontend only for now) ---------------- */
+  //PHOTO (frontend only for now) 
   function onPhotoSelected(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -362,9 +369,7 @@
     btnReplace.hidden = false;
     btnDelete.hidden = false;
 
-    // NOTE: currently this is only frontend preview.
-    // If later you add /api/profile/farmer/land-photo,
-    // you can POST formData here similar to buyer Aadhaar upload.
+
   }
 
   function onDeletePhoto() {
@@ -374,18 +379,16 @@
     btnUpload.hidden = false;
     btnReplace.hidden = true;
     btnDelete.hidden = true;
-
-    // Same note as above: here you can call DELETE API when available.
   }
 
-  /* 9) INIT ----------------------------------------- */
+//INIT 
   function initPage() {
     applyTheme(currentTheme);
     applyLanguage(currentLanguage);
     loadFarmerProfile();
   }
 
-  /* 10) EVENT LISTENERS ----------------------------- */
+  // EVENT LISTENERS
   document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
   document.getElementById("mobileThemeToggle")?.addEventListener("click", toggleTheme);
 

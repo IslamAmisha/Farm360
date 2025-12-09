@@ -315,6 +315,67 @@
       </main>
     </div>
 
+    <!-- FARMER DETAILS POPUP -->
+
+    <div id="farmerDetailsPopup" class="fd-overlay hidden">
+      <div class="fd-modal">
+        <button class="fd-close-btn" onclick="closeFarmerDetails()">✕</button>
+
+        <div class="fd-header">
+          <div>
+            <h2 id="fd_name" class="fd-title"></h2>
+            <p id="fd_location" class="fd-location"></p>
+          </div>
+        </div>
+
+        <div class="fd-layout">
+          <!-- LEFT: FARMER OVERVIEW -->
+          <div class="fd-column fd-left">
+            <h3 class="fd-section-title">Farmer Overview</h3>
+
+            <div class="fd-section">
+              <div class="fd-row">
+                <span class="fd-label">Full Name</span>
+                <span id="fd_fullName" class="fd-value"></span>
+              </div>
+              <div class="fd-row">
+                <span class="fd-label">Phone</span>
+                <span id="fd_phone" class="fd-value"></span>
+              </div>
+            </div>
+
+            <h3 class="fd-section-title">Address</h3>
+            <div class="fd-section">
+              <div class="fd-row">
+                <span class="fd-label">District</span>
+                <span id="fd_district" class="fd-value"></span>
+              </div>
+              <div class="fd-row">
+                <span class="fd-label">Block</span>
+                <span id="fd_block" class="fd-value"></span>
+              </div>
+              <div class="fd-row">
+                <span class="fd-label">Village / City</span>
+                <span id="fd_village" class="fd-value"></span>
+              </div>
+              <div class="fd-row">
+                <span class="fd-label">PIN Code</span>
+                <span id="fd_pin" class="fd-value"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: LANDS -->
+          <div class="fd-column fd-right">
+            <h3 class="fd-section-title">Lands</h3>
+            <div id="fd_lands" class="fd-lands-grid">
+              <!-- land cards injected here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../../Landing-page/landing-page.js"></script>
     <script src="buyer-dashboard.js"></script>

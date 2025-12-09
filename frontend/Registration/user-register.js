@@ -1,4 +1,4 @@
-/* LANGUAGE ------------------------------ */
+//LANGUAGE 
 let currentLanguage = "en";
 
 const text = {
@@ -50,18 +50,15 @@ document.getElementById("langToggle").onclick = () => {
 
 updateText();
 
-/* THEME SWITCH ------------------------------ */
+//THEME SWITCH 
 document.getElementById("themeToggle").onclick = () => {
   document.body.classList.toggle("theme-dark");
 };
 
-/* BACKEND API URL */
-/* ----------------------------------
-   CONFIG
----------------------------------- */
-const BASE_URL = "http://localhost:8080";   // change if needed
 
-/* ELEMENTS */
+const BASE_URL = "http://localhost:8080";  
+
+//element
 const form = document.getElementById("registerForm");
 const phone = document.getElementById("phone");
 const otp = document.getElementById("otp");
@@ -76,9 +73,7 @@ const msg = document.getElementById("msg");
 
 let sessionId = null;
 
-/* ----------------------------------
-   SEND OTP
----------------------------------- */
+//send otp
 verifyBtn.addEventListener("click", async () => {
   phoneErr.textContent = "";
   msg.textContent = "";
@@ -117,9 +112,7 @@ verifyBtn.addEventListener("click", async () => {
   }
 });
 
-/* ----------------------------------
-   VERIFY OTP + ROLE + REGISTER
----------------------------------- */
+//verify otp,role,register
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -172,7 +165,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // ✔ OTP SUCCESS
+    // OTP SUCCESS
     msg.style.color = "green";
     msg.textContent = "OTP verified successfully";
 
@@ -203,8 +196,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-
-/* CLEAR BUTTON */
+//clear button
 document.getElementById("clearBtn").addEventListener("click", () => {
   form.reset();
   phoneErr.textContent = "";

@@ -209,6 +209,29 @@
                 <option value="gt100">More than 100 tons</option>
               </select>
             </div>
+
+            <div class="form-group">
+              <label data-text="contractModelLabel">Contract Model</label>
+              <select id="contractModel">
+                <option value="">Select</option>
+                <option value="SEASONAL">Season Only</option>
+                <option value="ANNUAL">Annual (Full Year)</option>
+                <option value="BOTH">Both Seasonal & Annual</option>
+              </select>
+              <div class="error" id="contractModelErr"></div>
+            </div>
+
+            <div class="form-group" id="seasonGroup" style="display: none">
+              <label data-text="seasonLabel">Select Season(s)</label>
+
+              <select id="seasonSelect" multiple size="3">
+                <option value="KHARIF" data-text="seasonKharif">Kharif</option>
+                <option value="RABI" data-text="seasonRabi">Rabi</option>
+                <option value="ZAID" data-text="seasonZaid">Zaid</option>
+              </select>
+
+              <div class="error" id="seasonErr"></div>
+            </div>
           </section>
 
           <!-- CARD 3 – CROPS -->
@@ -244,10 +267,11 @@
       </main>
     </div>
 
-    <div id="submitPopup" class="popup hidden">
-      <div class="popup-content" id="popupContent">
-        <div id="popupLoader" class="loader"></div>
-        <p id="popupMessage">Submitting your profile...</p>
+    <div id="resultPopup" class="popup-overlay hidden">
+      <div class="popup-box">
+        <div class="popup-icon" id="popupIcon"></div>
+        <h3 id="popupTitle">Status</h3>
+        <p id="popupText"></p>
       </div>
     </div>
 
