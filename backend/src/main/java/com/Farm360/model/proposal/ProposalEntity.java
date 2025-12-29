@@ -1,48 +1,76 @@
 package com.Farm360.model.proposal;
 
-import com.Farm360.model.BuyerEntity;
-import com.Farm360.model.FarmerEntity;
-import com.Farm360.model.request.RequestEntity;
-import com.Farm360.utils.ProposalStatus;
+import com.Farm360.model.audit.AuditTable;
+import com.Farm360.utils.*;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "Proposal_Table")
-@Data
-@AllArgsConstructor
+@Table(name = "proposals")
+@Getter
+@Setter
 @NoArgsConstructor
-public class ProposalEntity {
+@AllArgsConstructor
+@Builder
+public class ProposalEntity extends AuditTable<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long proposalId;
 
-    @OneToOne
-    @JoinColumn(name = "request_id", nullable = false)
-    private RequestEntity request;
+    @Column(nullable = false)
+    private Long requestId;
 
-    @ManyToOne
-    @JoinColumn(name = "buyer_id", nullable = false)
-    private BuyerEntity buyer;
+    @Column(nullable = false)
+    private Long senderUserId;
 
-    @ManyToOne
-    @JoinColumn(name = "farmer_id", nullable = false)
-    private FarmerEntity farmer;
+    @Column(nullable = false)
+    private Long receiverUserId;
+
+    private Long landId;
+    private Long cropId;
+    private Long cropSubCategoryId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProposalStatus status;
+    private ContractModel contractModel;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private SeasonType season;
 
-    @Column(nullable = false)
-    private LocalDateTime lastUpdatedAt;
+    private Double expectedQuantity;
 
-    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProposalTermEntity> terms;
+    @Enumerated(EnumType.STRING)
+    private UnitType unit;
+
+    private Double pricePerUnit;
+    private String currency;
+
+    private Double totalContractAmount;
+
+    private Boolean escrowApplicable;
+    private Integer advancePercent;
+    private Integer midCyclePercent;
+    private Integer finalPercent;
+
+    private Boolean inputProvided;
+
+    @Enumerated(EnumType.STRING)
+    private DeliveryLocation deliveryLocation;
+
+    private String deliveryWindow;
+
+    @Enumerated(EnumType.STRING)
+    private LogisticsHandledBy logisticsHandledBy;
+
+    private Boolean allowCropChangeBetweenSeasons;
+
+    private Integer startYear;
+    private Integer endYear;
+
+    @Enumerated(EnumType.STRING)
+    private ProposalStatus proposalStatus;
+
+    private LocalDateTime validUntil;
 }
