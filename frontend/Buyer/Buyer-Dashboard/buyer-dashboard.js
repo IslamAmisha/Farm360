@@ -403,91 +403,50 @@ function openFarmerDetails(f) {
     `${f.villageOrCity || ""}${f.villageOrCity && f.district ? ", " : ""}${f.district || ""}`;
 
   // Overview
-  const maskedPhone = maskPhone(f.phoneNumber || f.phone || null);
-
   document.getElementById("fd_fullName").textContent = f.name || "";
-  document.getElementById("fd_phone").textContent = maskedPhone;
+  document.getElementById("fd_phone").textContent = f.maskedPhone || "N/A";
   
   // Address
   document.getElementById("fd_district").textContent = f.district || "N/A";
-  document.getElementById("fd_block").textContent =
-    f.block || f.blockName || "N/A";
+  document.getElementById("fd_block").textContent = "N/A";
   document.getElementById("fd_village").textContent =
     f.villageOrCity || "N/A";
   document.getElementById("fd_pin").textContent = f.pinCode || "N/A";
 
-  // Lands
-  const lands = f.lands || f.landList || f.landDetails || [];
-  let html = "";
+  // Lands (FINAL)
+const lands = Array.isArray(f.lands) ? f.lands : [];
+let html = "";
 
-  if (!lands.length) {
-    const crops = (f.crops || []).join(", ") || "N/A";
-    const subs =
-      (f.subcategories || f.cropSubcategories || []).join(", ") || "N/A";
+if (!lands.length) {
+  html = `<p class="fd-empty">No lands added</p>`;
+} else {
+  lands.forEach((land, idx) => {
+    const size = land.size ?? "N/A";
+    const type = land.croppingPattern
+      ? land.croppingPattern.charAt(0) +
+        land.croppingPattern.slice(1).toLowerCase()
+      : "N/A";
+    const crops = (land.crops || []).join(", ") || "N/A";
+    const subs = (land.subcategories || []).join(", ") || "N/A";
 
-    html = `
+    html += `
       <div class="fd-land-card">
         <div class="fd-land-header">
-          <span class="fd-land-title">Land 1</span>
+          <span class="fd-land-title">Land ${idx + 1}</span>
         </div>
         <div class="fd-land-body">
-          <div class="fd-row">
-            <span class="fd-label">Size</span>
-            <span class="fd-value">${f.landSize || "N/A"} acres</span>
-          </div>
-          <div class="fd-row">
-            <span class="fd-label">Type</span>
-            <span class="fd-value">${f.croppingPattern || "N/A"}</span>
-          </div>
-          <div class="fd-row">
-            <span class="fd-label">Crops</span>
-            <span class="fd-value">${crops}</span>
-          </div>
-          <div class="fd-row">
-            <span class="fd-label">Subcategories</span>
-            <span class="fd-value">${subs}</span>
-          </div>
+          <div class="fd-row"><span class="fd-label">Size</span><span>${size} acres</span></div>
+          <div class="fd-row"><span class="fd-label">Type</span><span>${type}</span></div>
+          <div class="fd-row"><span class="fd-label">Crops</span><span>${crops}</span></div>
+          <div class="fd-row"><span class="fd-label">Subcategories</span><span>${subs}</span></div>
         </div>
       </div>
     `;
-  } else {
-    lands.forEach((land, idx) => {
-      const size = land.size || land.landSize || "N/A";
-      const type = land.type || land.croppingPattern || "N/A";
-      const crops = (land.crops || []).join(", ") || "N/A";
-      const subs =
-        (land.subcategories || land.subCats || land.cropSubcategories || [])
-          .join(", ") || "N/A";
+  });
+}
 
-      html += `
-        <div class="fd-land-card">
-          <div class="fd-land-header">
-            <span class="fd-land-title">Land ${idx + 1}</span>
-          </div>
-          <div class="fd-land-body">
-            <div class="fd-row">
-              <span class="fd-label">Size</span>
-              <span class="fd-value">${size} acres</span>
-            </div>
-            <div class="fd-row">
-              <span class="fd-label">Type</span>
-              <span class="fd-value">${type}</span>
-            </div>
-            <div class="fd-row">
-              <span class="fd-label">Crops</span>
-              <span class="fd-value">${crops}</span>
-            </div>
-            <div class="fd-row">
-              <span class="fd-label">Subcategories</span>
-              <span class="fd-value">${subs}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  }
+document.getElementById("fd_lands").innerHTML = html;
 
-  document.getElementById("fd_lands").innerHTML = html;
 
   // Show overlay
   document.getElementById("farmerDetailsPopup").classList.remove("hidden");

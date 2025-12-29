@@ -306,9 +306,10 @@ function renderBuyers(list) {
 
     if (reqBtn && !disabled) {
       reqBtn.addEventListener("click", () => {
-        const receiver = card.getAttribute("data-receiver-id");
-        if (receiver) sendRequestToBuyer(receiver, reqBtn);
-      });
+  selectedBuyer = b;
+  openRequestModal(b);
+});
+
     }
 
     if (detailsBtn) {
@@ -443,42 +444,42 @@ async function loadBuyers() {
   }
 }
 
-async function sendRequestToBuyer(receiverUserId, btn) {
-  const { token, userId } = getAuthInfo();
-  const { t } = getDashText();
+// async function sendRequestToBuyer(receiverUserId, btn) {
+//   const { token, userId } = getAuthInfo();
+//   const { t } = getDashText();
 
-  if (!token || !userId) return alert(t.msgLoginRequired);
+//   if (!token || !userId) return alert(t.msgLoginRequired);
 
-  btn.disabled = true;
+//   btn.disabled = true;
 
-  try {
-    const resp = await fetch(
-      `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ receiverId: receiverUserId }),
-      }
-    );
+//   try {
+//     const resp = await fetch(
+//       `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: "Bearer " + token,
+//         },
+//         body: JSON.stringify({ receiverId: receiverUserId }),
+//       }
+//     );
 
-    const body = await resp.json().catch(() => ({}));
+//     const body = await resp.json().catch(() => ({}));
 
-    if (resp.ok && body.success) {
-      alert(t.msgRequestSent);
-      btn.textContent = t.btnRequested;
-      btn.disabled = true;
-    } else {
-      alert(t.msgRequestFailed);
-      btn.disabled = false;
-    }
-  } catch (e) {
-    alert(t.msgRequestFailed);
-    btn.disabled = false;
-  }
-}
+//     if (resp.ok && body.success) {
+//       alert(t.msgRequestSent);
+//       btn.textContent = t.btnRequested;
+//       btn.disabled = true;
+//     } else {
+//       alert(t.msgRequestFailed);
+//       btn.disabled = false;
+//     }
+//   } catch (e) {
+//     alert(t.msgRequestFailed);
+//     btn.disabled = false;
+//   }
+// }
 
 function attachRequestButtonHandlers() {
   const cards = document.querySelectorAll(".buyer-card .btn-request");
@@ -533,7 +534,7 @@ document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   document.querySelector(".sidebar")?.classList.toggle("collapsed");
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const { t } = getDashText();
   const search = document.getElementById("buyerSearch");
   if (search) search.placeholder = t.searchPlaceholder;
@@ -557,5 +558,201 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelector(".logout")?.addEventListener("click", logoutUser);
 
+    await loadFarmerLands();
   loadBuyers();
 });
+
+let selectedBuyer = null;
+let selectedLandId = null;
+let selectedCropId = null;
+let selectedSubCategoryId = null;
+
+function openRequestModal(buyer) {
+
+  if (!farmerLands || farmerLands.length === 0) {
+    alert("Your lands are still loading. Please try again.");
+    return;
+  }
+
+  selectedBuyer = buyer;
+  selectedLandId = null;
+  selectedCropId = null;
+  selectedSubCategoryId = null;
+
+  const modal = document.getElementById("requestModal");
+  const landInput = document.getElementById("reqLandInput");
+  const landPicker = document.getElementById("landPicker");
+  const cropSelect = document.getElementById("reqCropSelect");
+  const subSelect = document.getElementById("reqSubCategorySelect");
+
+  // reset UI
+  landInput.value = "";
+  landPicker.innerHTML = "";
+  cropSelect.innerHTML = `<option value="">Select crop</option>`;
+  subSelect.innerHTML = `<option value="">Select crop type</option>`;
+
+  // -------- populate land picker --------
+  farmerLands.forEach(land => {
+    const div = document.createElement("div");
+    div.className = "picker-item";
+    div.textContent = `Land – ${land.size} Acre`;
+
+    div.onclick = () => {
+      landInput.value = div.textContent;
+      selectedLandId = land.landId;
+
+      // reset crop + subcategory
+      cropSelect.innerHTML = `<option value="">Select crop</option>`;
+      subSelect.innerHTML = `<option value="">Select crop type</option>`;
+      selectedCropId = null;
+      selectedSubCategoryId = null;
+
+      // populate crops
+      land.crops.forEach(crop => {
+        const opt = document.createElement("option");
+        opt.value = crop.id;        // ✅ cropId
+        opt.textContent = crop.name;
+        cropSelect.appendChild(opt);
+      });
+
+      landPicker.classList.add("hidden");
+    };
+
+    landPicker.appendChild(div);
+  });
+
+  landInput.onclick = () => landPicker.classList.toggle("hidden");
+
+  const seasonGroup = document.getElementById("seasonGroup");
+const seasonSelect = document.getElementById("reqSeasonSelect");
+
+// 🔑 CONTRACT MODEL BASED UI
+if (buyer.contractModel === "SEASONAL") {
+  seasonGroup.style.display = "block";
+  seasonSelect.value = "";
+} else {
+  // ANNUAL contract → no season selection
+  seasonGroup.style.display = "none";
+  seasonSelect.value = null;
+}
+
+
+  // -------- crop → subcategory --------
+  cropSelect.onchange = () => {
+    selectedCropId = Number(cropSelect.value);
+    selectedSubCategoryId = null;
+    subSelect.innerHTML = `<option value="">Select crop type</option>`;
+
+    if (!selectedCropId || !selectedLandId) return;
+
+    const land = farmerLands.find(l => l.landId === selectedLandId);
+    const crop = land.crops.find(c => c.id === selectedCropId);
+
+    crop.subcategories.forEach(sc => {
+      const opt = document.createElement("option");
+      opt.value = sc.id;          // ✅ subCategoryId
+      opt.textContent = sc.name;
+      subSelect.appendChild(opt);
+    });
+  };
+
+  subSelect.onchange = () => {
+    selectedSubCategoryId = Number(subSelect.value);
+  };
+
+  modal.hidden = false;
+}
+
+
+
+document.getElementById("requestModalClose").onclick =
+document.getElementById("cancelRequestBtn").onclick = () => {
+  document.getElementById("requestModal").hidden = true;
+};
+
+
+document.getElementById("confirmRequestBtn").onclick = async () => {
+
+  const { token, userId } = getAuthInfo();
+const season =
+  selectedBuyer.contractModel === "SEASONAL"
+    ? document.getElementById("reqSeasonSelect").value
+    : null;
+
+  // -------- frontend validation --------
+  if (!selectedLandId) {
+    alert("Please select land");
+    return;
+  }
+
+  if (!selectedCropId) {
+    alert("Please select crop");
+    return;
+  }
+
+  if (!selectedSubCategoryId) {
+    alert("Please select crop type");
+    return;
+  }
+
+  if (
+  selectedBuyer.contractModel === "SEASONAL" &&
+  !season
+) {
+  alert("Please select season");
+  return;
+}
+
+
+  // -------- send request --------
+  const resp = await fetch(
+    `${API_BASE_URL}/request/send?userId=${userId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify({
+        receiverId: selectedBuyer.userId,
+        landId: selectedLandId,
+        cropId: selectedCropId,
+        subCategoryId: selectedSubCategoryId,
+        season: season || null
+      })
+    }
+  );
+
+  const res = await resp.json();
+  alert(res.message || "Request sent");
+
+  document.getElementById("requestModal").hidden = true;
+  loadBuyers();
+};
+
+
+let farmerLands = [];
+
+async function loadFarmerLands() {
+  const { token, userId } = getAuthInfo();
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/farmers/${userId}/lands`,
+    {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }
+  );
+
+  if (!resp.ok) {
+    console.error("Failed to load lands", resp.status);
+    farmerLands = [];
+    return;
+  }
+
+  farmerLands = await resp.json();
+  console.log("Farmer lands loaded:", farmerLands);
+}
+
+

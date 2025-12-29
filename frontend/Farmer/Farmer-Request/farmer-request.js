@@ -138,6 +138,11 @@
     });
   }
 
+function handleView(req) {
+  openRequestViewModal(req);
+}
+
+
 //api calls
 
   // Incoming for this farmer
@@ -179,7 +184,12 @@
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ requestId: id, action: "ACCEPT" }),
+      body: JSON.stringify({
+  requestId: id,
+  action: "ACCEPT",
+  actionUserId: userId
+})
+
     });
 
     await loadIncomingRequests();
@@ -195,7 +205,12 @@
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ requestId: id, action: "REJECT" }),
+     body: JSON.stringify({
+  requestId: id,
+  action: "REJECT",
+  actionUserId: userId
+})
+
     });
 
     await loadIncomingRequests();
@@ -229,50 +244,60 @@
           : "rejected";
 
       const card = document.createElement("div");
+      card.dataset.requestId = req.requestId;
       card.className = "request-card";
 
       card.innerHTML = `
-        <div class="request-header">
-          <div class="request-user">
-            <div class="user-name">${req.senderName}</div>
-            <div class="user-company">${req.companyName || ""}</div>
-            <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
-            </div>
-            <div class="user-rating">
-              👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
-            </div>
-          </div>
+  <div class="request-header">
+    <div class="request-user">
+      <div class="user-name">${req.senderName}</div>
+      <div class="user-company">${req.companyName || ""}</div>
+      <div class="user-location">
+        ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
+      </div>
+      <div class="user-rating">
+        👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
+      </div>
+    </div>
 
-          <div class="request-status ${statusClass}">
-            ${t()[`status${req.status}`]}
-          </div>
-        </div>
+    <div class="request-status ${statusClass}">
+      ${t()[`status${req.status}`]}
+    </div>
+  </div>
 
-        <div class="request-body">
-          <div class="request-dates">
-            <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
-          </div>
+  <div class="request-body">
 
-          <div class="request-actions">
-            ${
-              req.status === "PENDING"
-                ? `
-            <button class="btn-primary btn-accept" data-id="${req.requestId}">
-              ${tr.btnAccept}
-            </button>
-            <button class="btn-outline btn-reject" data-id="${req.requestId}">
-              ${tr.btnReject}
-            </button>
-            `
-                : ""
-            }
-            <button class="btn-outline btn-view" data-id="${req.requestId}">
-              ${tr.btnView}
-            </button>
-          </div>
-        </div>
-      `;
+    <!-- 🔹 ADDED: REQUEST CONTEXT -->
+    <div class="request-meta">
+      <div><strong>Crop:</strong> ${req.cropName}</div>
+      ${req.landSize ? `<div><strong>Land:</strong> ${req.landSize} Acres</div>` : ""}
+      ${req.season ? `<div><strong>Season:</strong> ${req.season}</div>` : ""}
+    </div>
+
+    <div class="request-dates">
+      <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
+    </div>
+
+    <div class="request-actions">
+      ${
+        req.status === "PENDING"
+          ? `
+        <button class="btn-primary btn-accept" data-id="${req.requestId}">
+          ${tr.btnAccept}
+        </button>
+        <button class="btn-outline btn-reject" data-id="${req.requestId}">
+          ${tr.btnReject}
+        </button>
+      `
+          : ""
+      }
+<button class="btn-outline btn-view">
+        ${tr.btnView}
+      </button>
+    </div>
+  </div>
+`;
+
 
       incomingList.appendChild(card);
     });
@@ -293,6 +318,22 @@
           handleReject(e.target.dataset.id)
         )
       );
+
+      // 🔹 ADDED: View buttons
+incomingList.querySelectorAll(".btn-view").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const card = btn.closest(".request-card");
+    const id = card.dataset.requestId;
+    const req = incoming.find(r => r.requestId == id);
+    openRequestViewModal(req);
+      console.log("DATASET ID:", card.dataset.requestId);
+    console.log("INCOMING ARRAY:", incoming);
+  });
+});
+
+
+
+
   }
 
   // OUTGOING (Farmer → Buyer)
@@ -317,40 +358,66 @@
 
       const card = document.createElement("div");
       card.className = "request-card";
+      card.dataset.requestId = req.requestId;
 
       card.innerHTML = `
-        <div class="request-header">
-          <div class="request-user">
-            <div class="user-name">${req.receiverName}</div>
-            <div class="user-company">${req.companyName || ""}</div>
-            <div class="user-location">
-              ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
-            </div>
-            <div class="user-rating">
-              👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
-            </div>
-          </div>
+  <div class="request-header">
+    <div class="request-user">
+      <div class="user-name">${req.receiverName}</div>
+      <div class="user-company">${req.companyName || ""}</div>
+      <div class="user-location">
+        ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
+      </div>
+      <div class="user-rating">
+        👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
+      </div>
+    </div>
 
-          <div class="request-status ${statusClass}">
-            ${t()[`status${req.status}`]}
-          </div>
-        </div>
+    <div class="request-status ${statusClass}">
+      ${t()[`status${req.status}`]}
+    </div>
+  </div>
 
-        <div class="request-body">
-          <div class="request-dates">
-            <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
-          </div>
+  <div class="request-body">
 
-          <div class="request-actions">
-            <button class="btn-outline btn-view">
-              ${tr.btnView}
-            </button>
-          </div>
-        </div>
-      `;
+    <!-- 🔹 ADDED: REQUEST CONTEXT -->
+    <div class="request-meta">
+      <div><strong>Crop:</strong> ${req.cropName}</div>
+      ${req.landSize ? `<div><strong>Land:</strong> ${req.landSize} Acres</div>` : ""}
+      ${req.season ? `<div><strong>Season:</strong> ${req.season}</div>` : ""}
+    </div>
+
+    <div class="request-dates">
+      <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
+    </div>
+
+    <div class="request-actions">
+    <button class="btn-outline btn-view">
+
+        ${tr.btnView}
+      </button>
+    </div>
+  </div>
+`;
+
 
       outgoingList.appendChild(card);
     });
+    // 🔹 ADDED: View buttons (outgoing)
+outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const card = btn.closest(".request-card");
+    const id = card.dataset.requestId;
+    const req = outgoing.find(r => r.requestId == id);
+    openRequestViewModal(req);
+      console.log("DATASET ID:", card.dataset.requestId);
+    console.log("Outgoing ARRAY:", outgoing);
+  });
+});
+
+
+
+
   }
 
   function renderAll() {
@@ -411,3 +478,76 @@
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
   });
 })();
+
+function openRequestViewModal(req) {
+  if (!req) return;
+  const modal = document.getElementById("requestViewModal");
+  const body = document.getElementById("requestViewBody");
+
+  const seasonText =
+    req.contractModel === "ANNUAL"
+      ? "All Seasons"
+      : (req.season || "—");
+
+  body.innerHTML = `
+  <div class="request-view-grid">
+    <div class="item">
+      <label>Crop</label>
+      <span>${req.cropName}</span>
+    </div>
+
+    <div class="item">
+      <label>Crop Type</label>
+      <span>${req.subCategoryName}</span>
+    </div>
+
+    <div class="item">
+      <label>Land</label>
+      <span>${req.landSize} Acres</span>
+    </div>
+
+    <div class="item">
+      <label>Season</label>
+      <span>${seasonText}</span>
+    </div>
+
+    <div class="item">
+      <label>Status</label>
+      <span class="status-badge ${req.status.toLowerCase()}">${req.status}</span>
+
+    </div>
+
+    <div class="item">
+      <label>Sent On</label>
+      <span>${new Date(req.createdAt).toLocaleDateString()}</span>
+    </div>
+  </div>
+`;
+
+  modal.hidden = false;
+  modal.style.display = "flex";
+
+}
+
+document.getElementById("closeRequestView")
+  ?.addEventListener("click", closeRequestModal);
+
+document.getElementById("closeRequestViewBtn")
+  ?.addEventListener("click", closeRequestModal);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("requestViewModal");
+  if (modal) modal.hidden = true;
+});
+
+function closeRequestModal() {
+  const modal = document.getElementById("requestViewModal");
+  modal.hidden = true;
+  modal.style.display = "none";
+}
+document.getElementById("requestViewModal")
+  ?.addEventListener("click", (e) => {
+    if (e.target.id === "requestViewModal") {
+      closeRequestModal();
+    }
+  });

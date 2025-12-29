@@ -327,22 +327,68 @@
       </main>
     </div>
 
-    
-<div id="buyerDetailsModal" class="modal-overlay" hidden>
-  <div class="modal-box wide-modal">
-    <button id="buyerModalCloseBtn" class="modal-close">×</button>
-    <h3 class="modal-title">Buyer Details</h3>
-    <div id="buyerDetailsBody" class="modal-body"></div>
-  </div>
-</div>
+    <div id="buyerDetailsModal" class="modal-overlay" hidden>
+      <div class="modal-box wide-modal">
+        <button id="buyerModalCloseBtn" class="modal-close">×</button>
+        <h3 class="modal-title">Buyer Details</h3>
+        <div id="buyerDetailsBody" class="modal-body"></div>
+      </div>
+    </div>
 
+    <!-- REQUEST MODAL -->
+    <div id="requestModal" class="modal-overlay" hidden>
+      <div class="modal-box">
+        <button class="modal-close" id="requestModalClose">×</button>
 
-    <!-- Script -->
-    <script src="../../Landing-page/landing-page.js"></script>
-    <script src="farmer-dashboard.js"></script>
-  </body>
-</html>
+        <h3 class="modal-title">Send Request</h3>
+        <p class="modal-subtitle">Select land and crop for this request</p>
 
+        <!-- LAND INPUT (with picker) -->
+        <div class="form-group">
+          <label class="field-label">Land *</label>
+          <input
+            type="text"
+            id="reqLandInput"
+            class="search-input"
+            placeholder="Select land"
+            readonly
+          />
+          <div id="landPicker" class="picker-list hidden"></div>
+        </div>
+
+        <!-- CROP DROPDOWN -->
+        <div class="form-group">
+          <label class="field-label">Crop *</label>
+          <select id="reqCropSelect" class="filter-select">
+            <option value="">Select crop</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Crop Type *</label>
+          <select id="reqSubCategorySelect" class="filter-select">
+            <option value="">Select crop type</option>
+          </select>
+        </div>
+
+        <!-- SEASON -->
+        <div class="form-group" id="seasonGroup">
+          <label class="field-label">Season</label>
+          <select id="reqSeasonSelect" class="filter-select">
+            <option value="">Select season</option>
+            <option value="KHARIF">Kharif</option>
+            <option value="RABI">Rabi</option>
+            <option value="SUMMER">Summer</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-details" id="cancelRequestBtn">Cancel</button>
+          <button class="btn-request" id="confirmRequestBtn">
+            Send Request
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Script -->
     <script src="../../Landing-page/landing-page.js"></script>
