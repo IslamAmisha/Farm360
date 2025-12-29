@@ -6,4 +6,5 @@ import lombok.Data;
 public class UpdateRequestRQ {
     private Long requestId;
     private String action; // ACCEPT or REJECT
+    private Long actionUserId;
 }

@@ -2,6 +2,7 @@ package com.Farm360.service.dashboard;
 
 import com.Farm360.dto.response.dashboard.DashboardCardRS;
 import com.Farm360.dto.response.dashboard.DashboardListRS;
+import com.Farm360.dto.response.land.LandRS;
 import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.FarmerEntity;
 import com.Farm360.model.master.crop.CropEntity;
@@ -85,13 +86,20 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         if (crop != null && !crop.equals("All Crops")) {
-            boolean has = f.getCrops().stream()
-                    .anyMatch(c -> c.getName().equalsIgnoreCase(crop));
+            boolean has = f.getLands().stream()
+                    .flatMap(l -> l.getLandCrops().stream())
+                    .anyMatch(lc ->
+                            lc.getCropSubCategory()
+                                    .getCrop()
+                                    .getName()
+                                    .equalsIgnoreCase(crop)
+                    );
             if (!has) return false;
         }
 
         return true;
     }
+
 
     private DashboardCardRS toBuyerCard(BuyerEntity b, Long farmerUserId) {
 
@@ -145,11 +153,21 @@ public class DashboardServiceImpl implements DashboardService {
         card.setRatingDown(0);
 
         // Request status
-        boolean exists =
-                requestRepo.existsBySender_IdAndReceiver_Id(farmerUserId, b.getUser().getId());
+        // -------- REQUEST STATUS LOGIC --------
+        var reqOpt = requestRepo.findBySender_IdAndReceiver_Id(
+                farmerUserId,
+                b.getUser().getId()
+        );
 
-        card.setCanSendRequest(!exists);
-        card.setRequestStatus(exists ? "PENDING" : "NONE");
+        if (reqOpt.isPresent()) {
+            card.setCanSendRequest(false);
+            card.setRequestStatus(reqOpt.get().getStatus().name());
+        } else {
+            card.setCanSendRequest(true);
+            card.setRequestStatus("NONE");
+        }
+
+
 
         return card;
     }
@@ -165,11 +183,7 @@ public class DashboardServiceImpl implements DashboardService {
         card.setDistrict(f.getDistrict().getName());
         card.setVillageOrCity(f.getVillage());
 
-        // Farmer special fields
-        card.setLandSize(f.getLandSize());
-        card.setCroppingPattern(
-                f.getCroppingPattern() != null ? f.getCroppingPattern().name() : null
-        );
+        card.setLands(null);
         card.setPinCode(f.getPinCode());
 
         // Crops
@@ -189,11 +203,21 @@ public class DashboardServiceImpl implements DashboardService {
         card.setRatingDown(0);
 
         // Request status
-        boolean exists =
-                requestRepo.existsBySender_IdAndReceiver_Id(buyerUserId, f.getUser().getId());
+        // -------- REQUEST STATUS LOGIC --------
+        var reqOpt = requestRepo.findBySender_IdAndReceiver_Id(
+                buyerUserId,
+                f.getUser().getId()
+        );
 
-        card.setCanSendRequest(!exists);
-        card.setRequestStatus(exists ? "PENDING" : "NONE");
+        if (reqOpt.isPresent()) {
+            card.setCanSendRequest(false);
+            card.setRequestStatus(reqOpt.get().getStatus().name());
+        } else {
+            card.setCanSendRequest(true);
+            card.setRequestStatus("NONE");
+        }
+
+
 
         return card;
     }

@@ -10,11 +10,13 @@ import com.Farm360.model.master.cropsubcategory.CropSubCategoriesEntity;
 import com.Farm360.repository.farmer.FarmerRepo;
 import com.Farm360.repository.land.LandRepository;
 import com.Farm360.repository.master.CropSubCategoriesRepo;
+import com.Farm360.utils.CroppingPattern;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -80,18 +82,24 @@ public class LandServiceImpl implements LandService {
             land.setSize(rq.getSize());
         }
 
+        CroppingPattern existingPattern = land.getLandCrops().stream()
+                .findFirst()
+                .map(LandCropEntity::getCroppingPattern)
+                .orElse(null);
+
         if (rq.getSubCategoryIds() != null) {
             land.getLandCrops().clear();
 
             List<CropSubCategoriesEntity> subs =
                     subCategoryRepo.findAllById(rq.getSubCategoryIds());
 
+
             for (CropSubCategoriesEntity sub : subs) {
                 LandCropEntity lc = LandCropEntity.builder()
                         .land(land)
                         .cropSubCategory(sub)
+                        .croppingPattern(existingPattern)
                         .build();
-
                 land.getLandCrops().add(lc);
             }
         }
@@ -109,14 +117,41 @@ public class LandServiceImpl implements LandService {
     }
 
     private LandRS mapToRS(LandEntity land) {
+
         return LandRS.builder()
                 .landId(land.getId())
                 .size(land.getSize())
+                .croppingPattern(
+                        land.getLandCrops().stream()
+                                .findFirst()
+                                .map(lc -> lc.getCroppingPattern())
+                                .orElse(null)
+                )
                 .crops(
                         land.getLandCrops().stream()
-                                .map(lc -> lc.getCropSubCategory().getName())
+                                .collect(Collectors.groupingBy(
+                                        lc -> lc.getCropSubCategory().getCrop()
+                                ))
+                                .entrySet()
+                                .stream()
+                                .map(entry -> {
+                                    var crop = entry.getKey();
+                                    var subcats = entry.getValue().stream()
+                                            .map(lc -> new LandRS.SubCategoryRS(
+                                                    lc.getCropSubCategory().getId(),
+                                                    lc.getCropSubCategory().getName()
+                                            ))
+                                            .toList();
+
+                                    return new LandRS.CropRS(
+                                            crop.getId(),
+                                            crop.getName(),
+                                            subcats
+                                    );
+                                })
                                 .toList()
                 )
                 .build();
     }
+
 }

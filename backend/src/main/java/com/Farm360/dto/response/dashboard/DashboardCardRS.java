@@ -1,5 +1,6 @@
 package com.Farm360.dto.response.dashboard;
 
+import com.Farm360.dto.response.land.LandRS;
 import lombok.Data;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class DashboardCardRS {
     private String name;
     private String district;
     private String villageOrCity;
+    private String block;
 
     private int ratingUp;
     private int ratingDown;
@@ -43,8 +45,7 @@ public class DashboardCardRS {
 
 
     // Farmer-specific fields
-    private Double landSize;
-    private String croppingPattern;
+    private List<LandRS> lands;
     private String pinCode;
 }
 

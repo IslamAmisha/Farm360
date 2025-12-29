@@ -19,6 +19,17 @@ public class RequestListItemRS {
     private String receiverName;
     private String receiverRole;
 
+    private Long cropId;
+    private String cropName;
+
+    private Long subCategoryId;
+    private String subCategoryName;
+
+    private Long landId;
+    private Double landSize;
+
+    private String season;
+
     private String status; // PENDING / ACCEPTED / REJECTED
     private String createdAt;
 
