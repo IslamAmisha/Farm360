@@ -376,6 +376,76 @@
       </div>
     </div>
 
+    <!-- BUYER REQUEST MODAL -->
+    <div id="requestModal" class="modal-overlay" hidden>
+      <div class="modal-box">
+        <button class="modal-close" id="requestModalClose">×</button>
+
+        <h3 class="modal-title">Send Request to Farmer</h3>
+        <p class="modal-subtitle">
+          Select farmer land, crop and contract terms
+        </p>
+
+        <!-- CONTRACT MODEL (BUYER DECIDES) -->
+        <div class="form-group">
+          <label class="field-label">Contract Model *</label>
+          <select id="buyerContractModel" class="filter-select">
+            <option value="">Select contract model</option>
+            <option value="ANNUAL">Annual (All seasons)</option>
+            <option value="SEASONAL">Seasonal</option>
+          </select>
+        </div>
+
+        <!-- SEASON (ONLY IF SEASONAL) -->
+        <div class="form-group" id="seasonGroup" style="display: none">
+          <label class="field-label">Season *</label>
+          <select id="reqSeasonSelect" class="filter-select">
+            <option value="">Select season</option>
+            <option value="KHARIF">Kharif</option>
+            <option value="RABI">Rabi</option>
+            <option value="ZAID">Zaid</option>
+          </select>
+        </div>
+
+        <!-- FARMER LAND -->
+        <div class="form-group">
+          <label class="field-label">Farmer Land *</label>
+          <input
+            type="text"
+            id="reqLandInput"
+            class="search-input"
+            placeholder="Select farmer land"
+            readonly
+          />
+          <div id="landPicker" class="picker-list hidden"></div>
+        </div>
+
+        <!-- CROP -->
+        <div class="form-group">
+          <label class="field-label">Crop *</label>
+          <select id="reqCropSelect" class="filter-select">
+            <option value="">Select crop</option>
+          </select>
+        </div>
+
+        <!-- SUBCATEGORY -->
+        <div class="form-group">
+          <label class="field-label">Crop Type *</label>
+          <select id="reqSubCategorySelect" class="filter-select">
+            <option value="">Select crop type</option>
+          </select>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="modal-actions">
+          <button class="btn-details" id="cancelRequestBtn">Cancel</button>
+          <button class="btn-request" id="confirmRequestBtn">
+            Send Request
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../../Landing-page/landing-page.js"></script>
     <script src="buyer-dashboard.js"></script>

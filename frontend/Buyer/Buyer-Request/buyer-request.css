@@ -255,3 +255,142 @@ body.theme-dark .request-card {
   background:var(--card); 
   border:1px solid var(--border); 
 }
+.modal-box {
+  max-width: 560px;
+  width: 100%;
+}
+
+.request-view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 40px;
+  margin-top: 20px;
+}
+
+.request-view-grid .item {
+  display: flex;
+  flex-direction: column;
+}
+
+.request-view-grid .item label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.request-view-grid .item span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .request-view-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  display: none 
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-box {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px 26px;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--foreground);
+  transform: scale(1.1);
+}
+
+
+.request-view-grid .item span {
+  line-height: 1.3;
+}
+
+.request-view-grid .item span:has(+ label) {
+  margin-bottom: 6px;
+}
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.status-badge.pending {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+}
+
+.status-badge.accepted {
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+}
+
+.status-badge.rejected {
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+}
+.modal-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-details {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-details:hover {
+  opacity: 0.9;
+}
+.contract-annual {
+  color: #10b981;
+  font-weight: 700;
+}
+.contract-seasonal {
+  color: #f59e0b;
+  font-weight: 700;
+}
+

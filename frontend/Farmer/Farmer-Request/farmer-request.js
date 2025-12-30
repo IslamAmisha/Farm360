@@ -267,12 +267,7 @@ function handleView(req) {
 
   <div class="request-body">
 
-    <!-- 🔹 ADDED: REQUEST CONTEXT -->
-    <div class="request-meta">
-      <div><strong>Crop:</strong> ${req.cropName}</div>
-      ${req.landSize ? `<div><strong>Land:</strong> ${req.landSize} Acres</div>` : ""}
-      ${req.season ? `<div><strong>Season:</strong> ${req.season}</div>` : ""}
-    </div>
+   
 
     <div class="request-dates">
       <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
@@ -380,13 +375,7 @@ incomingList.querySelectorAll(".btn-view").forEach((btn) => {
 
   <div class="request-body">
 
-    <!-- 🔹 ADDED: REQUEST CONTEXT -->
-    <div class="request-meta">
-      <div><strong>Crop:</strong> ${req.cropName}</div>
-      ${req.landSize ? `<div><strong>Land:</strong> ${req.landSize} Acres</div>` : ""}
-      ${req.season ? `<div><strong>Season:</strong> ${req.season}</div>` : ""}
-    </div>
-
+  
     <div class="request-dates">
       <div>${tr.sentOn}: ${formatDate(req.createdAt)}</div>
     </div>
@@ -481,30 +470,49 @@ outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
 
 function openRequestViewModal(req) {
   if (!req) return;
+
   const modal = document.getElementById("requestViewModal");
   const body = document.getElementById("requestViewBody");
+
+  const contractModelText=
+  req.contractModel=== "ANNUAL"
+      ? "Annual"
+      : req.contractModel === "SEASONAL"
+      ? "Seasonal"
+    : "—";
 
   const seasonText =
     req.contractModel === "ANNUAL"
       ? "All Seasons"
-      : (req.season || "—");
+      : req.season || "—";
 
   body.innerHTML = `
-  <div class="request-view-grid">
+   <div class="request-view-grid">
     <div class="item">
       <label>Crop</label>
-      <span>${req.cropName}</span>
+      <span>${req.cropName || "—"}</span>
     </div>
 
     <div class="item">
       <label>Crop Type</label>
-      <span>${req.subCategoryName}</span>
+      <span>${req.subCategoryName || "—"}</span>
     </div>
 
     <div class="item">
       <label>Land</label>
-      <span>${req.landSize} Acres</span>
+      <span>${req.landSize || "—"} Acres</span>
     </div>
+
+    <div class="item">
+        <label>Contract Model</label>
+        <span class="${
+          req.contractModel === "ANNUAL"
+            ? "contract-annual"
+            : "contract-seasonal"
+        }">
+          ${contractModelText}
+        </span>
+      </div>
 
     <div class="item">
       <label>Season</label>
@@ -513,21 +521,22 @@ function openRequestViewModal(req) {
 
     <div class="item">
       <label>Status</label>
-      <span class="status-badge ${req.status.toLowerCase()}">${req.status}</span>
-
+      <span class="status-badge ${(req.status || "").toLowerCase()}">
+        ${req.status || "—"}
+      </span>
     </div>
 
     <div class="item">
       <label>Sent On</label>
       <span>${new Date(req.createdAt).toLocaleDateString()}</span>
     </div>
-  </div>
-`;
 
-  modal.hidden = false;
+    </div>
+  `;
+
   modal.style.display = "flex";
-
 }
+
 
 document.getElementById("closeRequestView")
   ?.addEventListener("click", closeRequestModal);
@@ -535,14 +544,9 @@ document.getElementById("closeRequestView")
 document.getElementById("closeRequestViewBtn")
   ?.addEventListener("click", closeRequestModal);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("requestViewModal");
-  if (modal) modal.hidden = true;
-});
 
 function closeRequestModal() {
   const modal = document.getElementById("requestViewModal");
-  modal.hidden = true;
   modal.style.display = "none";
 }
 document.getElementById("requestViewModal")

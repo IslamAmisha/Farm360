@@ -633,7 +633,7 @@ if (buyer.contractModel === "SEASONAL") {
 } else {
   // ANNUAL contract → no season selection
   seasonGroup.style.display = "none";
-  seasonSelect.value = null;
+  seasonSelect.value = "";
 }
 
 

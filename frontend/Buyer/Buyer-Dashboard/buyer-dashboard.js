@@ -172,6 +172,15 @@ if (typeof translations !== "undefined") {
 
 const API_BASE_URL = "http://localhost:8080";
 
+let selectedFarmer = null;
+let farmerLands = [];
+
+let selectedLandId = null;
+let selectedCropId = null;
+let selectedSubCategoryId = null;
+let selectedContractModel = null;
+let selectedSeason = null;
+
 function getDashText() {
   const lang = window.currentLanguage || "en";
   const t =
@@ -279,7 +288,7 @@ function renderFarmers(list) {
 
     if (reqBtn && !reqBtn.classList.contains("requested")) {
       reqBtn.onclick = () => {
-        if (farmerId) sendRequestToFarmer(farmerId, reqBtn);
+        if (farmerId) openBuyerRequestModal(farmer);
       };
     }
 
@@ -354,103 +363,79 @@ async function loadFarmers() {
 }
 
 
-// SEND REQUEST
-
-async function sendRequestToFarmer(farmerId, btn) {
-  const { token, userId } = getAuthInfo();
-  const { t } = getDashText();
-
-  if (!token || !userId) return alert(t.msgLoginRequired);
-
-  btn.disabled = true;
-  btn.textContent = "Sending...";
-
-  try {
-    const resp = await fetch(
-      `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ receiverId: farmerId }),
-      }
-    );
-
-    // No matter what, lock the button
-    btn.textContent = "✔ Requested";
-    btn.classList.add("requested");
-    btn.disabled = true;
-
-  } catch (e) {
-    console.error(e);
-    btn.textContent = t.btnRequest;
-    btn.disabled = false;
-  }
-}
-
-
 
 // POPUP DETAILS
 
-function openFarmerDetails(f) {
-  if (!f) return;
+async function openFarmerDetails(farmer) {
+  if (!farmer) return;
 
-  // Top header
-  document.getElementById("fd_name").textContent = f.name || "";
+  // Header
+  document.getElementById("fd_name").textContent = farmer.name || "";
   document.getElementById("fd_location").textContent =
-    `${f.villageOrCity || ""}${f.villageOrCity && f.district ? ", " : ""}${f.district || ""}`;
+    `${farmer.villageOrCity || ""}${farmer.villageOrCity && farmer.district ? ", " : ""}${farmer.district || ""}`;
 
   // Overview
-  document.getElementById("fd_fullName").textContent = f.name || "";
-  document.getElementById("fd_phone").textContent = f.maskedPhone || "N/A";
-  
+  document.getElementById("fd_fullName").textContent = farmer.name || "";
+  document.getElementById("fd_phone").textContent = farmer.maskedPhone || "N/A";
+
   // Address
-  document.getElementById("fd_district").textContent = f.district || "N/A";
+  document.getElementById("fd_district").textContent = farmer.district || "N/A";
   document.getElementById("fd_block").textContent = "N/A";
   document.getElementById("fd_village").textContent =
-    f.villageOrCity || "N/A";
-  document.getElementById("fd_pin").textContent = f.pinCode || "N/A";
+    farmer.villageOrCity || "N/A";
+  document.getElementById("fd_pin").textContent = farmer.pinCode || "N/A";
 
-  // Lands (FINAL)
-const lands = Array.isArray(f.lands) ? f.lands : [];
-let html = "";
+  const landsContainer = document.getElementById("fd_lands");
+  landsContainer.innerHTML = `<p class="fd-empty">Loading land details...</p>`;
 
-if (!lands.length) {
-  html = `<p class="fd-empty">No lands added</p>`;
-} else {
-  lands.forEach((land, idx) => {
-    const size = land.size ?? "N/A";
-    const type = land.croppingPattern
-      ? land.croppingPattern.charAt(0) +
-        land.croppingPattern.slice(1).toLowerCase()
-      : "N/A";
-    const crops = (land.crops || []).join(", ") || "N/A";
-    const subs = (land.subcategories || []).join(", ") || "N/A";
+  // 🔥 FETCH LANDS FOR DETAILS VIEW
+  try {
+    const { token } = getAuthInfo();
+    const resp = await fetch(
+      `${API_BASE_URL}/api/farmers/${farmer.userId}/lands`,
+      { headers: { Authorization: "Bearer " + token } }
+    );
 
-    html += `
-      <div class="fd-land-card">
-        <div class="fd-land-header">
-          <span class="fd-land-title">Land ${idx + 1}</span>
-        </div>
-        <div class="fd-land-body">
-          <div class="fd-row"><span class="fd-label">Size</span><span>${size} acres</span></div>
-          <div class="fd-row"><span class="fd-label">Type</span><span>${type}</span></div>
-          <div class="fd-row"><span class="fd-label">Crops</span><span>${crops}</span></div>
-          <div class="fd-row"><span class="fd-label">Subcategories</span><span>${subs}</span></div>
-        </div>
+    const lands = resp.ok ? await resp.json() : [];
+
+    landsContainer.innerHTML = "";
+
+    if (!lands.length) {
+      landsContainer.innerHTML =
+        `<p class="fd-empty">No land data available</p>`;
+    } else {
+      lands.forEach((land) => {
+  const cropText = (land.crops || [])
+    .map(c => {
+      const subs = (c.subcategories || []).map(sc => sc.name).join(", ");
+      return subs
+        ? `${c.name} (${subs})`
+        : c.name;
+    })
+    .join(" | ");
+
+  landsContainer.innerHTML += `
+    <div class="fd-land-card">
+      <strong>${land.size} Acre</strong>
+      <div class="fd-land-meta">
+        Crops: ${cropText || "N/A"}
       </div>
-    `;
-  });
-}
-
-document.getElementById("fd_lands").innerHTML = html;
+    </div>
+  `;
+});
 
 
-  // Show overlay
+    }
+  } catch (e) {
+    console.error("Land load failed", e);
+    landsContainer.innerHTML =
+      `<p class="fd-empty">Unable to load land details</p>`;
+  }
+
+  // Show popup
   document.getElementById("farmerDetailsPopup").classList.remove("hidden");
 }
+
 
 
 
@@ -510,4 +495,243 @@ document.addEventListener("DOMContentLoaded", () => {
       closeFarmerDetails();
     }
   });
+});
+
+
+async function openBuyerRequestModal(farmer) {
+selectedFarmer = farmer;
+
+  selectedLandId = null;
+  selectedCropId = null;
+  selectedSubCategoryId = null;
+  selectedContractModel = null;
+  selectedSeason = null;
+
+  await loadFarmerLandsForBuyer(farmer.userId);
+
+  if (!farmerLands.length) {
+    alert("Farmer has no registered lands");
+    return;
+  }
+
+  setupBuyerRequestUI();
+  document.getElementById("requestModal").hidden = false;
+}
+async function loadFarmerLandsForBuyer(farmerUserId) {
+  const { token } = getAuthInfo();
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/farmers/${farmerUserId}/lands`,
+    {
+      headers: { Authorization: "Bearer " + token }
+    }
+  );
+
+  farmerLands = resp.ok ? await resp.json() : [];
+}
+function setupBuyerRequestUI() {
+  const landInput = document.getElementById("reqLandInput");
+  const landPicker = document.getElementById("landPicker");
+  const cropSelect = document.getElementById("reqCropSelect");
+  const subSelect = document.getElementById("reqSubCategorySelect");
+  const contractSelect = document.getElementById("buyerContractModel");
+  const seasonGroup = document.getElementById("seasonGroup");
+  const seasonSelect = document.getElementById("reqSeasonSelect"); 
+
+
+  // RESET
+  landInput.value = "";
+  landPicker.innerHTML = "";
+  cropSelect.innerHTML = `<option value="">Select crop</option>`;
+  subSelect.innerHTML = `<option value="">Select crop type</option>`;
+  seasonSelect.value = "";
+
+  landInput.disabled = true;
+  cropSelect.disabled = true;
+  subSelect.disabled = true;
+  seasonGroup.style.display = "none";
+
+  // CONTRACT MODEL FIRST
+
+  contractSelect.onchange = () => {
+  selectedContractModel = contractSelect.value;
+
+  selectedLandId = null;
+  selectedCropId = null;
+  selectedSubCategoryId = null;
+  selectedSeason = null;
+
+  landInput.disabled = false;
+  cropSelect.disabled = true;
+  subSelect.disabled = true;
+
+  cropSelect.innerHTML = `<option value="">Select crop</option>`;
+  subSelect.innerHTML = `<option value="">Select crop type</option>`;
+
+  if (selectedContractModel === "SEASONAL") {
+    seasonGroup.style.display = "block";
+  } else {
+    seasonGroup.style.display = "none";
+  }
+};
+
+contractSelect.dispatchEvent(new Event("change"));
+cropSelect.onchange = () => {
+  selectedCropId = Number(cropSelect.value);
+  selectedSubCategoryId = null;
+
+  subSelect.innerHTML = `<option value="">Select crop type</option>`;
+  subSelect.disabled = true;
+
+  if (!selectedCropId || !selectedLandId) return;
+
+  const land = farmerLands.find(
+    l => Number(l.id ?? l.landId) === Number(selectedLandId)
+  );
+  if (!land) return;
+
+  const crop = land.crops?.find(c => Number(c.id) === selectedCropId);
+  if (!crop) return;
+
+  // 🔥 ENABLE CORRECTLY
+  subSelect.disabled = false;
+  subSelect.style.pointerEvents = "auto";
+
+  if (!Array.isArray(crop.subcategories) || crop.subcategories.length === 0) {
+    subSelect.innerHTML =
+      `<option value="">No crop types available</option>`;
+    return;
+  }
+
+  crop.subcategories.forEach(sc => {
+    const opt = document.createElement("option");
+    opt.value = sc.id;
+    opt.textContent = sc.name;
+    subSelect.appendChild(opt);
+  });
+};
+
+
+
+
+
+  // LAND PICKER
+  farmerLands.forEach(land => {
+    const div = document.createElement("div");
+    div.className = "picker-item";
+    div.textContent = `Land – ${land.size} Acre`;
+
+div.onclick = () => {
+  landInput.value = div.textContent;
+  selectedLandId = land.id ?? land.landId;
+
+  cropSelect.innerHTML = `<option value="">Select crop</option>`;
+  subSelect.innerHTML = `<option value="">Select crop type</option>`;
+
+  if (selectedContractModel === "SEASONAL") {
+    cropSelect.disabled = false;
+
+    land.crops?.forEach(crop => {
+      const opt = document.createElement("option");
+      opt.value = crop.id;
+      opt.textContent = crop.name;
+      cropSelect.appendChild(opt);
+    });
+  }
+
+  landPicker.classList.add("hidden");
+};
+
+
+
+
+    landPicker.appendChild(div);
+  });
+
+  landInput.onclick = () => landPicker.classList.toggle("hidden");
+
+
+  subSelect.onchange = () => {
+    selectedSubCategoryId = Number(subSelect.value);
+  };
+
+  seasonSelect.onchange = () => {
+    selectedSeason = seasonSelect.value;
+  };
+}
+// AFTER setting contractSelect.onchange
+
+document.addEventListener("click", (e) => {
+  const picker = document.getElementById("landPicker");
+  const input = document.getElementById("reqLandInput");
+
+  if (!picker || !input) return;
+
+  if (!picker.contains(e.target) && e.target !== input) {
+    picker.classList.add("hidden");
+  }
+});
+
+document.getElementById("confirmRequestBtn").onclick = async () => {
+  const { token, userId } = getAuthInfo();
+if (!selectedContractModel) {
+  return alert("Select contract model");
+}
+
+  if (!selectedLandId) return alert("Select farmer land");
+
+if (selectedContractModel === "SEASONAL") {
+  if (!selectedCropId) return alert("Select crop");
+  if (!selectedSubCategoryId) return alert("Select crop type");
+  if (!selectedSeason) return alert("Select season");
+}
+
+
+  if (!selectedFarmer) {
+  alert("Farmer not selected");
+  return;
+}
+
+  const payload = {
+ receiverId: selectedFarmer.userId,
+  landId: selectedLandId,
+  contractModel: selectedContractModel,
+  season: selectedContractModel === "SEASONAL" ? selectedSeason : null,
+  cropId: selectedContractModel === "SEASONAL" ? selectedCropId : null,
+  cropSubCategoryId:
+    selectedContractModel === "SEASONAL" ? selectedSubCategoryId : null
+};
+
+  const confirmBtn = document.getElementById("confirmRequestBtn");
+confirmBtn.disabled = true;
+try{
+  const resp = await fetch(
+    `${API_BASE_URL}/request/send?userId=${userId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  const res = await resp.json();
+  alert(res.message || "Request sent");
+
+  document.getElementById("requestModal").hidden = true;
+  loadFarmers(); // reload buyer dashboard list
+} finally
+{
+   confirmBtn.disabled = false;
+}
+}
+  
+document.getElementById("requestModalClose")?.addEventListener("click", () => {
+  document.getElementById("requestModal").hidden = true;
+});
+
+document.getElementById("cancelRequestBtn")?.addEventListener("click", () => {
+  document.getElementById("requestModal").hidden = true;
 });

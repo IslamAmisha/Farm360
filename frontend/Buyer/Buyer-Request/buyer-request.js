@@ -185,7 +185,7 @@
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ requestId: id, action: "ACCEPT" }),
+      body: JSON.stringify({ requestId: id, action: "ACCEPT", actionUserId: userId }),
     });
 
     await loadIncomingRequests();
@@ -201,7 +201,7 @@
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ requestId: id, action: "REJECT" }),
+      body: JSON.stringify({ requestId: id, action: "REJECT",actionUserId: userId  }),
     });
 
     await loadIncomingRequests();
@@ -240,16 +240,13 @@
       card.innerHTML = `
   <div class="request-row">
     <div class="col-left">
-      <div class="user-name">${req.senderName}</div>
+     
       <div class="user-company">${req.companyName || ""}</div>
       <div class="user-location">${req.city}, ${req.district}</div>
       <div class="user-rating">👍 ${req.thumbsUp} &nbsp; 👎 ${req.thumbsDown}</div>
     </div>
 
-    <div class="col-status ${statusClass}">
-      ${tr[`status${req.status}`]}
-    </div>
-  </div>
+   
 
   <div class="request-body">
     <div class="request-dates">${tr.sentOn}: ${formatDate(req.createdAt)}</div>
@@ -277,6 +274,9 @@
 
 
       incomingList.appendChild(card);
+
+      
+
     });
 
     // attach events
@@ -295,6 +295,13 @@
           handleReject(e.target.dataset.id)
         )
       );
+      incomingList.querySelectorAll(".btn-view").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.id;
+    const req = incoming.find(r => r.requestId == id);
+    openRequestViewModal(req);
+  });
+});
   }
 
   // OUTGOING (Buyer → Farmer)
@@ -323,7 +330,7 @@
       card.innerHTML = `
   <div class="request-row">
     <div class="col-left">
-      <div class="user-name">${req.receiverName}</div>
+      
       <div class="user-company">${req.companyName || ""}</div>
       <div class="user-location">
         ${req.city || ""}${req.city && req.district ? ", " : ""}${req.district || ""}
@@ -332,11 +339,6 @@
         👍 ${req.thumbsUp ?? 0} &nbsp; 👎 ${req.thumbsDown ?? 0}
       </div>
     </div>
-
-    <div class="col-status ${statusClass}">
-      ${tr[`status${req.status}`]}
-    </div>
-  </div>
 
   <div class="request-body">
     <div class="request-dates">
@@ -353,7 +355,17 @@
 
 
       outgoingList.appendChild(card);
+      
+
     });
+
+    outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.id;
+    const req = outgoing.find(r => r.requestId == id);
+    openRequestViewModal(req);
+  });
+});
   }
 
   function renderAll() {
@@ -409,3 +421,95 @@
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
   });
 })();
+
+function openRequestViewModal(req) {
+  if (!req) return;
+
+  const modal = document.getElementById("requestViewModal");
+  const body = document.getElementById("requestViewBody");
+
+  const contractModelText =
+    req.contractModel === "ANNUAL"
+      ? "Annual"
+      : req.contractModel === "SEASONAL"
+      ? "Seasonal"
+      : "—";
+
+  const seasonText =
+    req.contractModel === "ANNUAL"
+      ? "All Seasons"
+      : req.season || "—";
+
+  body.innerHTML = `
+    <div class="request-view-grid">
+
+      <div class="item">
+        <label>Crop</label>
+        <span>${req.cropName || "—"}</span>
+      </div>
+
+      <div class="item">
+        <label>Crop Type</label>
+        <span>${req.subCategoryName || "—"}</span>
+      </div>
+
+      <div class="item">
+        <label>Land</label>
+        <span>${req.landSize ?? "—"} Acres</span>
+      </div>
+
+      <div class="item">
+        <label>Contract Model</label>
+        <span class="${
+          req.contractModel === "ANNUAL"
+            ? "contract-annual"
+            : "contract-seasonal"
+        }">
+          ${contractModelText}
+        </span>
+      </div>
+
+      <div class="item">
+        <label>Season</label>
+        <span>${seasonText}</span>
+      </div>
+
+      <div class="item">
+        <label>Status</label>
+        <span class="status-badge ${req.status.toLowerCase()}">
+          ${req.status}
+        </span>
+      </div>
+
+      <div class="item">
+        <label>Sent On</label>
+        <span>${new Date(req.createdAt).toLocaleDateString()}</span>
+      </div>
+
+    </div>
+  `;
+
+  modal.hidden = false;
+  modal.style.display = "flex";
+}
+
+
+function closeRequestModal() {
+  document.getElementById("requestViewModal").style.display = "none";
+}
+
+document
+  .getElementById("closeRequestView")
+  ?.addEventListener("click", closeRequestModal);
+
+document
+  .getElementById("closeRequestViewBtn")
+  ?.addEventListener("click", closeRequestModal);
+
+document
+  .getElementById("requestViewModal")
+  ?.addEventListener("click", (e) => {
+    if (e.target.id === "requestViewModal") {
+      closeRequestModal();
+    }
+  });
