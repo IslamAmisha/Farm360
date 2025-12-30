@@ -28,6 +28,7 @@ public class RequestListItemRS {
     private Long landId;
     private Double landSize;
 
+    private String contractModel;
     private String season;
 
     private String status; // PENDING / ACCEPTED / REJECTED

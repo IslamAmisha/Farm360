@@ -48,12 +48,19 @@ public class RequestServiceImpl implements RequestService {
             return rs;
         }
 
-        if (rq.getLandId() == null ||
-                rq.getCropId() == null ||
-                rq.getSubCategoryId() == null) {
+        if (rq.getLandId() == null) {
             rs.setSuccess(false);
-            rs.setMessage("Land and crop are required");
+            rs.setMessage("Land is required");
             return rs;
+        }
+
+        if (rq.getSeason() != null) { // SEASONAL
+            if (rq.getCropId() == null || rq.getCropSubCategoryId()
+                    == null) {
+                rs.setSuccess(false);
+                rs.setMessage("Crop and crop type are required for seasonal contract");
+                return rs;
+            }
         }
 
         UserEntity sender = userRepo.findById(senderId).orElseThrow();
@@ -63,16 +70,32 @@ public class RequestServiceImpl implements RequestService {
         LandEntity land = landRepo.findById(rq.getLandId())
                 .orElseThrow(() -> new RuntimeException("Invalid land"));
 
-        // -------- OWNERSHIP CHECK --------
-        if (!land.getFarmer().getUser().getId().equals(senderId)) {
+        // -------- OWNERSHIP CHECK (ROLE SAFE) --------
+        UserEntity farmerUser;
+
+        if (sender.getFarmer() != null) {
+            // Farmer → Buyer
+            farmerUser = sender;
+        } else if (receiver.getFarmer() != null) {
+            // Buyer → Farmer
+            farmerUser = receiver;
+        } else {
             rs.setSuccess(false);
-            rs.setMessage("Land does not belong to farmer");
+            rs.setMessage("Invalid request: no farmer involved");
             return rs;
         }
 
+        if (!land.getFarmer().getUser().getId().equals(farmerUser.getId())) {
+            rs.setSuccess(false);
+            rs.setMessage("Selected land does not belong to the farmer");
+            return rs;
+        }
+
+
         // -------- VALIDATE SUBCATEGORY BELONGS TO LAND --------
         LandCropEntity landCrop = land.getLandCrops().stream()
-                .filter(lc -> lc.getCropSubCategory().getId().equals(rq.getSubCategoryId()))
+                .filter(lc -> lc.getCropSubCategory().getId().equals(rq.getCropSubCategoryId()
+                ))
                 .findFirst()
                 .orElse(null);
 
@@ -106,7 +129,18 @@ public class RequestServiceImpl implements RequestService {
         request.setLand(land);
         request.setCrop(crop);
         request.setCropSubCategory(subCategory);
-        request.setSeason(rq.getSeason());
+        if (rq.getSeason() != null && !rq.getSeason().isBlank()) {
+            try {
+                request.setSeason(SeasonType.valueOf(rq.getSeason().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                rs.setSuccess(false);
+                rs.setMessage("Invalid season value");
+                return rs;
+            }
+        } else {
+            request.setSeason(null); // annual / non-seasonal
+        }
+
         request.setStatus(RequestStatus.PENDING);
 
 
@@ -221,6 +255,16 @@ public class RequestServiceImpl implements RequestService {
                         item.setLandSize(req.getLand().getSize());
                     }
 
+                    // -------- CONTRACT MODEL & SEASON --------
+                    if (req.getSeason() != null) {
+                        item.setContractModel("SEASONAL");
+                        item.setSeason(req.getSeason().name());
+                    } else {
+                        item.setContractModel("ANNUAL");
+                        item.setSeason(null);
+                    }
+
+
                     return item;
                 }).collect(Collectors.toList())
         );
@@ -287,6 +331,14 @@ public class RequestServiceImpl implements RequestService {
                         item.setLandSize(req.getLand().getSize());
                     }
 
+                    // -------- CONTRACT MODEL & SEASON --------
+                    if (req.getSeason() != null) {
+                        item.setContractModel("SEASONAL");
+                        item.setSeason(req.getSeason().name());
+                    } else {
+                        item.setContractModel("ANNUAL");
+                        item.setSeason(null);
+                    }
 
 
                     return item;

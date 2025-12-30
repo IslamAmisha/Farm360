@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class SendRequestRQ {
     private Long receiverId;
     private Long cropId;
-    private Long subCategoryId;
+    private Long cropSubCategoryId;
     private Long landId;
-    private SeasonType season;
+    private String season;
 }
