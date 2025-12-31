@@ -7,6 +7,8 @@ public enum ProposalStatus {
     SENT,
     ACCEPTED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+
+    EXPIRED
 }
 

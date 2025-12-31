@@ -2,6 +2,8 @@ package com.Farm360.dto.request.proposal;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,6 +17,8 @@ public class ProposalCreateRQ {
     private Long receiverUserId;
 
     private Long landId;
+    private Double landAreaUsed;
+
     private Long cropId;
     private Long cropSubCategoryId;
 
@@ -25,7 +29,6 @@ public class ProposalCreateRQ {
     private String unit;            // QUINTAL / TON
 
     private Double pricePerUnit;
-    private String currency;         // INR
 
     private Boolean escrowApplicable;
 
@@ -42,6 +45,10 @@ public class ProposalCreateRQ {
 
     private Boolean allowCropChangeBetweenSeasons;
 
+    private String remarks;
+
     private Integer startYear;
     private Integer endYear;
+
+    private List<ProposalCropCreateRQ> proposalCrops;
 }

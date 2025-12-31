@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "proposals")
@@ -33,6 +34,10 @@ public class ProposalEntity extends AuditTable<String> {
     private Long cropId;
     private Long cropSubCategoryId;
 
+    @Column(nullable = false)
+    private Double landAreaUsed; // acres or hectares
+
+
     @Enumerated(EnumType.STRING)
     private ContractModel contractModel;
 
@@ -45,7 +50,6 @@ public class ProposalEntity extends AuditTable<String> {
     private UnitType unit;
 
     private Double pricePerUnit;
-    private String currency;
 
     private Double totalContractAmount;
 
@@ -61,6 +65,13 @@ public class ProposalEntity extends AuditTable<String> {
 
     private String deliveryWindow;
 
+    private Integer proposalVersion;
+
+    @Enumerated(EnumType.STRING)
+    private Role createdByRole;
+
+    private Long parentProposalId;
+
     @Enumerated(EnumType.STRING)
     private LogisticsHandledBy logisticsHandledBy;
 
@@ -73,4 +84,31 @@ public class ProposalEntity extends AuditTable<String> {
     private ProposalStatus proposalStatus;
 
     private LocalDateTime validUntil;
+
+    private Boolean locked;
+
+    @Column(length = 1000)
+    private String remarks;
+
+    private LocalDateTime acceptedAt;
+
+    private LocalDateTime rejectedAt;
+
+    private LocalDateTime expiredAt;
+
+    @Column(nullable = false)
+    private LocalDateTime actionDueAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role actionRequiredBy; // BUYER / FARMER
+
+    @OneToMany(
+            mappedBy = "proposal",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ProposalCropEntity> proposalCrops;
+
 }

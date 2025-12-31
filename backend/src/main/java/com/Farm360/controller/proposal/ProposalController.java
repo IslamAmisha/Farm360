@@ -5,6 +5,7 @@ package com.Farm360.controller.proposal;
 import com.Farm360.dto.request.proposal.ProposalCreateRQ;
 import com.Farm360.dto.response.proposal.ProposalRS;
 import com.Farm360.service.proposal.ProposalService;
+import com.Farm360.utils.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,9 @@ public class ProposalController {
     public ResponseEntity<ProposalRS> createOrUpdateDraft(
             @RequestParam Long senderUserId,
             @RequestBody ProposalCreateRQ rq
+            ,@RequestParam Role currentUserRole
     ) {
-        ProposalRS rs = proposalService.createDraftProposal(senderUserId, rq);
+        ProposalRS rs = proposalService.createDraftProposal(senderUserId, rq,currentUserRole);
         return ResponseEntity.ok(rs);
     }
 
@@ -32,9 +34,10 @@ public class ProposalController {
     @PostMapping("/{proposalId}/send")
     public ResponseEntity<Void> sendProposal(
             @RequestParam Long senderUserId,
-            @PathVariable Long proposalId
+            @PathVariable Long proposalId,
+            @RequestParam Role currentUserRole
     ) {
-        proposalService.sendProposal(senderUserId, proposalId);
+        proposalService.sendProposal(senderUserId, proposalId,currentUserRole);
         return ResponseEntity.ok().build();
     }
 

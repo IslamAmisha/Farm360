@@ -7,6 +7,7 @@ import com.Farm360.utils.ProposalStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -23,4 +24,6 @@ public interface ProposalRepo extends JpaRepository<ProposalEntity, Long> {
 
     // Optional: find by request + accepted status
     List<ProposalEntity> findByRequestIdAndProposalStatus(Long requestId, ProposalStatus status);
+
+    List<ProposalEntity> findByProposalStatusInAndActionDueAtBefore(List<ProposalStatus> statuses, LocalDateTime now);
 }

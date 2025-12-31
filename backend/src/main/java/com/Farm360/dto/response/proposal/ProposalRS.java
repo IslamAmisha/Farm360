@@ -2,6 +2,7 @@ package com.Farm360.dto.response.proposal;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +18,7 @@ public class ProposalRS {
     private Long receiverUserId;
 
     private Long landId;
+    private Double landAreaUsed;
     private Long cropId;
     private Long cropSubCategoryId;
 
@@ -27,7 +29,6 @@ public class ProposalRS {
     private String unit;
 
     private Double pricePerUnit;
-    private String currency;
 
     private Double totalContractAmount;
 
@@ -49,7 +50,9 @@ public class ProposalRS {
     private Integer endYear;
 
     private String proposalStatus;
+    private String remarks;
 
+    private List<ProposalCropRS> proposalCrops;
     /* -------- Audit fields -------- */
 
     private LocalDateTime createdAt;   // from AuditTable.createdDate
