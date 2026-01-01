@@ -1,7 +1,5 @@
 package com.Farm360.controller.proposal;
 
-
-
 import com.Farm360.dto.request.proposal.ProposalCreateRQ;
 import com.Farm360.dto.response.proposal.ProposalRS;
 import com.Farm360.service.proposal.ProposalService;
@@ -17,16 +15,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProposalController {
 
-    private final ProposalService proposalService;
+    private final ProposalService proposalService; // interface type
 
     /* -------------------- CREATE / UPDATE DRAFT -------------------- */
     @PostMapping("/draft")
     public ResponseEntity<ProposalRS> createOrUpdateDraft(
             @RequestParam Long senderUserId,
-            @RequestBody ProposalCreateRQ rq
-            ,@RequestParam Role currentUserRole
+            @RequestBody ProposalCreateRQ rq,
+            @RequestParam Role currentUserRole
     ) {
-        ProposalRS rs = proposalService.createDraftProposal(senderUserId, rq,currentUserRole);
+        ProposalRS rs = proposalService.createDraftProposal(senderUserId, rq, currentUserRole);
         return ResponseEntity.ok(rs);
     }
 
@@ -37,7 +35,7 @@ public class ProposalController {
             @PathVariable Long proposalId,
             @RequestParam Role currentUserRole
     ) {
-        proposalService.sendProposal(senderUserId, proposalId,currentUserRole);
+        proposalService.sendProposal(senderUserId, proposalId, currentUserRole);
         return ResponseEntity.ok().build();
     }
 
