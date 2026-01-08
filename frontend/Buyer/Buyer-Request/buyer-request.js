@@ -236,6 +236,7 @@
 
       const card = document.createElement("div");
       card.className = "request-card";
+      card.dataset.requestId = req.requestId;
 
       card.innerHTML = `
   <div class="request-row">
@@ -252,23 +253,48 @@
     <div class="request-dates">${tr.sentOn}: ${formatDate(req.createdAt)}</div>
 
     <div class="request-actions">
-      ${
-        req.status === "PENDING"
-          ? `
-        <button class="btn-accept" data-id="${req.requestId}">
-          ${tr.btnAccept}
-        </button>
-        <button class="btn-reject" data-id="${req.requestId}">
-          ${tr.btnReject}
-        </button>
-        `
-          : ""
-      }
 
-      <button class="btn-view" data-id="${req.requestId}">
-        ${tr.btnView}
-      </button>
-    </div>
+  ${
+    req.status === "PENDING"
+      ? `
+    <button class="btn-accept" data-id="${req.requestId}">
+      ${tr.btnAccept}
+    </button>
+    <button class="btn-reject" data-id="${req.requestId}">
+      ${tr.btnReject}
+    </button>
+    `
+      : ""
+  }
+
+  <button class="btn-view" data-id="${req.requestId}">
+    ${tr.btnView}
+  </button>
+
+  ${
+    req.status === "ACCEPTED" && !req.proposalId
+      ? `
+    <button class="btn-primary btn-proposal-create"
+      data-request="${req.requestId}">
+      Create Proposal
+    </button>
+    `
+      : ""
+  }
+
+  ${
+    req.proposalId
+      ? `
+    <button class="btn-outline btn-proposal-edit"
+      data-proposal="${req.proposalId}">
+      Edit Proposal
+    </button>
+    `
+      : ""
+  }
+
+</div>
+
   </div>
 `;
 
@@ -326,6 +352,7 @@
 
       const card = document.createElement("div");
       card.className = "request-card";
+      card.dataset.requestId = req.requestId;
 
       card.innerHTML = `
   <div class="request-row">
@@ -346,10 +373,28 @@
     </div>
 
     <div class="request-actions">
-      <button class="btn-view" data-id="${req.requestId}">
-        ${tr.btnView}
-      </button>
-    </div>
+
+  ${
+    req.status === "ACCEPTED" && !req.proposalId
+      ? `<span class="waiting-text">
+           Waiting for farmer proposal
+         </span>`
+      : ""
+  }
+
+  ${
+    req.proposalId
+      ? `<button class="btn-outline btn-proposal-view"
+            data-proposal="${req.proposalId}">
+           View Proposal
+         </button>`
+      : `<button class="btn-view" data-id="${req.requestId}">
+           ${tr.btnView}
+         </button>`
+  }
+
+</div>
+
   </div>
 `;
 
@@ -402,6 +447,33 @@
     renderAll();
     switchTab("incoming");
   });
+
+  document.addEventListener("click", (e) => {
+
+    if (!e.target.classList.contains("btn-proposal-create") &&
+      !e.target.classList.contains("btn-proposal-edit") &&
+      !e.target.classList.contains("btn-view")) {
+    return;
+  }
+
+  e.stopPropagation();
+
+  // CREATE PROPOSAL
+  if (e.target.classList.contains("btn-proposal-create")) {
+    const requestId = e.target.dataset.request;
+    window.location.href =
+      `../../Proposal/proposal.html?requestId=${requestId}`;
+  }
+
+  // EDIT PROPOSAL
+  if (e.target.classList.contains("btn-proposal-edit")) {
+    const proposalId = e.target.dataset.proposal;
+    window.location.href =
+      `../../Proposal/proposal.html?proposalId=${proposalId}`;
+  }
+
+});
+
 
   document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
   document

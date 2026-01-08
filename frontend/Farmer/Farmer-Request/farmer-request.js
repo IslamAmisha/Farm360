@@ -40,7 +40,7 @@
       statusACCEPTED: "Accepted",
       statusREJECTED: "Rejected",
 
-      btnView: "View",
+      btnView: "View Request",
       btnAccept: "Accept",
       btnReject: "Reject",
 
@@ -286,12 +286,28 @@ function handleView(req) {
       `
           : ""
       }
-<button class="btn-outline btn-view">
+
+<button class="btn-outline btn-view-request">
         ${tr.btnView}
       </button>
+
+                ${req.status === "ACCEPTED" && !req.proposalId ? `
+  <button class="btn-primary btn-proposal-create"
+    data-request="${req.requestId}">
+    Create Proposal
+  </button>
+` : ""}
+
+${req.proposalId ? `
+  <button class="btn-outline btn-proposal-view"
+    data-proposal="${req.proposalId}">
+    View Proposal
+  </button>
+` : ""}
     </div>
   </div>
 `;
+
 
 
       incomingList.appendChild(card);
@@ -315,16 +331,16 @@ function handleView(req) {
       );
 
       // 🔹 ADDED: View buttons
-incomingList.querySelectorAll(".btn-view").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const card = btn.closest(".request-card");
-    const id = card.dataset.requestId;
-    const req = incoming.find(r => r.requestId == id);
-    openRequestViewModal(req);
-      console.log("DATASET ID:", card.dataset.requestId);
-    console.log("INCOMING ARRAY:", incoming);
-  });
-});
+// incomingList.querySelectorAll(".btn-view").forEach((btn) => {
+//   btn.addEventListener("click", () => {
+//     const card = btn.closest(".request-card");
+//     const id = card.dataset.requestId;
+//     const req = incoming.find(r => r.requestId == id);
+//     openRequestViewModal(req);
+//       console.log("DATASET ID:", card.dataset.requestId);
+//     console.log("INCOMING ARRAY:", incoming);
+//   });
+// });
 
 
 
@@ -381,8 +397,18 @@ incomingList.querySelectorAll(".btn-view").forEach((btn) => {
     </div>
 
     <div class="request-actions">
-    <button class="btn-outline btn-view">
+    ${req.status === "ACCEPTED" && !req.proposalId ? `
+  <span class="waiting-text">Waiting for buyer proposal</span>
+` : ""}
 
+${req.proposalId ? `
+  <button class="btn-outline btn-proposal-view"
+    data-proposal="${req.proposalId}">
+    View Proposal
+  </button>
+` : ""}
+
+    <button class="btn-outline btn-view-request">
         ${tr.btnView}
       </button>
     </div>
@@ -393,21 +419,19 @@ incomingList.querySelectorAll(".btn-view").forEach((btn) => {
       outgoingList.appendChild(card);
     });
     // 🔹 ADDED: View buttons (outgoing)
-outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const card = btn.closest(".request-card");
-    const id = card.dataset.requestId;
-    const req = outgoing.find(r => r.requestId == id);
-    openRequestViewModal(req);
-      console.log("DATASET ID:", card.dataset.requestId);
-    console.log("Outgoing ARRAY:", outgoing);
-  });
-});
+// outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
+//   btn.addEventListener("click", () => {
+//     const card = btn.closest(".request-card");
+//     const id = card.dataset.requestId;
+//     const req = outgoing.find(r => r.requestId == id);
+//     openRequestViewModal(req);
+//       console.log("DATASET ID:", card.dataset.requestId);
+//     console.log("Outgoing ARRAY:", outgoing);
+//   });
+// });
 
 
-
-
-  }
+}
 
   function renderAll() {
     updateCounts();
@@ -448,6 +472,37 @@ outgoingList.querySelectorAll(".btn-view").forEach((btn) => {
     renderAll();
     switchTab("incoming");
   });
+
+document.addEventListener("click", (e) => {
+
+  // VIEW REQUEST (modal)
+  if (e.target.classList.contains("btn-view-request")) {
+    const card = e.target.closest(".request-card");
+    const requestId = card.dataset.requestId;
+
+    const req =
+      incoming.find(r => r.requestId == requestId) ||
+      outgoing.find(r => r.requestId == requestId);
+
+    openRequestViewModal(req);
+  }
+
+  // CREATE PROPOSAL
+  if (e.target.classList.contains("btn-proposal-create")) {
+    const requestId = e.target.dataset.request;
+    window.location.href =
+      `../../Proposal/proposal.html?requestId=${requestId}`;
+  }
+
+  // VIEW PROPOSAL
+  if (e.target.classList.contains("btn-proposal-view")) {
+    const proposalId = e.target.dataset.proposal;
+    window.location.href =
+      `../../Proposal/proposal.html?proposalId=${proposalId}`;
+  }
+
+});
+
 
   document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
   document

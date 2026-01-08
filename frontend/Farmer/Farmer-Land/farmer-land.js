@@ -547,11 +547,12 @@
 
       // push into state with known pattern
       lands.push({
-        landId: rs.landId,
-        size: rs.size,
-        croppingPattern: pattern,
-        crops: rs.crops || [],
-      });
+  landId: rs.landId,
+  size: rs.size,
+  croppingPattern: pattern,
+  crops: (rs.crops || []).map(c => c.name), 
+});
+
 
       renderLands();
       alert(t().msgSaveOk);
@@ -586,7 +587,7 @@
       const idx = lands.findIndex((l) => l.landId === landId);
       if (idx !== -1) {
         lands[idx].size = rs.size;
-        lands[idx].crops = rs.crops || [];
+   lands[idx].crops = (rs.crops || []).map(c => c.name);
       }
 
       renderLands();

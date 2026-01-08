@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — Proposal</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Global Theme (same as profile) -->
+    <link rel="stylesheet" href="../Landing-page/landing-page.css" />
+
+    <!-- Proposal Styles -->
+    <link rel="stylesheet" href="proposal.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- ================= HEADER (UNCHANGED, SAME AS PROFILE) ================= -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../Landing-page/landing-page.html" class="nav-item">Home</a>
+          <a href="../Modules/modules.html" class="nav-item">Modules</a>
+          <a href="../Landing-page/landing-page.html#about" class="nav-item"
+            >About</a
+          >
+          <a href="../Insights/insights.html" class="nav-item">Insights</a>
+          <a href="../Support/support.html" class="nav-item">Support</a>
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">☀️</button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+    <main class="container proposal-page">
+
+    <!-- Back -->
+    <button class="back-link">‹ Back</button>
+
+    <!-- ===== PROPOSAL META ===== -->
+    <section class="proposal-meta card">
+      <div class="meta-item">
+        <span class="meta-label">Proposal</span>
+        <strong>#—</strong>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Version</span>
+        <strong>v1</strong>
+      </div>
+      <div class="meta-item">
+        <span class="status-badge draft">DRAFT</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Action Required</span>
+        <strong>—</strong>
+      </div>
+    </section>
+
+    <!-- ===== CONTENT GRID ===== -->
+    <div class="proposal-grid">
+
+      <!-- LEFT COLUMN -->
+      <div class="proposal-main">
+
+        <!-- LAND DETAILS -->
+        <section class="card">
+  <h3>Land Details</h3>
+
+  <div class="form-grid two">
+    <div>
+      <label>Land</label>
+      <select id="landSelect"></select>
+    </div>
+
+    <div>
+      <label>Total Land (acre)</label>
+      <input id="totalLand" disabled />
+    </div>
+
+    <div>
+      <label>Land Used (acre)</label>
+      <input id="landUsed" type="number" />
+    </div>
+  </div>
+</section>
+
+
+        <!-- CONTRACT TYPE -->
+        <section class="card">
+  <h3>Contract Type</h3>
+
+  <div class="form-grid three">
+    <div>
+      <label>Model</label>
+      <select id="contractModel">
+        <option value="SEASONAL">SEASONAL</option>
+        <option value="ANNUAL">ANNUAL</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Season</label>
+      <select id="seasonSelect">
+        <option value="KHARIF">Kharif</option>
+        <option value="RABI">Rabi</option>
+        <option value="ZAID">Zaid</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Start Year</label>
+     <input id="startYear" type="number" min="2025" max="2100" />
+    </div>
+
+    <div>
+      <label>End Year</label>
+      <input id="endYear" type="number" min="2025" max="2100" />
+    </div>
+  </div>
+</section>
+
+
+
+        <!-- CROP PLAN -->
+        <section class="card">
+          <h3>Crop Plan</h3>
+
+          <!-- Seasonal → 1 crop | Annual → multiple -->
+          <div class="crop-row">
+            <select><option>Crop</option></select>
+            <select><option>Sub-category</option></select>
+            <input placeholder="Qty" />
+            <input placeholder="Area" />
+            <select><option>Season</option></select>
+          </div>
+
+          <button class="btn-link">+ Add Crop</button>
+        </section>
+
+        <!-- PRICING -->
+        <section class="card">
+  <h3>Pricing & Payment</h3>
+
+  <div class="form-grid three">
+    <div>
+      <label>Price / Unit</label>
+      <input id="pricePerUnit" />
+    </div>
+
+    <div>
+      <label>Total Amount</label>
+      <input id="totalAmount" disabled />
+    </div>
+  </div>
+
+  <div class="form-grid three">
+    <div>
+      <label>Advance %</label>
+      <input id="advancePercent" />
+    </div>
+    <div>
+      <label>Mid %</label>
+      <input id="midPercent" />
+    </div>
+    <div>
+      <label>Final %</label>
+      <input id="finalPercent" />
+    </div>
+  </div>
+</section>
+
+
+        <!-- DELIVERY -->
+        <section class="card">
+  <h3>Delivery & Logistics</h3>
+
+  <div class="form-grid three">
+    <div>
+      <label>Delivery Location</label>
+      <select id="deliveryLocation"></select>
+    </div>
+    <div>
+      <label>Logistics By</label>
+      <select id="logisticsBy"></select>
+    </div>
+    <div>
+      <label>Delivery Window</label>
+      <input id="deliveryWindow" />
+    </div>
+  </div>
+</section>
+
+
+        <!-- REMARKS -->
+        <section class="card">
+          <h3>Remarks</h3>
+          <textarea rows="3"></textarea>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="proposal-side card">
+        <h4>Proposal Info</h4>
+        <p><strong>Sender:</strong> —</p>
+        <p><strong>Receiver:</strong> —</p>
+        <p><strong>Expires On:</strong> —</p>
+      </aside>
+
+    </div>
+
+    <!-- ===== ACTION BAR ===== -->
+    <footer class="proposal-actions">
+      <button class="btn ghost">Save Draft</button>
+      <button class="btn primary">Send</button>
+      <button class="btn ghost">Counter</button>
+      <button class="btn success">Accept</button>
+      <button class="btn danger">Reject</button>
+      <button class="btn ghost">Cancel</button>
+    </footer>
+
+  </main>
+
+    </div>
+<script src="../../Landing-page/landing-page.js"></script>
+    <script src="proposal.js"></script>
+  </body>
+</html>
