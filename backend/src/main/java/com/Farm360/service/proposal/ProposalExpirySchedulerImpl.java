@@ -5,6 +5,7 @@ import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.utils.ProposalStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProposalExpirySchedulerImpl implements ProposalExpiryScheduler {
 
-    private final ProposalRepo proposalRepo;
+    @Autowired
+    private ProposalRepo proposalRepo;
 
     @Override
     @Scheduled(cron = "0 */10 * * * *") // runs every 10 minutes

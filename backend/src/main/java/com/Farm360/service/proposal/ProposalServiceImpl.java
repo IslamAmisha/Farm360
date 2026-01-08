@@ -8,6 +8,7 @@ import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.utils.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,7 +21,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProposalServiceImpl implements ProposalService {
 
-    private final ProposalRepo proposalRepository;
+    @Autowired
+    private ProposalRepo proposalRepository;
 
     @Override
     public ProposalRS createDraftProposal(Long senderUserId, ProposalCreateRQ rq, Role currentUserRole) {
@@ -220,7 +222,8 @@ public class ProposalServiceImpl implements ProposalService {
         );
 
         proposals = proposals.stream()
-                .filter(p -> p.getActionDueAt().isAfter(LocalDateTime.now()))
+                .filter(p -> p.getActionDueAt() != null &&
+                        p.getActionDueAt().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
 
         return proposals.stream().map(this::mapEntityToRS).collect(Collectors.toList());

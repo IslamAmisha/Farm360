@@ -5,6 +5,7 @@ import com.Farm360.dto.response.proposal.ProposalRS;
 import com.Farm360.service.proposal.ProposalService;
 import com.Farm360.utils.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,98 +13,104 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/proposals")
-@RequiredArgsConstructor
 public class ProposalController {
 
-    private final ProposalService proposalService; // interface type
+    @Autowired
+    private ProposalService proposalService;
 
-    /* -------------------- CREATE / UPDATE DRAFT -------------------- */
     @PostMapping("/draft")
     public ResponseEntity<ProposalRS> createOrUpdateDraft(
             @RequestParam Long senderUserId,
-            @RequestBody ProposalCreateRQ rq,
-            @RequestParam Role currentUserRole
+            @RequestParam Role currentUserRole,
+            @RequestBody ProposalCreateRQ rq
     ) {
-        ProposalRS rs = proposalService.createDraftProposal(senderUserId, rq, currentUserRole);
-        return ResponseEntity.ok(rs);
+        return ResponseEntity.ok(
+                proposalService.createDraftProposal(senderUserId, rq, currentUserRole)
+        );
     }
 
-    /* -------------------- SEND PROPOSAL -------------------- */
     @PostMapping("/{proposalId}/send")
     public ResponseEntity<Void> sendProposal(
-            @RequestParam Long senderUserId,
             @PathVariable Long proposalId,
+            @RequestParam Long senderUserId,
             @RequestParam Role currentUserRole
     ) {
         proposalService.sendProposal(senderUserId, proposalId, currentUserRole);
         return ResponseEntity.ok().build();
     }
 
-    /* -------------------- ACCEPT PROPOSAL -------------------- */
     @PostMapping("/{proposalId}/accept")
     public ResponseEntity<Void> acceptProposal(
-            @RequestParam Long receiverUserId,
-            @PathVariable Long proposalId
+            @PathVariable Long proposalId,
+            @RequestParam Long receiverUserId
     ) {
         proposalService.acceptProposal(receiverUserId, proposalId);
         return ResponseEntity.ok().build();
     }
 
-    /* -------------------- REJECT PROPOSAL -------------------- */
     @PostMapping("/{proposalId}/reject")
     public ResponseEntity<Void> rejectProposal(
-            @RequestParam Long receiverUserId,
-            @PathVariable Long proposalId
+            @PathVariable Long proposalId,
+            @RequestParam Long receiverUserId
     ) {
         proposalService.rejectProposal(receiverUserId, proposalId);
         return ResponseEntity.ok().build();
     }
 
-    /* -------------------- CANCEL PROPOSAL -------------------- */
     @PostMapping("/{proposalId}/cancel")
     public ResponseEntity<Void> cancelProposal(
-            @RequestParam Long senderUserId,
-            @PathVariable Long proposalId
+            @PathVariable Long proposalId,
+            @RequestParam Long senderUserId
     ) {
         proposalService.cancelProposal(senderUserId, proposalId);
         return ResponseEntity.ok().build();
     }
 
-    /* -------------------- GET PROPOSAL BY ID -------------------- */
+    @PostMapping("/{proposalId}/counter")
+    public ResponseEntity<ProposalRS> counterProposal(
+            @PathVariable Long proposalId,
+            @RequestParam Long userId
+    ) {
+        return ResponseEntity.ok(
+                proposalService.createCounterProposal(userId, proposalId)
+        );
+    }
+
     @GetMapping("/{proposalId}")
     public ResponseEntity<ProposalRS> getProposalById(
-            @RequestParam Long userId,
-            @PathVariable Long proposalId
+            @PathVariable Long proposalId,
+            @RequestParam Long userId
     ) {
-        ProposalRS rs = proposalService.getProposalById(userId, proposalId);
-        return ResponseEntity.ok(rs);
+        return ResponseEntity.ok(
+                proposalService.getProposalById(userId, proposalId)
+        );
     }
 
-    /* -------------------- GET PROPOSALS BY REQUEST -------------------- */
     @GetMapping("/request/{requestId}")
     public ResponseEntity<List<ProposalRS>> getProposalsByRequest(
-            @RequestParam Long userId,
-            @PathVariable Long requestId
+            @PathVariable Long requestId,
+            @RequestParam Long userId
     ) {
-        List<ProposalRS> rsList = proposalService.getProposalsByRequest(userId, requestId);
-        return ResponseEntity.ok(rsList);
+        return ResponseEntity.ok(
+                proposalService.getProposalsByRequest(userId, requestId)
+        );
     }
 
-    /* -------------------- GET INCOMING PROPOSALS -------------------- */
     @GetMapping("/incoming")
     public ResponseEntity<List<ProposalRS>> getIncomingProposals(
             @RequestParam Long receiverUserId
     ) {
-        List<ProposalRS> rsList = proposalService.getIncomingProposals(receiverUserId);
-        return ResponseEntity.ok(rsList);
+        return ResponseEntity.ok(
+                proposalService.getIncomingProposals(receiverUserId)
+        );
     }
-
-    /* -------------------- GET OUTGOING PROPOSALS -------------------- */
+    
     @GetMapping("/outgoing")
     public ResponseEntity<List<ProposalRS>> getOutgoingProposals(
             @RequestParam Long senderUserId
     ) {
-        List<ProposalRS> rsList = proposalService.getOutgoingProposals(senderUserId);
-        return ResponseEntity.ok(rsList);
+        return ResponseEntity.ok(
+                proposalService.getOutgoingProposals(senderUserId)
+        );
     }
 }
