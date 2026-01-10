@@ -25,11 +25,17 @@ public class ProposalServiceImpl implements ProposalService {
     private ProposalRepo proposalRepository;
 
     @Override
-    public ProposalRS createDraftProposal(Long senderUserId, ProposalCreateRQ rq, Role currentUserRole) {
+    public ProposalRS createDraftProposal(
+            Long senderUserId,
+            ProposalCreateRQ rq,
+            Role currentUserRole
+    ) {
 
         ProposalEntity proposal;
 
+        /* ---------- LOAD OR CREATE ---------- */
         if (rq.getProposalId() != null) {
+
             proposal = proposalRepository.findById(rq.getProposalId())
                     .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -41,59 +47,155 @@ public class ProposalServiceImpl implements ProposalService {
                 proposal.setProposalCrops(new ArrayList<>());
             }
             proposal.getProposalCrops().clear();
-            proposal.setActionDueAt(null);
+
             proposal.setLocked(false);
+            proposal.setActionDueAt(null);
 
         } else {
+
             proposal = new ProposalEntity();
             proposal.setProposalStatus(ProposalStatus.DRAFT);
             proposal.setSenderUserId(senderUserId);
-            proposal.setReceiverUserId(rq.getReceiverUserId());
             proposal.setRequestId(rq.getRequestId());
             proposal.setProposalVersion(1);
             proposal.setCreatedByRole(currentUserRole);
             proposal.setActionRequiredBy(
                     currentUserRole == Role.farmer ? Role.buyer : Role.farmer
             );
+            proposal.setProposalCrops(new ArrayList<>());
+            proposal.setLocked(false);
+            proposal.setActionDueAt(null);
         }
 
-        mapRQToEntity(rq, proposal);
+        /* ---------- BASIC FIELDS ---------- */
+        proposal.setLandId(rq.getLandId());
 
-        if (rq.getLandAreaUsed() == null || rq.getLandAreaUsed() <= 0) {
-            throw new RuntimeException("Land area is required");
-        }
-        proposal.setLandAreaUsed(rq.getLandAreaUsed());
-
-        if (rq.getProposalCrops() == null || rq.getProposalCrops().isEmpty()) {
-            throw new RuntimeException("At least one crop is required");
+        if (rq.getReceiverUserId() != null) {
+            proposal.setReceiverUserId(rq.getReceiverUserId());
         }
 
-        for (var cropRQ : rq.getProposalCrops()) {
-            ProposalCropEntity crop = ProposalCropEntity.builder()
-                    .proposal(proposal)
-                    .cropId(cropRQ.getCropId())
-                    .cropSubCategoryId(cropRQ.getCropSubCategoryId())
-                    .season(SeasonType.valueOf(cropRQ.getSeason()))
-                    .expectedQuantity(cropRQ.getExpectedQuantity())
-                    .unit(UnitType.valueOf(cropRQ.getUnit()))
-                    .landAreaUsed(cropRQ.getLandAreaUsed())
-                    .build();
+        proposal.setLandAreaUsed(
+                rq.getLandAreaUsed() != null && rq.getLandAreaUsed() > 0
+                        ? rq.getLandAreaUsed()
+                        : null
+        );
 
-            proposal.getProposalCrops().add(crop);
+        if (rq.getContractModel() != null) {
+            proposal.setContractModel(ContractModel.valueOf(rq.getContractModel()));
         }
 
+        /* ---------- SEASON ---------- */
         if (proposal.getContractModel() == ContractModel.SEASONAL &&
-                proposal.getProposalCrops().size() != 1) {
-            throw new RuntimeException("Seasonal contract must have exactly one crop");
+                rq.getSeason() != null && !rq.getSeason().isBlank()) {
+            proposal.setSeason(SeasonType.valueOf(rq.getSeason()));
+        } else {
+            proposal.setSeason(null);
         }
 
-        if (proposal.getContractModel() == ContractModel.ANNUAL &&
-                proposal.getProposalCrops().size() < 2) {
-            throw new RuntimeException("Annual contract must have multiple crops");
+        proposal.setPricePerUnit(rq.getPricePerUnit());
+        proposal.setEscrowApplicable(rq.getEscrowApplicable());
+        proposal.setAdvancePercent(rq.getAdvancePercent());
+        proposal.setMidCyclePercent(rq.getMidCyclePercent());
+        proposal.setFinalPercent(rq.getFinalPercent());
+        proposal.setInputProvided(rq.getInputProvided());
+        proposal.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
+        proposal.setStartYear(rq.getStartYear());
+        proposal.setEndYear(rq.getEndYear());
+
+        if (rq.getDeliveryLocation() != null) {
+            proposal.setDeliveryLocation(
+                    DeliveryLocation.valueOf(rq.getDeliveryLocation())
+            );
         }
 
+        proposal.setDeliveryWindow(rq.getDeliveryWindow());
+
+        if (rq.getLogisticsHandledBy() != null) {
+            proposal.setLogisticsHandledBy(
+                    LogisticsHandledBy.valueOf(rq.getLogisticsHandledBy())
+            );
+        }
+
+        /* ---------- REMARKS (APPEND ONLY) ---------- */
+        if (rq.getRemarks() != null && !rq.getRemarks().isBlank()) {
+
+            String prefix = "[" + LocalDateTime.now() +
+                    " | " + currentUserRole.name() + "] ";
+
+            String newRemark = prefix + rq.getRemarks();
+
+            if (proposal.getRemarks() == null) {
+                proposal.setRemarks(newRemark);
+            } else {
+                proposal.setRemarks(proposal.getRemarks() + "\n" + newRemark);
+            }
+        }
+
+        /* ---------- CROPS ---------- */
+        if (rq.getProposalCrops() != null) {
+            for (var cropRQ : rq.getProposalCrops()) {
+
+                ProposalCropEntity crop = ProposalCropEntity.builder()
+                        .proposal(proposal)
+                        .cropId(cropRQ.getCropId())
+                        .cropSubCategoryId(cropRQ.getCropSubCategoryId())
+                        .season(
+                                cropRQ.getSeason() != null && !cropRQ.getSeason().isBlank()
+                                        ? SeasonType.valueOf(cropRQ.getSeason())
+                                        : null
+                        )
+                        .expectedQuantity(cropRQ.getExpectedQuantity())
+                        .unit(
+                                cropRQ.getUnit() != null
+                                        ? UnitType.valueOf(cropRQ.getUnit())
+                                        : UnitType.QUINTAL
+                        )
+                        .landAreaUsed(cropRQ.getLandAreaUsed())
+                        .build();
+
+                proposal.getProposalCrops().add(crop);
+            }
+        }
+
+        /* ---------- LAND VALIDATION ---------- */
+        if (proposal.getLandAreaUsed() != null &&
+                proposal.getContractModel() != null) {
+
+            double landSize = proposal.getLandAreaUsed();
+
+            if (proposal.getContractModel() == ContractModel.SEASONAL) {
+
+                double totalUsed = proposal.getProposalCrops().stream()
+                        .mapToDouble(c -> c.getLandAreaUsed() == null ? 0 : c.getLandAreaUsed())
+                        .sum();
+
+                if (totalUsed > landSize) {
+                    throw new RuntimeException(
+                            "Total crop area cannot exceed land size for seasonal contract"
+                    );
+                }
+            }
+
+            if (proposal.getContractModel() == ContractModel.ANNUAL) {
+
+                for (ProposalCropEntity c : proposal.getProposalCrops()) {
+                    if (c.getLandAreaUsed() != null &&
+                            c.getLandAreaUsed() > landSize) {
+
+                        throw new RuntimeException(
+                                "Crop land usage cannot exceed land size in annual contract"
+                        );
+                    }
+                }
+            }
+        }
+
+        /* ---------- TOTAL AMOUNT ---------- */
         double totalAmount = proposal.getProposalCrops().stream()
-                .mapToDouble(c -> c.getExpectedQuantity() * proposal.getPricePerUnit())
+                .mapToDouble(c ->
+                        (c.getExpectedQuantity() == null ? 0 : c.getExpectedQuantity()) *
+                                (proposal.getPricePerUnit() == null ? 0 : proposal.getPricePerUnit())
+                )
                 .sum();
 
         proposal.setTotalContractAmount(totalAmount);
@@ -101,8 +203,12 @@ public class ProposalServiceImpl implements ProposalService {
         return mapEntityToRS(proposalRepository.save(proposal));
     }
 
+    /* =========================================================
+       SEND PROPOSAL
+    ========================================================= */
     @Override
     public void sendProposal(Long senderUserId, Long proposalId, Role currentUserRole) {
+
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -113,14 +219,31 @@ public class ProposalServiceImpl implements ProposalService {
         if (proposal.getProposalStatus() != ProposalStatus.DRAFT) {
             throw new RuntimeException("Only DRAFT proposals can be sent");
         }
+
+        if (proposal.getReceiverUserId() == null) {
+            throw new RuntimeException("Receiver is required");
+        }
+
         if (proposal.getProposalCrops() == null || proposal.getProposalCrops().isEmpty()) {
             throw new RuntimeException("Cannot send proposal without crops");
         }
 
+        if (proposal.getPricePerUnit() == null || proposal.getPricePerUnit() <= 0) {
+            throw new RuntimeException("Price per unit is required");
+        }
+
+        if (proposal.getDeliveryLocation() == null) {
+            throw new RuntimeException("Delivery location is required");
+        }
+
+        if (proposal.getLogisticsHandledBy() == null) {
+            throw new RuntimeException("Logistics handler is required");
+        }
+
         int totalPercent =
-                proposal.getAdvancePercent() +
-                        proposal.getMidCyclePercent() +
-                        proposal.getFinalPercent();
+                (proposal.getAdvancePercent() == null ? 0 : proposal.getAdvancePercent()) +
+                        (proposal.getMidCyclePercent() == null ? 0 : proposal.getMidCyclePercent()) +
+                        (proposal.getFinalPercent() == null ? 0 : proposal.getFinalPercent());
 
         if (totalPercent != 100) {
             throw new RuntimeException("Payment percentages must total 100");
@@ -130,14 +253,17 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setActionRequiredBy(
                 currentUserRole == Role.farmer ? Role.buyer : Role.farmer
         );
-
         proposal.setActionDueAt(LocalDateTime.now().plusDays(7));
 
         proposalRepository.save(proposal);
     }
 
+    /* =========================================================
+       ACCEPT / REJECT / CANCEL
+    ========================================================= */
     @Override
     public void acceptProposal(Long receiverUserId, Long proposalId) {
+
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -158,6 +284,7 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Override
     public void rejectProposal(Long receiverUserId, Long proposalId) {
+
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -174,6 +301,7 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Override
     public void cancelProposal(Long senderUserId, Long proposalId) {
+
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -192,12 +320,17 @@ public class ProposalServiceImpl implements ProposalService {
         proposalRepository.save(proposal);
     }
 
+    /* =========================================================
+       FETCH METHODS
+    ========================================================= */
     @Override
     public ProposalRS getProposalById(Long userId, Long proposalId) {
+
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        if (!proposal.getSenderUserId().equals(userId) && !proposal.getReceiverUserId().equals(userId)) {
+        if (!proposal.getSenderUserId().equals(userId) &&
+                !proposal.getReceiverUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
         }
 
@@ -206,140 +339,107 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Override
     public List<ProposalRS> getProposalsByRequest(Long userId, Long requestId) {
-        List<ProposalEntity> proposals = proposalRepository.findByRequestId(requestId);
 
-        proposals = proposals.stream()
-                .filter(p -> p.getSenderUserId().equals(userId) || p.getReceiverUserId().equals(userId))
+        return proposalRepository.findByRequestId(requestId).stream()
+                .filter(p -> p.getSenderUserId().equals(userId)
+                        || p.getReceiverUserId().equals(userId))
+                .map(this::mapEntityToRS)
                 .collect(Collectors.toList());
-
-        return proposals.stream().map(this::mapEntityToRS).collect(Collectors.toList());
     }
 
     @Override
     public List<ProposalRS> getIncomingProposals(Long receiverUserId) {
-        List<ProposalEntity> proposals = proposalRepository.findByReceiverUserIdAndProposalStatus(
-                receiverUserId, ProposalStatus.SENT
-        );
 
-        proposals = proposals.stream()
+        return proposalRepository
+                .findByReceiverUserIdAndProposalStatus(receiverUserId, ProposalStatus.SENT)
+                .stream()
                 .filter(p -> p.getActionDueAt() != null &&
                         p.getActionDueAt().isAfter(LocalDateTime.now()))
+                .map(this::mapEntityToRS)
                 .collect(Collectors.toList());
-
-        return proposals.stream().map(this::mapEntityToRS).collect(Collectors.toList());
     }
 
     @Override
     public List<ProposalRS> getOutgoingProposals(Long senderUserId) {
-        List<ProposalEntity> proposals = proposalRepository.findBySenderUserId(senderUserId);
 
-        return proposals.stream().map(this::mapEntityToRS).collect(Collectors.toList());
+        return proposalRepository.findBySenderUserId(senderUserId)
+                .stream()
+                .map(this::mapEntityToRS)
+                .collect(Collectors.toList());
     }
 
+    /* =========================================================
+       COUNTER PROPOSAL
+    ========================================================= */
     @Override
     public ProposalRS createCounterProposal(Long userId, Long proposalId) {
-        ProposalEntity oldProposal = proposalRepository.findById(proposalId)
+
+        ProposalEntity old = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        if (oldProposal.getProposalStatus() != ProposalStatus.SENT) {
+        if (old.getProposalStatus() != ProposalStatus.SENT) {
             throw new RuntimeException("Only SENT proposals can be countered");
         }
 
-        if (!oldProposal.getReceiverUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to counter this proposal");
+        if (!old.getReceiverUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
         }
 
         ProposalEntity counter = ProposalEntity.builder()
-                .requestId(oldProposal.getRequestId())
-                .senderUserId(oldProposal.getReceiverUserId())
-                .receiverUserId(oldProposal.getSenderUserId())
-                .landId(oldProposal.getLandId())
-                .landAreaUsed(oldProposal.getLandAreaUsed())
-                .cropId(oldProposal.getCropId())
-                .cropSubCategoryId(oldProposal.getCropSubCategoryId())
-                .contractModel(oldProposal.getContractModel())
-                .season(oldProposal.getSeason())
-                .expectedQuantity(oldProposal.getExpectedQuantity())
-                .unit(oldProposal.getUnit())
-                .pricePerUnit(oldProposal.getPricePerUnit())
-                .escrowApplicable(oldProposal.getEscrowApplicable())
-                .advancePercent(oldProposal.getAdvancePercent())
-                .midCyclePercent(oldProposal.getMidCyclePercent())
-                .finalPercent(oldProposal.getFinalPercent())
-                .inputProvided(oldProposal.getInputProvided())
-                .deliveryLocation(oldProposal.getDeliveryLocation())
-                .deliveryWindow(oldProposal.getDeliveryWindow())
-                .logisticsHandledBy(oldProposal.getLogisticsHandledBy())
-                .allowCropChangeBetweenSeasons(oldProposal.getAllowCropChangeBetweenSeasons())
-                .startYear(oldProposal.getStartYear())
-                .endYear(oldProposal.getEndYear())
-                .remarks(oldProposal.getRemarks())
+                .requestId(old.getRequestId())
+                .senderUserId(old.getReceiverUserId())
+                .receiverUserId(old.getSenderUserId())
+                .landId(old.getLandId())
+                .landAreaUsed(old.getLandAreaUsed())
+                .contractModel(old.getContractModel())
+                .season(old.getSeason())
+                .pricePerUnit(old.getPricePerUnit())
+                .escrowApplicable(old.getEscrowApplicable())
+                .advancePercent(old.getAdvancePercent())
+                .midCyclePercent(old.getMidCyclePercent())
+                .finalPercent(old.getFinalPercent())
+                .deliveryLocation(old.getDeliveryLocation())
+                .deliveryWindow(old.getDeliveryWindow())
+                .logisticsHandledBy(old.getLogisticsHandledBy())
+                .allowCropChangeBetweenSeasons(old.getAllowCropChangeBetweenSeasons())
+                .startYear(old.getStartYear())
+                .endYear(old.getEndYear())
+                .remarks(old.getRemarks())
                 .proposalStatus(ProposalStatus.DRAFT)
-                .proposalVersion(oldProposal.getProposalVersion() + 1)
-                .parentProposalId(oldProposal.getProposalId())
-                .createdByRole(oldProposal.getReceiverUserId().equals(userId) ?
-                        oldProposal.getActionRequiredBy() : oldProposal.getCreatedByRole())
+                .proposalVersion(old.getProposalVersion() + 1)
+                .parentProposalId(old.getProposalId())
+                .createdByRole(old.getActionRequiredBy())
                 .locked(false)
                 .build();
 
+        counter.setActionRequiredBy(
+                old.getCreatedByRole() == Role.buyer ? Role.farmer : Role.buyer
+        );
         counter.setActionDueAt(null);
-        counter.setActionRequiredBy(oldProposal.getCreatedByRole() == Role.buyer ? Role.farmer : Role.buyer);
         counter.setProposalCrops(new ArrayList<>());
 
-        for (ProposalCropEntity oldCrop : oldProposal.getProposalCrops()) {
-            ProposalCropEntity newCrop = ProposalCropEntity.builder()
-                    .proposal(counter)
-                    .cropId(oldCrop.getCropId())
-                    .cropSubCategoryId(oldCrop.getCropSubCategoryId())
-                    .season(oldCrop.getSeason())
-                    .expectedQuantity(oldCrop.getExpectedQuantity())
-                    .unit(oldCrop.getUnit())
-                    .landAreaUsed(oldCrop.getLandAreaUsed())
-                    .build();
-
-            counter.getProposalCrops().add(newCrop);
+        for (ProposalCropEntity c : old.getProposalCrops()) {
+            counter.getProposalCrops().add(
+                    ProposalCropEntity.builder()
+                            .proposal(counter)
+                            .cropId(c.getCropId())
+                            .cropSubCategoryId(c.getCropSubCategoryId())
+                            .season(c.getSeason())
+                            .expectedQuantity(c.getExpectedQuantity())
+                            .unit(c.getUnit())
+                            .landAreaUsed(c.getLandAreaUsed())
+                            .build()
+            );
         }
 
         return mapEntityToRS(proposalRepository.save(counter));
     }
 
-    /* -------------------- PRIVATE MAPPERS -------------------- */
-    private void mapRQToEntity(ProposalCreateRQ rq, ProposalEntity p) {
-        p.setLandId(rq.getLandId());
-        p.setCropId(rq.getCropId());
-        p.setCropSubCategoryId(rq.getCropSubCategoryId());
-
-        if (rq.getContractModel() != null)
-            p.setContractModel(ContractModel.valueOf(rq.getContractModel()));
-        if (rq.getSeason() != null)
-            p.setSeason(SeasonType.valueOf(rq.getSeason()));
-
-        p.setExpectedQuantity(rq.getExpectedQuantity());
-        if (rq.getUnit() != null)
-            p.setUnit(UnitType.valueOf(rq.getUnit()));
-
-        p.setPricePerUnit(rq.getPricePerUnit());
-
-        p.setEscrowApplicable(rq.getEscrowApplicable());
-        p.setAdvancePercent(rq.getAdvancePercent());
-        p.setMidCyclePercent(rq.getMidCyclePercent());
-        p.setFinalPercent(rq.getFinalPercent());
-        p.setRemarks(rq.getRemarks());
-
-        p.setInputProvided(rq.getInputProvided());
-        if (rq.getDeliveryLocation() != null)
-            p.setDeliveryLocation(DeliveryLocation.valueOf(rq.getDeliveryLocation()));
-        p.setDeliveryWindow(rq.getDeliveryWindow());
-
-        if (rq.getLogisticsHandledBy() != null)
-            p.setLogisticsHandledBy(LogisticsHandledBy.valueOf(rq.getLogisticsHandledBy()));
-
-        p.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
-        p.setStartYear(rq.getStartYear());
-        p.setEndYear(rq.getEndYear());
-    }
-
+    /* =========================================================
+       MAPPER
+    ========================================================= */
     private ProposalRS mapEntityToRS(ProposalEntity p) {
+
         return ProposalRS.builder()
                 .proposalId(p.getProposalId())
                 .requestId(p.getRequestId())
@@ -352,33 +452,22 @@ public class ProposalServiceImpl implements ProposalService {
                                         .map(c -> ProposalCropRS.builder()
                                                 .cropId(c.getCropId())
                                                 .cropSubCategoryId(c.getCropSubCategoryId())
-                                                .season(c.getSeason().name())
+                                                .season(c.getSeason() != null ? c.getSeason().name() : null)
                                                 .expectedQuantity(c.getExpectedQuantity())
-                                                .unit(c.getUnit().name())
+                                                .unit(c.getUnit() != null ? c.getUnit().name() : null)
                                                 .landAreaUsed(c.getLandAreaUsed())
                                                 .build())
                                         .collect(Collectors.toList())
                 )
-                .cropId(p.getCropId())
-                .cropSubCategoryId(p.getCropSubCategoryId())
                 .contractModel(p.getContractModel() != null ? p.getContractModel().name() : null)
                 .season(p.getSeason() != null ? p.getSeason().name() : null)
-                .expectedQuantity(p.getExpectedQuantity())
-                .unit(p.getUnit() != null ? p.getUnit().name() : null)
                 .pricePerUnit(p.getPricePerUnit())
                 .totalContractAmount(p.getTotalContractAmount())
-                .escrowApplicable(p.getEscrowApplicable())
-                .advancePercent(p.getAdvancePercent())
-                .midCyclePercent(p.getMidCyclePercent())
-                .finalPercent(p.getFinalPercent())
-                .inputProvided(p.getInputProvided())
                 .deliveryLocation(p.getDeliveryLocation() != null ? p.getDeliveryLocation().name() : null)
-                .deliveryWindow(p.getDeliveryWindow())
                 .logisticsHandledBy(p.getLogisticsHandledBy() != null ? p.getLogisticsHandledBy().name() : null)
-                .allowCropChangeBetweenSeasons(p.getAllowCropChangeBetweenSeasons())
                 .startYear(p.getStartYear())
                 .endYear(p.getEndYear())
-                .proposalStatus(p.getProposalStatus() != null ? p.getProposalStatus().name() : null)
+                .proposalStatus(p.getProposalStatus().name())
                 .createdAt(p.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime())
                 .updatedAt(p.getModifiedDate().toInstant().atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime())
                 .build();

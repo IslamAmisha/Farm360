@@ -27,14 +27,14 @@ public class ProposalEntity extends AuditTable<String> {
     @Column(nullable = false)
     private Long senderUserId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long receiverUserId;
 
     private Long landId;
     private Long cropId;
     private Long cropSubCategoryId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double landAreaUsed; // acres or hectares
 
 
@@ -96,7 +96,7 @@ public class ProposalEntity extends AuditTable<String> {
 
     private LocalDateTime expiredAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime actionDueAt;
 
     @Enumerated(EnumType.STRING)
