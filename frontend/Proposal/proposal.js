@@ -472,7 +472,7 @@ function renderMeta() {
       `${API_BASE}/api/proposals/${state.proposal.proposalId}/send?senderUserId=${state.user.id}&currentUserRole=${state.user.role}`,
       { method: "POST", headers: authHeaders() }
     );
-    window.location.href = "../../Farmer-Request/farmer-request.html";
+    window.location.href = "../../Farmer/Farmer-Request/farmer-request.html";
   }
 
   async function acceptProposal() {
@@ -509,7 +509,7 @@ function renderMeta() {
     $(".proposal-actions .danger").onclick = rejectProposal;
 
     $(".back-link").onclick = () => {
-      window.location.href = "../../Farmer-Request/farmer-request.html";
+      window.location.href = "../../Farmer/Farmer-Request/farmer-request.html";
     };
   }
 document.getElementById("contractModel")
