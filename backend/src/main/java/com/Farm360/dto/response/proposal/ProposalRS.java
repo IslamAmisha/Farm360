@@ -19,17 +19,11 @@ public class ProposalRS {
 
     private Long landId;
     private Double landAreaUsed;
-    private Long cropId;
-    private Long cropSubCategoryId;
 
     private String contractModel;
     private String season;
 
-    private Double expectedQuantity;
-    private String unit;
-
     private Double pricePerUnit;
-
     private Double totalContractAmount;
 
     private Boolean escrowApplicable;
@@ -50,11 +44,12 @@ public class ProposalRS {
     private Integer endYear;
 
     private String proposalStatus;
+    private Integer proposalVersion;
+
     private String remarks;
 
     private List<ProposalCropRS> proposalCrops;
-    /* -------- Audit fields -------- */
 
-    private LocalDateTime createdAt;   // from AuditTable.createdDate
-    private LocalDateTime updatedAt;   // from AuditTable.modifiedDate
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

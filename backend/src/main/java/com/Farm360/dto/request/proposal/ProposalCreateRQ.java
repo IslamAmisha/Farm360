@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class ProposalCreateRQ {
 
-    private Long proposalId; // null for new, present for edit draft
+    private Long proposalId;
 
     private Long requestId;
     private Long receiverUserId;
@@ -19,14 +19,8 @@ public class ProposalCreateRQ {
     private Long landId;
     private Double landAreaUsed;
 
-    private Long cropId;
-    private Long cropSubCategoryId;
-
-    private String contractModel;   // SEASONAL / ANNUAL / BOTH
-    private String season;          // nullable
-
-    private Double expectedQuantity;
-    private String unit;            // QUINTAL / TON
+    private String contractModel;
+    private String season;
 
     private Double pricePerUnit;
 
@@ -38,17 +32,17 @@ public class ProposalCreateRQ {
 
     private Boolean inputProvided;
 
-    private String deliveryLocation; // BUYER_WAREHOUSE / MANDI / FARM_GATE / CUSTOM
+    private String deliveryLocation;
     private String deliveryWindow;
 
-    private String logisticsHandledBy; // BUYER / FARMER / SHARED
+    private String logisticsHandledBy;
 
     private Boolean allowCropChangeBetweenSeasons;
 
-    private String remarks;
-
     private Integer startYear;
     private Integer endYear;
+
+    private String remarks;
 
     private List<ProposalCropCreateRQ> proposalCrops;
 }
