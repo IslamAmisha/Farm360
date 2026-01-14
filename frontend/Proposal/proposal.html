@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="proposal.css" />
   </head>
 
+
   <body class="theme-light lang-en">
+    <div id="toast-container"></div>
     <!-- ================= HEADER (UNCHANGED, SAME AS PROFILE) ================= -->
     <header id="site-header">
       <div class="header-container">
@@ -139,16 +141,24 @@
 
         <!-- CROP PLAN -->
         <section class="card">
+
           <h3>Crop Plan</h3>
 
           <!-- Seasonal → 1 crop | Annual → multiple -->
-          <div class="crop-row">
-            <select><option>Crop</option></select>
-            <select><option>Sub-category</option></select>
-            <input placeholder="Qty" />
-            <input placeholder="Area" />
-            <select><option>Season</option></select>
-          </div>
+         <div id="cropContainer"></div>
+<div class="card">
+
+<label>
+  <input type="checkbox" id="inputProvided" />
+  Inputs Provided by Buyer
+</label>
+
+<label>
+  <input type="checkbox" id="allowCropChange" />
+  Allow Crop Change Between Seasons
+</label>
+
+</div>
 
           <button class="btn-link">+ Add Crop</button>
         </section>
@@ -172,15 +182,15 @@
   <div class="form-grid three">
     <div>
       <label>Advance %</label>
-      <input id="advancePercent" />
+      <input id="advancePercent" value="30" disabled />
     </div>
     <div>
       <label>Mid %</label>
-      <input id="midPercent" />
+     <input id="midPercent" value="30" disabled />
     </div>
     <div>
       <label>Final %</label>
-      <input id="finalPercent" />
+      <input id="finalPercent" value="40" disabled />
     </div>
   </div>
 </section>
