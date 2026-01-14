@@ -27,7 +27,7 @@ public class ProposalExpirySchedulerImpl implements ProposalExpiryScheduler {
 
         List<ProposalEntity> expiredProposals =
                 proposalRepo.findByProposalStatusInAndActionDueAtBefore(
-                        List.of(ProposalStatus.DRAFT, ProposalStatus.SENT),
+                        List.of(ProposalStatus.SENT),
                         now
                 );
 

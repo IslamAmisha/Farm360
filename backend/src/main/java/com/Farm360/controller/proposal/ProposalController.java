@@ -113,4 +113,17 @@ public class ProposalController {
                 proposalService.getOutgoingProposals(senderUserId)
         );
     }
+
+    @PostMapping("/save-and-send")
+    public ResponseEntity<String> saveAndSend(
+            @RequestParam Long senderUserId,
+            @RequestParam Role currentUserRole,
+            @RequestBody ProposalCreateRQ rq
+    ) {
+        proposalService.saveAndSendProposal(
+                senderUserId, rq, currentUserRole
+        );
+        return ResponseEntity.ok("Proposal sent successfully");
+    }
+
 }

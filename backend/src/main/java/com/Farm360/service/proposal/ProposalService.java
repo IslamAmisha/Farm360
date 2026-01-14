@@ -27,4 +27,9 @@ public interface ProposalService {
     List<ProposalRS> getOutgoingProposals(Long senderUserId);
 
     ProposalRS createCounterProposal(Long userId, Long proposalId);
+
+     void saveAndSendProposal(
+            Long senderUserId,
+            ProposalCreateRQ rq,
+            Role role);
 }

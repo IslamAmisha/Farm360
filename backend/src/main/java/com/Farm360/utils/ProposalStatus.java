@@ -9,6 +9,8 @@ public enum ProposalStatus {
     REJECTED,
     CANCELLED,
 
+    COUNTERED,
+
     EXPIRED
 }
 

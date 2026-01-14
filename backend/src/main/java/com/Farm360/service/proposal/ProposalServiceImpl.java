@@ -5,8 +5,11 @@ import com.Farm360.dto.response.proposal.ProposalCropRS;
 import com.Farm360.dto.response.proposal.ProposalRS;
 import com.Farm360.model.proposal.ProposalCropEntity;
 import com.Farm360.model.proposal.ProposalEntity;
+import com.Farm360.model.request.RequestEntity;
 import com.Farm360.repository.proposal.ProposalRepo;
+import com.Farm360.repository.request.RequestRepo;
 import com.Farm360.utils.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,10 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Autowired
     private ProposalRepo proposalRepository;
+
+    @Autowired
+    private RequestRepo requestRepository;
+
 
     @Override
     public ProposalRS createDraftProposal(
@@ -53,33 +60,53 @@ public class ProposalServiceImpl implements ProposalService {
             }
             proposal.getProposalCrops().clear();
 
-            proposal.setLocked(false);
+            if (proposal.getProposalStatus() == ProposalStatus.DRAFT) {
+                proposal.setLocked(false);
+            }
+
             proposal.setActionDueAt(null);
 
         } else {
 
             proposal = new ProposalEntity();
             proposal.setProposalStatus(ProposalStatus.DRAFT);
+            // 🔐 REQUEST-BASED PARTICIPANT LOCK
+            RequestEntity req = requestRepository.findById(rq.getRequestId())
+                    .orElseThrow(() -> new RuntimeException("Request not found"));
+
+            if (req.getStatus() != RequestStatus.ACCEPTED) {
+                throw new RuntimeException("Proposal allowed only for accepted requests");
+            }
+
+// 🔑 Determine sender & receiver strictly from request
+            proposal.setRequestId(req.getId());
             proposal.setSenderUserId(senderUserId);
-            proposal.setRequestId(rq.getRequestId());
+
+// receiver = the OTHER party in the request
+            Long receiverId =
+                    req.getSender().getId().equals(senderUserId)
+                            ? req.getReceiver().getId()
+                            : req.getSender().getId();
+
+            proposal.setReceiverUserId(receiverId);
+
             proposal.setProposalVersion(1);
             proposal.setCreatedByRole(currentUserRole);
             proposal.setActionRequiredBy(
                     currentUserRole == Role.farmer ? Role.buyer : Role.farmer
             );
             proposal.setProposalCrops(new ArrayList<>());
-            proposal.setLocked(false);
+            if (proposal.getProposalStatus() == ProposalStatus.DRAFT) {
+                proposal.setLocked(false);
+            }
+
             proposal.setActionDueAt(null);
         }
 
 
-
         /* ---------- BASIC FIELDS ---------- */
         proposal.setLandId(rq.getLandId());
-
-        if (rq.getReceiverUserId() != null) {
-            proposal.setReceiverUserId(rq.getReceiverUserId());
-        }
+        
 
         proposal.setLandAreaUsed(
                 rq.getLandAreaUsed() != null && rq.getLandAreaUsed() > 0
@@ -108,6 +135,22 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
         proposal.setStartYear(rq.getStartYear());
         proposal.setEndYear(rq.getEndYear());
+
+        boolean allProvided =
+                rq.getAdvancePercent() != null &&
+                        rq.getMidCyclePercent() != null &&
+                        rq.getFinalPercent() != null;
+
+        if (allProvided) {
+            int total =
+                    rq.getAdvancePercent() +
+                            rq.getMidCyclePercent() +
+                            rq.getFinalPercent();
+
+            if (total != 100) {
+                throw new RuntimeException("Payment percentages must total 100");
+            }
+        }
 
         if (rq.getDeliveryLocation() != null) {
             proposal.setDeliveryLocation(
@@ -314,13 +357,16 @@ public class ProposalServiceImpl implements ProposalService {
         if (Boolean.TRUE.equals(proposal.getLocked())) {
             throw new RuntimeException("Locked proposal cannot be sent");
         }
-
+        LocalDateTime expiry = LocalDateTime.now().plusDays(7);
 
         proposal.setProposalStatus(ProposalStatus.SENT);
         proposal.setActionRequiredBy(
                 currentUserRole == Role.farmer ? Role.buyer : Role.farmer
         );
-        proposal.setActionDueAt(LocalDateTime.now().plusDays(7));
+
+        proposal.setActionDueAt(expiry);
+        proposal.setValidUntil(expiry);
+        proposal.setLocked(true);
 
         proposalRepository.save(proposal);
     }
@@ -345,6 +391,8 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setProposalStatus(ProposalStatus.ACCEPTED);
         proposal.setAcceptedAt(LocalDateTime.now());
         proposal.setLocked(true);
+        proposal.setActionDueAt(null);
+        proposal.setValidUntil(null);
 
         proposalRepository.save(proposal);
     }
@@ -362,6 +410,8 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setProposalStatus(ProposalStatus.REJECTED);
         proposal.setRejectedAt(LocalDateTime.now());
         proposal.setLocked(true);
+        proposal.setActionDueAt(null);
+        proposal.setValidUntil(null);
 
         proposalRepository.save(proposal);
     }
@@ -383,6 +433,8 @@ public class ProposalServiceImpl implements ProposalService {
 
         proposal.setProposalStatus(ProposalStatus.CANCELLED);
         proposal.setLocked(true);
+        proposal.setActionDueAt(null);
+        proposal.setValidUntil(null);
 
         proposalRepository.save(proposal);
     }
@@ -438,12 +490,14 @@ public class ProposalServiceImpl implements ProposalService {
     /* =========================================================
        COUNTER PROPOSAL
     ========================================================= */
+
     @Override
     public ProposalRS createCounterProposal(Long userId, Long proposalId) {
 
         ProposalEntity old = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
+        // ✅ 1. VALIDATIONS FIRST
         if (old.getProposalStatus() != ProposalStatus.SENT) {
             throw new RuntimeException("Only SENT proposals can be countered");
         }
@@ -452,6 +506,15 @@ public class ProposalServiceImpl implements ProposalService {
             throw new RuntimeException("Unauthorized");
         }
 
+        // ✅ 2. CLOSE OLD PROPOSAL
+        old.setProposalStatus(ProposalStatus.COUNTERED);
+        old.setLocked(true);
+        old.setActionDueAt(null);
+        old.setValidUntil(null);
+
+        proposalRepository.save(old);
+
+        // ✅ 3. CREATE COUNTER PROPOSAL
         ProposalEntity counter = ProposalEntity.builder()
                 .requestId(old.getRequestId())
                 .senderUserId(old.getReceiverUserId())
@@ -461,7 +524,6 @@ public class ProposalServiceImpl implements ProposalService {
                 .contractModel(old.getContractModel())
                 .season(old.getSeason())
                 .pricePerUnit(old.getPricePerUnit())
-                .escrowApplicable(old.getEscrowApplicable())
                 .advancePercent(old.getAdvancePercent())
                 .midCyclePercent(old.getMidCyclePercent())
                 .finalPercent(old.getFinalPercent())
@@ -482,7 +544,7 @@ public class ProposalServiceImpl implements ProposalService {
         counter.setActionRequiredBy(
                 old.getCreatedByRole() == Role.buyer ? Role.farmer : Role.buyer
         );
-        counter.setActionDueAt(null);
+
         counter.setProposalCrops(new ArrayList<>());
 
         for (ProposalCropEntity c : old.getProposalCrops()) {
@@ -502,6 +564,7 @@ public class ProposalServiceImpl implements ProposalService {
         return mapEntityToRS(proposalRepository.save(counter));
     }
 
+
     /* =========================================================
        MAPPER
     ========================================================= */
@@ -510,9 +573,12 @@ public class ProposalServiceImpl implements ProposalService {
         return ProposalRS.builder()
                 .proposalId(p.getProposalId())
                 .requestId(p.getRequestId())
+
                 .senderUserId(p.getSenderUserId())
                 .receiverUserId(p.getReceiverUserId())
+
                 .landId(p.getLandId())
+
                 .proposalCrops(
                         p.getProposalCrops() == null ? List.of() :
                                 p.getProposalCrops().stream()
@@ -526,17 +592,49 @@ public class ProposalServiceImpl implements ProposalService {
                                                 .build())
                                         .collect(Collectors.toList())
                 )
+
                 .contractModel(p.getContractModel() != null ? p.getContractModel().name() : null)
                 .season(p.getSeason() != null ? p.getSeason().name() : null)
+
                 .pricePerUnit(p.getPricePerUnit())
                 .totalContractAmount(p.getTotalContractAmount())
+
                 .deliveryLocation(p.getDeliveryLocation() != null ? p.getDeliveryLocation().name() : null)
                 .logisticsHandledBy(p.getLogisticsHandledBy() != null ? p.getLogisticsHandledBy().name() : null)
+
                 .startYear(p.getStartYear())
                 .endYear(p.getEndYear())
+
                 .proposalStatus(p.getProposalStatus().name())
-                .createdAt(p.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime())
-                .updatedAt(p.getModifiedDate().toInstant().atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime())
+
+                .validUntil(p.getValidUntil())
+                .actionDueAt(p.getActionDueAt())
+
+                .createdAt(
+                        p.getCreatedDate().toInstant()
+                                .atZone(ZoneId.of("Asia/Kolkata"))
+                                .toLocalDateTime()
+                )
+                .updatedAt(
+                        p.getModifiedDate().toInstant()
+                                .atZone(ZoneId.of("Asia/Kolkata"))
+                                .toLocalDateTime()
+                )
                 .build();
     }
+
+
+    @Transactional
+    public void saveAndSendProposal(
+            Long senderUserId,
+            ProposalCreateRQ rq,
+            Role role
+    ) {
+        // 1. Save latest values
+        ProposalRS rs = createDraftProposal(senderUserId, rq, role);
+
+        // 2. Send immediately
+        sendProposal(senderUserId, rs.getProposalId(), role);
+    }
+
 }

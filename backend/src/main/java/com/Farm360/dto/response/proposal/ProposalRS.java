@@ -31,6 +31,9 @@ public class ProposalRS {
     private Integer midCyclePercent;
     private Integer finalPercent;
 
+    private LocalDateTime validUntil;
+    private LocalDateTime actionDueAt;
+
     private Boolean inputProvided;
 
     private String deliveryLocation;
