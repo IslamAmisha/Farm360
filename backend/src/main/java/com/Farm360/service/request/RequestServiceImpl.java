@@ -203,6 +203,8 @@ public class RequestServiceImpl implements RequestService {
 
                     item.setSenderId(req.getSender().getId());
                     item.setSenderName(getName(req.getSender()));
+                    item.setProposalId(req.getProposalId());
+
                     item.setSenderRole(req.getSender().getRole().name());
 
                     if (req.getSender().getBuyer() != null) {
@@ -290,6 +292,8 @@ public class RequestServiceImpl implements RequestService {
                     item.setSenderId(req.getSender().getId());
                     item.setSenderName(getName(req.getSender()));
                     item.setSenderRole(req.getSender().getRole().name());
+                    item.setProposalId(req.getProposalId());
+
 
                     item.setReceiverId(req.getReceiver().getId());
                     item.setReceiverName(getName(req.getReceiver()));

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class RequestListItemRS {
 
     private Long requestId;
-
+    private Long proposalId;
     private Long senderId;
     private String senderName;
     private String senderRole;

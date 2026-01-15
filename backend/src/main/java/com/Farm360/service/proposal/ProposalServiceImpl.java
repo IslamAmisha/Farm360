@@ -368,6 +368,14 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setValidUntil(expiry);
         proposal.setLocked(true);
 
+        RequestEntity request = requestRepository.findById(proposal.getRequestId())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setProposalId(proposal.getProposalId());
+        request.setStatus(RequestStatus.PROPOSAL_SENT);
+
+        requestRepository.save(request);
+
         proposalRepository.save(proposal);
     }
 

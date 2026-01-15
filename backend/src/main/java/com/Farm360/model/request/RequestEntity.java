@@ -48,6 +48,9 @@ public class RequestEntity {
     @Column(name = "season")
     private SeasonType season;
 
+    @Column(name = "proposal_id")
+    private Long proposalId;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
