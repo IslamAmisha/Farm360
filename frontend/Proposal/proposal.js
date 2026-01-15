@@ -136,20 +136,26 @@ function renderLand() {
 function renderProposalInfo() {
   if (!state.proposal) return;
 
-  document.getElementById("senderInfo").innerText =
-    state.proposal.senderUserId
+  const senderEl = document.getElementById("senderInfo");
+  if (senderEl) {
+    senderEl.innerText = state.proposal.senderUserId
       ? `User #${state.proposal.senderUserId}`
       : "—";
+  }
 
-  document.getElementById("receiverInfo").innerText =
-    state.proposal.receiverUserId
+  const receiverEl = document.getElementById("receiverInfo");
+  if (receiverEl) {
+    receiverEl.innerText = state.proposal.receiverUserId
       ? `User #${state.proposal.receiverUserId}`
       : "—";
+  }
 
-  document.getElementById("expiryInfo").innerText =
-    state.proposal.validUntil
+  const expiryEl = document.getElementById("expiryInfo");
+  if (expiryEl) {
+    expiryEl.innerText = state.proposal.validUntil
       ? new Date(state.proposal.validUntil).toLocaleString()
       : "—";
+  }
 }
 
 

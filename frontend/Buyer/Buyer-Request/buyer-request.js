@@ -452,6 +452,7 @@
 
     if (!e.target.classList.contains("btn-proposal-create") &&
       !e.target.classList.contains("btn-proposal-edit") &&
+      !e.target.classList.contains("btn-proposal-view") &&
       !e.target.classList.contains("btn-view")) {
     return;
   }
@@ -471,6 +472,13 @@
     window.location.href =
       `../../Proposal/proposal.html?proposalId=${proposalId}`;
   }
+
+  if (e.target.classList.contains("btn-proposal-view")) {
+  const proposalId = e.target.dataset.proposal;
+  window.location.href =
+    `../../Proposal/proposal.html?proposalId=${proposalId}`;
+}
+
 
 });
 
