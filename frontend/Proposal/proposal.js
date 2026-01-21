@@ -61,6 +61,7 @@
   }
 
   async function loadFarmerLands() {
+    if (state.user.role !== "farmer") return;
     state.lands =
       await (await fetch(`${API_BASE}/api/farmers/${state.user.id}/lands`, { headers: authHeaders() })).json();
   }
@@ -74,29 +75,59 @@
     return await (await fetch(`${API_BASE}/master/subcategories/${cropId}`, { headers: authHeaders() })).json();
   }
 
-  async function loadProposalContext() {
-    const params = new URLSearchParams(window.location.search);
-    const proposalId = params.get("proposalId");
-    const requestId = params.get("requestId");
+ async function loadProposalContext() {
+  let isViewOnly = false;
 
-    if (proposalId) {
-      state.proposal =
-        await (await fetch(`${API_BASE}/api/proposals/${proposalId}?userId=${state.user.id}`, { headers: authHeaders() })).json();
-    } else {
-      state.proposal = {
-  requestId,
-  senderUserId: state.user.id,
-  proposalStatus: "DRAFT",
-  advancePercent: 30,
-  midCyclePercent: 30,   // ✅ FIX
-  finalPercent: 40,
-   inputProvided: false,
-  allowCropChangeBetweenSeasons: false,
-  proposalCrops: [emptyCrop()]
-};
+  const params = new URLSearchParams(window.location.search);
+  const proposalId = params.get("proposalId");
+  const requestId = params.get("requestId");
 
-    }
+  if (proposalId) {
+    const proposal =
+      await (await fetch(
+        `${API_BASE}/api/proposals/${proposalId}?userId=${state.user.id}`,
+        { headers: authHeaders() }
+      )).json();
+
+const isEditable =
+  proposal.proposalStatus === "DRAFT" &&
+  proposal.senderUserId === state.user.id;
+
+if (!isEditable) {
+  window.location.href =
+    `/Proposal/Proposal-view/proposal-view.html?proposalId=${proposalId}`;
+  return;
+}
+
+
+
+
+if (isViewOnly && !params.get("counter")) {
+  window.location.href =
+    `Proposal-view/proposal-view.html?proposalId=${proposalId}`;
+  return;
+}
+
+
+
+    // editable (sender or counter draft)
+    state.proposal = proposal;
+
+  } else {
+    // brand new proposal
+    state.proposal = {
+      requestId,
+      senderUserId: state.user.id,
+      proposalStatus: "DRAFT",
+      advancePercent: 30,
+      midCyclePercent: 30,
+      finalPercent: 40,
+      inputProvided: false,
+      allowCropChangeBetweenSeasons: false,
+      proposalCrops: [emptyCrop()]
+    };
   }
+}
 
   /* ===============================
      LAND
@@ -105,33 +136,56 @@ function renderLand() {
   const sel = document.getElementById("landSelect");
   sel.innerHTML = `<option value="">Select Land</option>`;
 
-  state.lands.forEach(l => {
-    sel.add(new Option(`Land ${l.landId} (${l.size} acre)`, l.landId));
-  });
+  /* =========================
+     FARMER FLOW (EDITABLE)
+  ========================= */
+  if (state.user.role === "farmer") {
+    state.lands.forEach(l => {
+      sel.add(new Option(`Land ${l.landId} (${l.size} acre)`, l.landId));
+    });
 
-  sel.onchange = () => {
-    // ✅ store previous land before change
-    const prevLandId = state.proposal.landId;
-
-    const land = state.lands.find(l => String(l.landId) === sel.value);
-    const newLandId = land ? land.landId : null;
-
-    // ✅ set land
-    state.proposal.landId = newLandId;
-    document.getElementById("totalLand").value = land ? land.size : "";
-
-    // ✅ reset land-used ONLY if land actually changed
-    if (prevLandId && prevLandId !== newLandId) {
-      state.proposal.landAreaUsed = null;
-      document.getElementById("landUsed").value = "";
-
-      // reset crop land areas
-      state.proposal.proposalCrops.forEach(c => {
-        c.landAreaUsed = null;
-      });
+    // restore land if exists
+    if (state.proposal.landId) {
+      sel.value = state.proposal.landId;
+      const land = state.lands.find(l => l.landId == state.proposal.landId);
+      document.getElementById("totalLand").value = land?.size || "";
     }
-  };
+
+    sel.onchange = () => {
+      const land = state.lands.find(l => String(l.landId) === sel.value);
+      state.proposal.landId = land?.landId;
+      document.getElementById("totalLand").value = land?.size || "";
+    };
+
+    return;
+  }
+
+  /* =========================
+     BUYER COUNTER FLOW (READ-ONLY LAND)
+  ========================= */
+  if (state.user.role === "buyer" && state.proposal.landId) {
+  const opt = new Option(
+    `Land ${state.proposal.landId}`,
+    state.proposal.landId,
+    true,
+    true
+  );
+  sel.add(opt);
+  sel.disabled = true;
+
+  document.getElementById("totalLand").value =
+    state.proposal.landAreaUsed || "";
+
+  document.getElementById("landUsed").value =
+    state.proposal.landAreaUsed || "";
+
+  document.getElementById("landUsed").readOnly = true;
 }
+
+}
+
+
+
 
 function renderProposalInfo() {
   if (!state.proposal) return;
@@ -161,27 +215,34 @@ function renderProposalInfo() {
 
 
 
-document.getElementById("landUsed").oninput = e => {
-  const val = Number(e.target.value || 0);
-  state.proposal.landAreaUsed = val;
-
-  // ✅ APPLY TO ALL CROPS (SEASONAL + ANNUAL)
-  state.proposal.proposalCrops.forEach(c => {
-    c.landAreaUsed = val;
-  });
-};
-
+const landUsedEl = document.getElementById("landUsed");
+if (landUsedEl) {
+  landUsedEl.oninput = e => {
+    const val = Number(e.target.value || 0);
+    state.proposal.landAreaUsed = val;
+    state.proposal.proposalCrops.forEach(c => c.landAreaUsed = val);
+  };
+}
 
 
-  function validateLandArea() {
-    const land = state.lands.find(l => l.landId == state.proposal.landId);
-   if (!land) return showToast("Select land"), false;
-    if (!state.proposal.landAreaUsed || state.proposal.landAreaUsed <= 0)
-      return showToast("Enter land used"), false;
-    if (state.proposal.landAreaUsed > land.size)
-      return showToast(`Land used cannot exceed ${land.size}`), false;
-    return true;
-  }
+
+ function validateLandArea() {
+
+  // 🔒 Buyer counter → land is fixed, skip validation
+  if (state.user.role === "buyer") return true;
+
+  const land = state.lands.find(l => l.landId == state.proposal.landId);
+  if (!land) return showToast("Select land"), false;
+
+  if (!state.proposal.landAreaUsed || state.proposal.landAreaUsed <= 0)
+    return showToast("Enter land used"), false;
+
+  if (state.proposal.landAreaUsed > land.size)
+    return showToast(`Land used cannot exceed ${land.size}`), false;
+
+  return true;
+}
+
 
   function syncLandUsedFromUI() {
   const input = document.getElementById("landUsed");
@@ -460,31 +521,54 @@ function recalcTotalAmount() {
      INIT
   =============================== */
   async function init() {
+    await loadProposalContext();
+    const canEdit =
+  state.proposal.proposalStatus === "DRAFT" ||
+  (
+    state.proposal.proposalStatus === "SENT" &&
+    state.proposal.actionRequiredBy === state.user.role
+  );
+const isCounterEdit =
+  state.proposal.proposalStatus === "DRAFT" &&
+  state.proposal.senderUserId === state.user.id &&
+  state.user.role === "buyer";
+
+
+document.querySelector(".proposal-actions").style.display =
+  canEdit ? "flex" : "none";
+
+      if (
+    state.user.role === "farmer" &&
+    (!state.proposal.proposalId || state.proposal.proposalStatus === "DRAFT")
+  ) {
     await loadFarmerProfile();
+  }
     await loadFarmerLands();
     await loadCropMasters();
-    await loadProposalContext();
+    
 renderProposalInfo();
     renderLand();
     renderDelivery();
 
     // restore proposal values into UI
-if (state.proposal.landId) {
+if (state.user.role === "farmer" && state.proposal.landId) {
   document.getElementById("landSelect").value = state.proposal.landId;
   const land = state.lands.find(l => l.landId == state.proposal.landId);
   document.getElementById("totalLand").value = land?.size || "";
- const landUsedInput = document.getElementById("landUsed");
+}
 
-if (state.proposal.landAreaUsed) {
+const landUsedInput = document.getElementById("landUsed");
+
+if (state.proposal.landAreaUsed && landUsedInput) {
   landUsedInput.value = state.proposal.landAreaUsed;
 
-  // ✅ CRITICAL: sync state + crops
   state.proposal.proposalCrops.forEach(c => {
     c.landAreaUsed = state.proposal.landAreaUsed;
   });
 }
 
-}
+
+
 
 document.getElementById("contractModel").value =
   state.proposal.contractModel || "";

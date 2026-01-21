@@ -628,6 +628,13 @@ div.onclick = () => {
   cropSelect.innerHTML = `<option value="">Select crop</option>`;
   subSelect.innerHTML = `<option value="">Select crop type</option>`;
 
+    if (selectedContractModel === "ANNUAL") {
+    selectedCropId = null;
+    selectedSubCategoryId = null;
+    cropSelect.disabled = true;
+    subSelect.disabled = true;
+  }
+  
   if (selectedContractModel === "SEASONAL") {
     cropSelect.disabled = false;
 
