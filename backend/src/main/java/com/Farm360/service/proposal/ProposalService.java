@@ -12,11 +12,11 @@ public interface ProposalService {
 
     void sendProposal(Long senderUserId, Long proposalId, Role currentUserRole);
 
-    void acceptProposal(Long receiverUserId, Long proposalId);
+    void acceptProposal(Long userId, Long proposalId, Role role);
 
-    void rejectProposal(Long receiverUserId, Long proposalId);
+    void rejectProposal(Long userId, Long proposalId, Role role);
 
-    void cancelProposal(Long senderUserId, Long proposalId);
+        void cancelProposal(Long senderUserId, Long proposalId);
 
     ProposalRS getProposalById(Long userId, Long proposalId);
 
@@ -26,7 +26,7 @@ public interface ProposalService {
 
     List<ProposalRS> getOutgoingProposals(Long senderUserId);
 
-    ProposalRS createCounterProposal(Long userId, Long proposalId);
+    ProposalRS createCounterProposal(Long userId, Long proposalId, Role role);
 
      void saveAndSendProposal(
             Long senderUserId,

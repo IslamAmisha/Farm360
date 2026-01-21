@@ -15,9 +15,15 @@ public class ProposalRS {
     private Long requestId;
 
     private Long senderUserId;
+    private String senderName;
+    private String receiverName;
+    private String senderRole;
+
     private Long receiverUserId;
 
     private Long landId;
+    private String landLabel;
+    private Double totalLandArea;
     private Double landAreaUsed;
 
     private String contractModel;
@@ -50,6 +56,7 @@ public class ProposalRS {
     private Integer proposalVersion;
 
     private String remarks;
+    private String actionRequiredBy;
 
     private List<ProposalCropRS> proposalCrops;
 

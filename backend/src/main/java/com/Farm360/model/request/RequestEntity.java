@@ -32,12 +32,12 @@ public class RequestEntity {
     @JoinColumn(name = "receiver_id", nullable = false)
     private UserEntity receiver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "crop_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = true)
+    @JoinColumn(name = "crop_id", nullable = true)
     private CropEntity crop;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_category_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = true)
+    @JoinColumn(name = "sub_category_id", nullable = true)
     private CropSubCategoriesEntity cropSubCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)

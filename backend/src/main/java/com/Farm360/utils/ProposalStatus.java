@@ -5,12 +5,10 @@ public enum ProposalStatus {
 
     DRAFT,
     SENT,
-    ACCEPTED,
+    FINAL_ACCEPTED,
     REJECTED,
     CANCELLED,
-
     COUNTERED,
-
     EXPIRED
 }
 

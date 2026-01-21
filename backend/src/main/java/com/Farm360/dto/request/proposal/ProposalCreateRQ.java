@@ -15,6 +15,7 @@ public class ProposalCreateRQ {
 
     private Long requestId;
     private Long receiverUserId;
+    private String actionRequiredBy;
 
     private Long landId;
     private Double landAreaUsed;

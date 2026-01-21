@@ -3,9 +3,13 @@ package com.Farm360.service.proposal;
 import com.Farm360.dto.request.proposal.ProposalCreateRQ;
 import com.Farm360.dto.response.proposal.ProposalCropRS;
 import com.Farm360.dto.response.proposal.ProposalRS;
+import com.Farm360.model.land.LandEntity;
 import com.Farm360.model.proposal.ProposalCropEntity;
 import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.model.request.RequestEntity;
+import com.Farm360.repository.land.LandRepository;
+import com.Farm360.repository.master.CropRepo;
+import com.Farm360.repository.master.CropSubCategoriesRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.request.RequestRepo;
 import com.Farm360.utils.*;
@@ -29,6 +33,16 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Autowired
     private RequestRepo requestRepository;
+
+    @Autowired
+    private CropRepo cropRepo;
+
+    @Autowired
+    private CropSubCategoriesRepo cropSubCategoryRepo;
+
+    @Autowired
+    private LandRepository landRepo;
+
 
 
     @Override
@@ -383,38 +397,51 @@ public class ProposalServiceImpl implements ProposalService {
        ACCEPT / REJECT / CANCEL
     ========================================================= */
     @Override
-    public void acceptProposal(Long receiverUserId, Long proposalId) {
+    public void acceptProposal(Long userId, Long proposalId, Role role) {
 
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        if (!proposal.getReceiverUserId().equals(receiverUserId)) {
-            throw new RuntimeException("Unauthorized");
+        if (proposal.getActionRequiredBy() != role) {
+            throw new RuntimeException("Not your turn");
         }
 
-        if (proposal.getProposalStatus() != ProposalStatus.SENT) {
-            throw new RuntimeException("Only SENT proposals can be accepted");
-        }
-
-        proposal.setProposalStatus(ProposalStatus.ACCEPTED);
-        proposal.setAcceptedAt(LocalDateTime.now());
-        proposal.setLocked(true);
+        // clear expiry
         proposal.setActionDueAt(null);
         proposal.setValidUntil(null);
+        proposal.setLocked(true);
+
+        // 🔁 FIRST ACCEPT → send back to creator
+        if (proposal.getActionRequiredBy() != proposal.getCreatedByRole()) {
+
+            proposal.setActionRequiredBy(proposal.getCreatedByRole());
+            proposal.setProposalStatus(ProposalStatus.SENT);
+
+            // new 7-day window
+            LocalDateTime expiry = LocalDateTime.now().plusDays(7);
+            proposal.setActionDueAt(expiry);
+            proposal.setValidUntil(expiry);
+        }
+        // ✅ SECOND ACCEPT → FINAL
+        else {
+            proposal.setProposalStatus(ProposalStatus.FINAL_ACCEPTED);
+            proposal.setActionRequiredBy(null);
+        }
 
         proposalRepository.save(proposal);
     }
 
+
     @Override
-    public void rejectProposal(Long receiverUserId, Long proposalId) {
+    public void rejectProposal(Long userId, Long proposalId, Role role) {
 
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        if (!proposal.getReceiverUserId().equals(receiverUserId)) {
-            throw new RuntimeException("Unauthorized");
+        if (proposal.getActionRequiredBy() == null ||
+                proposal.getActionRequiredBy() != role) {
+            throw new RuntimeException("Not your turn");
         }
-
         proposal.setProposalStatus(ProposalStatus.REJECTED);
         proposal.setRejectedAt(LocalDateTime.now());
         proposal.setLocked(true);
@@ -430,13 +457,14 @@ public class ProposalServiceImpl implements ProposalService {
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
+        // 🔐 Only creator can cancel
         if (!proposal.getSenderUserId().equals(senderUserId)) {
             throw new RuntimeException("Unauthorized");
         }
 
-        if (!(proposal.getProposalStatus() == ProposalStatus.DRAFT ||
-                proposal.getProposalStatus() == ProposalStatus.SENT)) {
-            throw new RuntimeException("Only DRAFT or SENT proposals can be cancelled");
+        // 🔒 Only DRAFT proposals can be cancelled
+        if (proposal.getProposalStatus() != ProposalStatus.DRAFT) {
+            throw new RuntimeException("Only DRAFT proposals can be cancelled");
         }
 
         proposal.setProposalStatus(ProposalStatus.CANCELLED);
@@ -446,6 +474,8 @@ public class ProposalServiceImpl implements ProposalService {
 
         proposalRepository.save(proposal);
     }
+
+
 
     /* =========================================================
        FETCH METHODS
@@ -500,33 +530,37 @@ public class ProposalServiceImpl implements ProposalService {
     ========================================================= */
 
     @Override
-    public ProposalRS createCounterProposal(Long userId, Long proposalId) {
+    public ProposalRS createCounterProposal(Long userId, Long proposalId, Role role) {
 
         ProposalEntity old = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        // ✅ 1. VALIDATIONS FIRST
+        // 🔐 TURN-BASED AUTH (FINAL)
+        if (old.getActionRequiredBy() == null ||
+                old.getActionRequiredBy() != role) {
+            throw new RuntimeException("Not your turn");
+        }
+
         if (old.getProposalStatus() != ProposalStatus.SENT) {
             throw new RuntimeException("Only SENT proposals can be countered");
         }
 
-        if (!old.getReceiverUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        // ✅ 2. CLOSE OLD PROPOSAL
+        // 1️⃣ Close old proposal
         old.setProposalStatus(ProposalStatus.COUNTERED);
         old.setLocked(true);
         old.setActionDueAt(null);
         old.setValidUntil(null);
-
         proposalRepository.save(old);
 
-        // ✅ 3. CREATE COUNTER PROPOSAL
+        // 2️⃣ Create counter proposal
         ProposalEntity counter = ProposalEntity.builder()
                 .requestId(old.getRequestId())
-                .senderUserId(old.getReceiverUserId())
-                .receiverUserId(old.getSenderUserId())
+                .senderUserId(userId)
+                .receiverUserId(
+                        userId.equals(old.getSenderUserId())
+                                ? old.getReceiverUserId()
+                                : old.getSenderUserId()
+                )
                 .landId(old.getLandId())
                 .landAreaUsed(old.getLandAreaUsed())
                 .contractModel(old.getContractModel())
@@ -545,13 +579,12 @@ public class ProposalServiceImpl implements ProposalService {
                 .proposalStatus(ProposalStatus.DRAFT)
                 .proposalVersion(old.getProposalVersion() + 1)
                 .parentProposalId(old.getProposalId())
-                .createdByRole(old.getActionRequiredBy())
+                .createdByRole(role)
+                .actionRequiredBy(
+                        role == Role.farmer ? Role.buyer : Role.farmer
+                )
                 .locked(false)
                 .build();
-
-        counter.setActionRequiredBy(
-                old.getCreatedByRole() == Role.buyer ? Role.farmer : Role.buyer
-        );
 
         counter.setProposalCrops(new ArrayList<>());
 
@@ -573,31 +606,78 @@ public class ProposalServiceImpl implements ProposalService {
     }
 
 
+
     /* =========================================================
        MAPPER
     ========================================================= */
     private ProposalRS mapEntityToRS(ProposalEntity p) {
 
+
+        LandEntity land = null;
+        if (p.getLandId() != null) {
+            land = landRepo.findById(p.getLandId()).orElse(null);
+        }
+
+        String senderRole = p.getCreatedByRole() != null
+                ? p.getCreatedByRole().name()
+                : "—";
+
+
+        String senderName =
+                p.getSenderUserId() != null
+                        ? "User-" + p.getSenderUserId()
+                        : "—";
+
+        String receiverName =
+                p.getReceiverUserId() != null
+                        ? "User-" + p.getReceiverUserId()
+                        : "—";
+
+
+
         return ProposalRS.builder()
                 .proposalId(p.getProposalId())
                 .requestId(p.getRequestId())
-
+                .proposalVersion(p.getProposalVersion())
                 .senderUserId(p.getSenderUserId())
                 .receiverUserId(p.getReceiverUserId())
 
+                .senderName(senderName)
+                .receiverName(receiverName)
+                .senderRole(senderRole)
+
+
                 .landId(p.getLandId())
+                .landAreaUsed(p.getLandAreaUsed())
+                .totalLandArea(land != null ? land.getSize() : null)
+                .landLabel(
+                        land != null
+                                ? "Land " + land.getId() + " (" + land.getSize() + " acre)"
+                                : "—"
+                )
 
                 .proposalCrops(
                         p.getProposalCrops() == null ? List.of() :
                                 p.getProposalCrops().stream()
-                                        .map(c -> ProposalCropRS.builder()
-                                                .cropId(c.getCropId())
-                                                .cropSubCategoryId(c.getCropSubCategoryId())
-                                                .season(c.getSeason() != null ? c.getSeason().name() : null)
-                                                .expectedQuantity(c.getExpectedQuantity())
-                                                .unit(c.getUnit() != null ? c.getUnit().name() : null)
-                                                .landAreaUsed(c.getLandAreaUsed())
-                                                .build())
+                                        .map(c -> {
+                                            var crop = cropRepo.findById(c.getCropId()).orElse(null);
+                                            var sub = c.getCropSubCategoryId() != null
+                                                    ? cropSubCategoryRepo.findById(c.getCropSubCategoryId()).orElse(null)
+                                                    : null;
+
+                                            return ProposalCropRS.builder()
+                                                    .cropId(c.getCropId())
+                                                    .cropName(crop != null ? crop.getName() : "—")
+
+                                                    .cropSubCategoryId(c.getCropSubCategoryId())
+                                                    .cropSubCategoryName(sub != null ? sub.getName() : "—")
+
+                                                    .season(c.getSeason() != null ? c.getSeason().name() : null)
+                                                    .expectedQuantity(c.getExpectedQuantity())
+                                                    .unit(c.getUnit() != null ? c.getUnit().name() : null)
+                                                    .landAreaUsed(c.getLandAreaUsed())
+                                                    .build();
+                                        })
                                         .collect(Collectors.toList())
                 )
 
@@ -617,6 +697,9 @@ public class ProposalServiceImpl implements ProposalService {
 
                 .validUntil(p.getValidUntil())
                 .actionDueAt(p.getActionDueAt())
+                .actionRequiredBy(
+                        p.getActionRequiredBy() != null ? p.getActionRequiredBy().name() : null
+                )
 
                 .createdAt(
                         p.getCreatedDate().toInstant()

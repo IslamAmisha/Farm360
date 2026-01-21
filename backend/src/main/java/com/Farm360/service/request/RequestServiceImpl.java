@@ -54,14 +54,32 @@ public class RequestServiceImpl implements RequestService {
             return rs;
         }
 
-        if (rq.getSeason() != null) { // SEASONAL
-            if (rq.getCropId() == null || rq.getCropSubCategoryId()
-                    == null) {
+        // -------- DETERMINE CONTRACT TYPE --------
+        boolean isSeasonal =
+                rq.getSeason() != null && !rq.getSeason().isBlank();
+
+        // -------- CONTRACT BASED VALIDATION --------
+        if (isSeasonal) {
+
+            if (rq.getCropId() == null) {
                 rs.setSuccess(false);
-                rs.setMessage("Crop and crop type are required for seasonal contract");
+                rs.setMessage("Crop is required for seasonal contract");
                 return rs;
             }
+
+            if (rq.getCropSubCategoryId() == null) {
+                rs.setSuccess(false);
+                rs.setMessage("Crop type is required for seasonal contract");
+                return rs;
+            }
+
+        } else {
+            // ANNUAL → force clean state
+            rq.setCropId(null);
+            rq.setCropSubCategoryId(null);
+            rq.setSeason(null);
         }
+
 
         UserEntity sender = userRepo.findById(senderId).orElseThrow();
         UserEntity receiver = userRepo.findById(rq.getReceiverId()).orElseThrow();
@@ -93,33 +111,45 @@ public class RequestServiceImpl implements RequestService {
 
 
         // -------- VALIDATE SUBCATEGORY BELONGS TO LAND --------
-        LandCropEntity landCrop = land.getLandCrops().stream()
-                .filter(lc -> lc.getCropSubCategory().getId().equals(rq.getCropSubCategoryId()
-                ))
-                .findFirst()
-                .orElse(null);
+        CropEntity crop = null;
+        CropSubCategoriesEntity subCategory = null;
 
-        if (landCrop == null) {
-            rs.setSuccess(false);
-            rs.setMessage("Invalid crop selected");
-            return rs;
+        if (isSeasonal) {
+
+            // -------- VALIDATE SUBCATEGORY BELONGS TO LAND --------
+            LandCropEntity landCrop = land.getLandCrops().stream()
+                    .filter(lc -> lc.getCropSubCategory().getId()
+                            .equals(rq.getCropSubCategoryId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (landCrop == null) {
+                rs.setSuccess(false);
+                rs.setMessage("Invalid crop selected");
+                return rs;
+            }
+
+            subCategory = landCrop.getCropSubCategory();
+            crop = subCategory.getCrop();
         }
 
-        CropSubCategoriesEntity subCategory = landCrop.getCropSubCategory();
-        CropEntity crop = subCategory.getCrop(); // 🔑 MASTER CROP
 
         // -------- DUPLICATE CHECK --------
-        if (requestRepo.existsBySender_IdAndReceiver_IdAndCrop_IdAndCropSubCategory_IdAndLand_Id(
-                senderId,
-                rq.getReceiverId(),
-                crop.getId(),
-                subCategory.getId(),
-                land.getId()
-        )) {
-            rs.setSuccess(false);
-            rs.setMessage("Request already sent for this land and crop type");
-            return rs;
+        // -------- DUPLICATE CHECK (SEASONAL ONLY) --------
+        if (isSeasonal) {
+            if (requestRepo.existsBySender_IdAndReceiver_IdAndCrop_IdAndCropSubCategory_IdAndLand_Id(
+                    senderId,
+                    rq.getReceiverId(),
+                    crop.getId(),
+                    subCategory.getId(),
+                    land.getId()
+            )) {
+                rs.setSuccess(false);
+                rs.setMessage("Request already sent for this land and crop type");
+                return rs;
+            }
         }
+
 
 
         // -------- CREATE REQUEST --------
@@ -245,11 +275,22 @@ public class RequestServiceImpl implements RequestService {
                     item.setStatus(req.getStatus().name());
                     item.setCreatedAt(req.getCreatedAt().toString());
 
-                    item.setCropId(req.getCrop().getId());
-                    item.setCropName(req.getCrop().getName());
+                    if (req.getCrop() != null) {
+                        item.setCropId(req.getCrop().getId());
+                        item.setCropName(req.getCrop().getName());
+                    } else {
+                        item.setCropId(null);
+                        item.setCropName(null);
+                    }
 
-                    item.setSubCategoryId(req.getCropSubCategory().getId());
-                    item.setSubCategoryName(req.getCropSubCategory().getName());
+                    if (req.getCropSubCategory() != null) {
+                        item.setSubCategoryId(req.getCropSubCategory().getId());
+                        item.setSubCategoryName(req.getCropSubCategory().getName());
+                    } else {
+                        item.setSubCategoryId(null);
+                        item.setSubCategoryName(null);
+                    }
+
 
 
                     if (req.getLand() != null) {
@@ -324,11 +365,22 @@ public class RequestServiceImpl implements RequestService {
                     item.setStatus(req.getStatus().name());
                     item.setCreatedAt(req.getCreatedAt().toString());
 
-                    item.setCropId(req.getCrop().getId());
-                    item.setCropName(req.getCrop().getName());
+                    if (req.getCrop() != null) {
+                        item.setCropId(req.getCrop().getId());
+                        item.setCropName(req.getCrop().getName());
+                    } else {
+                        item.setCropId(null);
+                        item.setCropName(null);
+                    }
 
-                    item.setSubCategoryId(req.getCropSubCategory().getId());
-                    item.setSubCategoryName(req.getCropSubCategory().getName());
+                    if (req.getCropSubCategory() != null) {
+                        item.setSubCategoryId(req.getCropSubCategory().getId());
+                        item.setSubCategoryName(req.getCropSubCategory().getName());
+                    } else {
+                        item.setSubCategoryId(null);
+                        item.setSubCategoryName(null);
+                    }
+
 
                     if (req.getLand() != null) {
                         item.setLandId(req.getLand().getId());

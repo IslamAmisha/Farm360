@@ -10,7 +10,9 @@ import lombok.*;
 public class ProposalCropRS {
 
     private Long cropId;
+    private String cropName;
     private Long cropSubCategoryId;
+    private String cropSubCategoryName;
 
     private String season;
 

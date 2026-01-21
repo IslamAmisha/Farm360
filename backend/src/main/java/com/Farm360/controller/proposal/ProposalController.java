@@ -42,20 +42,24 @@ public class ProposalController {
     @PostMapping("/{proposalId}/accept")
     public ResponseEntity<Void> acceptProposal(
             @PathVariable Long proposalId,
-            @RequestParam Long receiverUserId
+            @RequestParam Long userId,
+            @RequestParam Role role
     ) {
-        proposalService.acceptProposal(receiverUserId, proposalId);
+        proposalService.acceptProposal(userId, proposalId, role);
         return ResponseEntity.ok().build();
     }
+
 
     @PostMapping("/{proposalId}/reject")
     public ResponseEntity<Void> rejectProposal(
             @PathVariable Long proposalId,
-            @RequestParam Long receiverUserId
+            @RequestParam Long userId,
+            @RequestParam Role role
     ) {
-        proposalService.rejectProposal(receiverUserId, proposalId);
+        proposalService.rejectProposal(userId, proposalId, role);
         return ResponseEntity.ok().build();
     }
+
 
     @PostMapping("/{proposalId}/cancel")
     public ResponseEntity<Void> cancelProposal(
@@ -69,10 +73,11 @@ public class ProposalController {
     @PostMapping("/{proposalId}/counter")
     public ResponseEntity<ProposalRS> counterProposal(
             @PathVariable Long proposalId,
-            @RequestParam Long userId
+            @RequestParam Long userId,
+            @RequestParam Role role
     ) {
         return ResponseEntity.ok(
-                proposalService.createCounterProposal(userId, proposalId)
+                proposalService.createCounterProposal(userId, proposalId, role)
         );
     }
 
@@ -115,6 +120,7 @@ public class ProposalController {
     }
 
     @PostMapping("/save-and-send")
+
     public ResponseEntity<String> saveAndSend(
             @RequestParam Long senderUserId,
             @RequestParam Role currentUserRole,

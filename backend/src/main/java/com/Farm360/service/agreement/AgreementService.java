@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface AgreementService {
 
-    AgreementResponseDTO createAgreementFromProposal(Long proposalId);
-
-    AgreementResponseDTO getByProposalId(Long proposalId);
-
-    List<AgreementSummaryDTO> getByBuyerId(Long buyerId);
-
-    List<AgreementSummaryDTO> getByFarmerId(Long farmerId);
-
-    AgreementResponseDTO terminateAgreement(Long agreementId);
+//    AgreementResponseDTO createAgreementFromProposal(Long proposalId);
+//
+//    AgreementResponseDTO getByProposalId(Long proposalId);
+//
+//    List<AgreementSummaryDTO> getByBuyerId(Long buyerId);
+//
+//    List<AgreementSummaryDTO> getByFarmerId(Long farmerId);
+//
+//    AgreementResponseDTO terminateAgreement(Long agreementId);
 }
