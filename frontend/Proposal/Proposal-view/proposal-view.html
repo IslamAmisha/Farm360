@@ -53,7 +53,9 @@
     <main class="container proposal-page">
 
     <!-- Back -->
-    <button class="back-link">‹ Back</button>
+    <a id="backBtn" href="#" class="back-btn">
+  <span class="back-arrow">‹</span> Back
+</a>
 
     <!-- ===== PROPOSAL META ===== -->
     <section class="proposal-meta card">
@@ -206,7 +208,8 @@
     </div>
     <div>
       <label>Delivery Window</label>
-      <input id="deliveryWindow" />
+      <input id="deliveryWindow"  type="text"
+  readonly/>
     </div>
   </div>
 </section>

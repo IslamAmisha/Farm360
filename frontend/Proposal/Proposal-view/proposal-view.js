@@ -154,23 +154,55 @@ document.getElementById("totalAmount").value =
   document.getElementById("startYear").value = p.startYear || "";
   document.getElementById("endYear").value = p.endYear || "";
   document.getElementById("deliveryWindow").value = p.deliveryWindow || "";
-  document.getElementById("inputProvided").checked = !!p.inputProvided;
-document.getElementById("allowCropChange").checked = !!p.allowCropChangeBetweenSeasons;
+ const inputProvided = document.getElementById("inputProvided");
+if (inputProvided) {
+  inputProvided.checked = Boolean(p.inputProvided);
+  inputProvided.disabled = true;
+}
+
+const allowCropChange = document.getElementById("allowCropChange");
+if (allowCropChange) {
+  allowCropChange.checked = Boolean(p.allowCropChangeBetweenSeasons);
+  allowCropChange.disabled = true;
+}
+
+
+// 🔥 Fallback calculation if totalAmount missing
+if (!p.totalAmount && p.proposalCrops?.length && p.pricePerUnit) {
+  const total = p.proposalCrops.reduce(
+    (sum, c) => sum + (Number(c.expectedQuantity || 0) * Number(p.pricePerUnit)),
+    0
+  );
+  p.totalAmount = total;
+}
+
+document.getElementById("totalAmount").value =
+  p.totalAmount ? p.totalAmount.toFixed(2) : "";
+
 
 }
 
 
-  function renderActions() {
-const canAct =
-  state.proposal.proposalStatus === "SENT" &&
-  state.proposal.actionRequiredBy === state.user.role;
-
-["acceptBtn","rejectBtn","counterBtn"].forEach(id => {
-  const btn = document.getElementById(id);
-  if (btn) btn.style.display = canAct ? "inline-block" : "none";
-});
-
+function renderActions() {
+  // 🔒 FINAL ACCEPTED → NO ACTIONS
+  if (state.proposal.proposalStatus === "FINAL_ACCEPTED") {
+    ["acceptBtn","rejectBtn","counterBtn"].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.style.display = "none";
+    });
+    return;
   }
+
+  const canAct =
+    state.proposal.proposalStatus === "SENT" &&
+    state.proposal.actionRequiredBy === state.user.role;
+
+  ["acceptBtn","rejectBtn","counterBtn"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.style.display = canAct ? "inline-block" : "none";
+  });
+}
+
 
   async function acceptProposal() {
   await fetch(
@@ -195,10 +227,11 @@ async function rejectProposal() {
 
 
 async function counterProposal() {
-  if (
-    state.proposal.proposalStatus !== "SENT" ||
-    state.proposal.actionRequiredBy !== state.user.role
-  ) {
+  if (state.proposal.proposalStatus !== "SENT") {
+    return showToast("Proposal already finalized");
+  }
+
+  if (state.proposal.actionRequiredBy !== state.user.role) {
     return showToast("Action not allowed");
   }
 
@@ -210,10 +243,10 @@ async function counterProposal() {
 
   const newProposal = await res.json();
 
-  // ✅ ALWAYS GO TO EDIT PAGE
   window.location.href =
     `/Proposal/proposal.html?proposalId=${newProposal.proposalId}`;
 }
+
 
 
   async function init() {
