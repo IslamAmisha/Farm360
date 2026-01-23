@@ -550,6 +550,17 @@ renderProposalInfo();
     renderLand();
     renderDelivery();
 
+    const inputProvidedEl = document.getElementById("inputProvided");
+if (inputProvidedEl) {
+  inputProvidedEl.checked = Boolean(state.proposal.inputProvided);
+}
+const allowCropChangeEl = document.getElementById("allowCropChange");
+if (allowCropChangeEl) {
+  allowCropChangeEl.checked =
+    Boolean(state.proposal.allowCropChangeBetweenSeasons);
+}
+
+
     // restore proposal values into UI
 if (state.user.role === "farmer" && state.proposal.landId) {
   document.getElementById("landSelect").value = state.proposal.landId;
@@ -591,11 +602,22 @@ document.getElementById("deliveryLocation").value =
 document.getElementById("logisticsBy").value =
   state.proposal.logisticsHandledBy || "";
 
-document.getElementById("deliveryWindow").value =
-  state.proposal.deliveryWindow || "";
+const dw = document.getElementById("deliveryWindow");
+if (dw && state.proposal.deliveryWindow) {
+  dw.value = state.proposal.deliveryWindow.includes("T")
+    ? state.proposal.deliveryWindow.split("T")[0]
+    : state.proposal.deliveryWindow;
+}
 
+const remarksEl = document.getElementById("remarks");
+if (remarksEl) {
+  remarksEl.value = state.proposal.remarks || "";
 
-    
+  remarksEl.oninput = e => {
+    state.proposal.remarks = e.target.value;
+  };
+}
+
 
     const modelSel = document.getElementById("contractModel");
 state.proposal.contractModel = modelSel.value;

@@ -142,6 +142,13 @@ if (seasonSelect) {
 document.getElementById("totalLand").value =
   p.landAreaUsed ?? "";
 
+  const remarksView = document.getElementById("remarks");
+if (remarksView) {
+  remarksView.value = p.remarks || "";
+  remarksView.readOnly = true;
+}
+
+
 
 document.getElementById("landUsed").value = p.landAreaUsed || "";
   document.getElementById("contractModel").value = p.contractModel || "";
