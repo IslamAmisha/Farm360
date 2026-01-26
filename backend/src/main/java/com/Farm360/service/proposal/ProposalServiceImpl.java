@@ -4,12 +4,14 @@ import com.Farm360.dto.request.proposal.ProposalCreateRQ;
 import com.Farm360.dto.response.proposal.ProposalCropRS;
 import com.Farm360.dto.response.proposal.ProposalRS;
 import com.Farm360.model.land.LandEntity;
+import com.Farm360.model.proposal.ProposalActionHistoryEntity;
 import com.Farm360.model.proposal.ProposalCropEntity;
 import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.model.request.RequestEntity;
 import com.Farm360.repository.land.LandRepository;
 import com.Farm360.repository.master.CropRepo;
 import com.Farm360.repository.master.CropSubCategoriesRepo;
+import com.Farm360.repository.proposal.ProposalActionHistoryRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.request.RequestRepo;
 import com.Farm360.utils.*;
@@ -43,6 +45,8 @@ public class ProposalServiceImpl implements ProposalService {
     @Autowired
     private LandRepository landRepo;
 
+    @Autowired
+    private ProposalActionHistoryRepo actionHistoryRepo;
 
 
     @Override
@@ -52,10 +56,12 @@ public class ProposalServiceImpl implements ProposalService {
             Role currentUserRole
     ) {
 
+        boolean isNewProposal = (rq.getProposalId() == null);
+
         ProposalEntity proposal;
 
         /* ---------- LOAD OR CREATE ---------- */
-        if (rq.getProposalId() != null) {
+        if (!isNewProposal) {
 
             proposal = proposalRepository.findById(rq.getProposalId())
                     .orElseThrow(() -> new RuntimeException("Proposal not found"));
@@ -68,23 +74,19 @@ public class ProposalServiceImpl implements ProposalService {
                 throw new RuntimeException("Locked proposal cannot be edited");
             }
 
-
             if (proposal.getProposalCrops() == null) {
                 proposal.setProposalCrops(new ArrayList<>());
             }
             proposal.getProposalCrops().clear();
 
-            if (proposal.getProposalStatus() == ProposalStatus.DRAFT) {
-                proposal.setLocked(false);
-            }
-
+            proposal.setLocked(false);
             proposal.setActionDueAt(null);
 
         } else {
 
             proposal = new ProposalEntity();
             proposal.setProposalStatus(ProposalStatus.DRAFT);
-            // 🔐 REQUEST-BASED PARTICIPANT LOCK
+
             RequestEntity req = requestRepository.findById(rq.getRequestId())
                     .orElseThrow(() -> new RuntimeException("Request not found"));
 
@@ -92,36 +94,28 @@ public class ProposalServiceImpl implements ProposalService {
                 throw new RuntimeException("Proposal allowed only for accepted requests");
             }
 
-// 🔑 Determine sender & receiver strictly from request
             proposal.setRequestId(req.getId());
             proposal.setSenderUserId(senderUserId);
 
-// receiver = the OTHER party in the request
             Long receiverId =
                     req.getSender().getId().equals(senderUserId)
                             ? req.getReceiver().getId()
                             : req.getSender().getId();
 
             proposal.setReceiverUserId(receiverId);
-
             proposal.setProposalVersion(1);
             proposal.setCreatedByRole(currentUserRole);
             proposal.setActionRequiredBy(
                     currentUserRole == Role.farmer ? Role.buyer : Role.farmer
             );
-            proposal.setProposalCrops(new ArrayList<>());
-            if (proposal.getProposalStatus() == ProposalStatus.DRAFT) {
-                proposal.setLocked(false);
-            }
 
+            proposal.setProposalCrops(new ArrayList<>());
+            proposal.setLocked(false);
             proposal.setActionDueAt(null);
         }
 
-
         /* ---------- BASIC FIELDS ---------- */
         proposal.setLandId(rq.getLandId());
-        
-
         proposal.setLandAreaUsed(
                 rq.getLandAreaUsed() != null && rq.getLandAreaUsed() > 0
                         ? rq.getLandAreaUsed()
@@ -129,13 +123,16 @@ public class ProposalServiceImpl implements ProposalService {
         );
 
         if (rq.getContractModel() != null) {
-            proposal.setContractModel(ContractModel.valueOf(rq.getContractModel().toUpperCase()));
+            proposal.setContractModel(
+                    ContractModel.valueOf(rq.getContractModel().toUpperCase())
+            );
         }
 
-        /* ---------- SEASON ---------- */
         if (proposal.getContractModel() == ContractModel.SEASONAL &&
                 rq.getSeason() != null && !rq.getSeason().isBlank()) {
-            proposal.setSeason(SeasonType.valueOf(rq.getSeason().toUpperCase()));
+            proposal.setSeason(
+                    SeasonType.valueOf(rq.getSeason().toUpperCase())
+            );
         } else {
             proposal.setSeason(null);
         }
@@ -149,22 +146,6 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
         proposal.setStartYear(rq.getStartYear());
         proposal.setEndYear(rq.getEndYear());
-
-        boolean allProvided =
-                rq.getAdvancePercent() != null &&
-                        rq.getMidCyclePercent() != null &&
-                        rq.getFinalPercent() != null;
-
-        if (allProvided) {
-            int total =
-                    rq.getAdvancePercent() +
-                            rq.getMidCyclePercent() +
-                            rq.getFinalPercent();
-
-            if (total != 100) {
-                throw new RuntimeException("Payment percentages must total 100");
-            }
-        }
 
         if (rq.getDeliveryLocation() != null) {
             proposal.setDeliveryLocation(
@@ -180,19 +161,17 @@ public class ProposalServiceImpl implements ProposalService {
             );
         }
 
-        /* ---------- REMARKS (APPEND ONLY) ---------- */
+        /* ---------- REMARKS ---------- */
         if (rq.getRemarks() != null && !rq.getRemarks().isBlank()) {
 
             String prefix = "[" + LocalDateTime.now() +
                     " | " + currentUserRole.name() + "] ";
 
-            String newRemark = prefix + rq.getRemarks();
-
-            if (proposal.getRemarks() == null) {
-                proposal.setRemarks(newRemark);
-            } else {
-                proposal.setRemarks(proposal.getRemarks() + "\n" + newRemark);
-            }
+            proposal.setRemarks(
+                    proposal.getRemarks() == null
+                            ? prefix + rq.getRemarks()
+                            : proposal.getRemarks() + "\n" + prefix + rq.getRemarks()
+            );
         }
 
         /* ---------- CROPS ---------- */
@@ -204,7 +183,7 @@ public class ProposalServiceImpl implements ProposalService {
                         .cropId(cropRQ.getCropId())
                         .cropSubCategoryId(cropRQ.getCropSubCategoryId())
                         .season(
-                                cropRQ.getSeason() != null && !cropRQ.getSeason().isBlank()
+                                cropRQ.getSeason() != null
                                         ? SeasonType.valueOf(cropRQ.getSeason())
                                         : null
                         )
@@ -225,88 +204,6 @@ public class ProposalServiceImpl implements ProposalService {
             }
         }
 
-        /* =========================================================
-   CONTRACT MODEL VALIDATION
-========================================================= */
-        if (proposal.getContractModel() != null) {
-
-            List<ProposalCropEntity> crops = proposal.getProposalCrops();
-
-            if (crops == null || crops.isEmpty()) {
-                return mapEntityToRS(proposalRepository.save(proposal)); // allow empty in DRAFT
-            }
-
-            /* ---------- SEASONAL ---------- */
-            if (proposal.getContractModel() == ContractModel.SEASONAL) {
-
-                if (proposal.getSeason() == null) {
-                    throw new RuntimeException("Season is required for seasonal contract");
-                }
-
-                if (crops.size() != 1) {
-                    throw new RuntimeException("Seasonal contract must have exactly one crop");
-                }
-
-                ProposalCropEntity c = crops.get(0);
-
-                if (c.getSeason() != null &&
-                        c.getSeason() != proposal.getSeason()) {
-                    throw new RuntimeException("Crop season must match proposal season");
-                }
-
-                if (c.getLandAreaUsed() == null || c.getLandAreaUsed() <= 0) {
-                    throw new RuntimeException("Crop land area is required");
-                }
-
-                if (proposal.getLandAreaUsed() != null &&
-                        c.getLandAreaUsed() > proposal.getLandAreaUsed()) {
-                    throw new RuntimeException(
-                            "Crop area cannot exceed total land area"
-                    );
-                }
-            }
-
-            /* ---------- ANNUAL ---------- */
-            if (proposal.getContractModel() == ContractModel.ANNUAL) {
-
-                if (crops.size() > 3) {
-                    throw new RuntimeException(
-                            "Annual contract can have maximum 3 crops"
-                    );
-                }
-
-                if (proposal.getLandAreaUsed() == null || proposal.getLandAreaUsed() <= 0) {
-                    throw new RuntimeException("Land area is required for annual contract");
-                }
-
-                for (ProposalCropEntity c : crops) {
-
-                    if (c.getSeason() == null) {
-                        throw new RuntimeException(
-                                "Each crop must specify a season in annual contract"
-                        );
-                    }
-
-                    if (c.getLandAreaUsed() == null ||
-                            !c.getLandAreaUsed().equals(proposal.getLandAreaUsed())) {
-
-                        throw new RuntimeException(
-                                "Each crop must use the full land area in annual contract"
-                        );
-                    }
-
-                    if (c.getExpectedQuantity() == null || c.getExpectedQuantity() <= 0) {
-                        throw new RuntimeException("Crop quantity is required");
-                    }
-
-                    if (c.getUnit() == null) {
-                        throw new RuntimeException("Crop unit is required");
-                    }
-                }
-            }
-        }
-
-
         /* ---------- TOTAL AMOUNT ---------- */
         double totalAmount = proposal.getProposalCrops().stream()
                 .mapToDouble(c ->
@@ -317,8 +214,20 @@ public class ProposalServiceImpl implements ProposalService {
 
         proposal.setTotalContractAmount(totalAmount);
 
-        return mapEntityToRS(proposalRepository.save(proposal));
+        ProposalEntity saved = proposalRepository.save(proposal);
+
+        if (isNewProposal) {
+            saveAction(
+                    saved,
+                    currentUserRole,
+                    ProposalActionType.CREATE,
+                    "Draft proposal created"
+            );
+        }
+
+        return mapEntityToRS(saved);
     }
+
 
     /* =========================================================
        SEND PROPOSAL
@@ -391,6 +300,12 @@ public class ProposalServiceImpl implements ProposalService {
         requestRepository.save(request);
 
         proposalRepository.save(proposal);
+
+        saveAction(
+                proposal,
+                currentUserRole,
+                ProposalActionType.SEND,
+                "Proposal sent");
     }
 
     /* =========================================================
@@ -429,6 +344,16 @@ public class ProposalServiceImpl implements ProposalService {
         }
 
         proposalRepository.save(proposal);
+
+        saveAction(
+                proposal,
+                role,
+                ProposalActionType.ACCEPT,
+                proposal.getProposalStatus() == ProposalStatus.FINAL_ACCEPTED
+                        ? "Final acceptance"
+                        : "Accepted, waiting for other party"
+        );
+
     }
 
 
@@ -449,6 +374,14 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setValidUntil(null);
 
         proposalRepository.save(proposal);
+
+        saveAction(
+                proposal,
+                role,
+                ProposalActionType.REJECT,
+                "Proposal rejected"
+        );
+
     }
 
     @Override
@@ -602,7 +535,24 @@ public class ProposalServiceImpl implements ProposalService {
             );
         }
 
-        return mapEntityToRS(proposalRepository.save(counter));
+        ProposalEntity savedCounter = proposalRepository.save(counter);
+
+        saveAction(
+                savedCounter,
+                role,
+                ProposalActionType.CREATE,
+                "Counter proposal created"
+        );
+
+        saveAction(
+                old,
+                role,
+                ProposalActionType.COUNTER,
+                "Proposal countered"
+        );
+
+        return mapEntityToRS(savedCounter);
+
     }
 
 
@@ -727,5 +677,19 @@ public class ProposalServiceImpl implements ProposalService {
         // 2. Send immediately
         sendProposal(senderUserId, rs.getProposalId(), role);
     }
+
+    private void saveAction(ProposalEntity proposal, Role actionBy, ProposalActionType actionType, String remarks) {
+        actionHistoryRepo.save(
+                ProposalActionHistoryEntity.builder()
+                        .proposalId(proposal.getProposalId())
+                        .proposalVersion(proposal.getProposalVersion())
+                        .actionBy(actionBy)
+                        .actionType(actionType)
+                        .actionAt(LocalDateTime.now())
+                        .remarks(remarks)
+                        .build()
+        );
+    }
+
 
 }

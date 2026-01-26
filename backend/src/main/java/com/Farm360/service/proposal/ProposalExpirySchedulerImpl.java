@@ -1,7 +1,10 @@
 package com.Farm360.service.proposal;
 
+import com.Farm360.model.proposal.ProposalActionHistoryEntity;
 import com.Farm360.model.proposal.ProposalEntity;
+import com.Farm360.repository.proposal.ProposalActionHistoryRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
+import com.Farm360.utils.ProposalActionType;
 import com.Farm360.utils.ProposalStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,9 @@ public class ProposalExpirySchedulerImpl implements ProposalExpiryScheduler {
 
     @Autowired
     private ProposalRepo proposalRepo;
+
+    @Autowired
+    private ProposalActionHistoryRepo actionHistoryRepo;
 
     @Override
     @Scheduled(cron = "0 */10 * * * *") // runs every 10 minutes
@@ -39,6 +45,17 @@ public class ProposalExpirySchedulerImpl implements ProposalExpiryScheduler {
             proposal.setProposalStatus(ProposalStatus.EXPIRED);
             proposal.setExpiredAt(now);
             proposal.setLocked(true);
+            actionHistoryRepo.save(
+                    ProposalActionHistoryEntity.builder()
+                            .proposalId(proposal.getProposalId())
+                            .proposalVersion(proposal.getProposalVersion())
+                            .actionBy(proposal.getActionRequiredBy())
+                            .actionType(ProposalActionType.EXPIRE)
+                            .actionAt(now)
+                            .remarks("Proposal expired due to no action")
+                            .build()
+            );
+
         }
 
         proposalRepo.saveAll(expiredProposals);
