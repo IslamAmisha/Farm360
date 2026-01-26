@@ -4,5 +4,7 @@ public enum Role {
 
     pending,
     farmer,
-    buyer
+    buyer,
+    none
+
 }

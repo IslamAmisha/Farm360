@@ -161,6 +161,19 @@ public class ProposalServiceImpl implements ProposalService {
             );
         }
 
+        if (rq.getDeliveryWindow() == null || rq.getDeliveryWindow().isBlank()) {
+            throw new RuntimeException("Delivery window is required");
+        }
+
+        if (rq.getInputProvided() == null) {
+            throw new RuntimeException("Input provided flag is required");
+        }
+
+        if (rq.getAllowCropChangeBetweenSeasons() == null) {
+            throw new RuntimeException("Crop change permission is required");
+        }
+
+
         /* ---------- REMARKS ---------- */
         if (rq.getRemarks() != null && !rq.getRemarks().isBlank()) {
 
@@ -264,6 +277,18 @@ public class ProposalServiceImpl implements ProposalService {
             throw new RuntimeException("Delivery location is required");
         }
 
+        if (proposal.getDeliveryWindow() == null || proposal.getDeliveryWindow().isBlank()) {
+            throw new RuntimeException("Delivery window is required before sending proposal");
+        }
+
+        if (proposal.getInputProvided() == null) {
+            throw new RuntimeException("Input provided flag is required before sending proposal");
+        }
+
+        if (proposal.getAllowCropChangeBetweenSeasons() == null) {
+            throw new RuntimeException("Crop change permission is required before sending proposal");
+        }
+
         if (proposal.getLogisticsHandledBy() == null) {
             throw new RuntimeException("Logistics handler is required");
         }
@@ -340,7 +365,8 @@ public class ProposalServiceImpl implements ProposalService {
         // ✅ SECOND ACCEPT → FINAL
         else {
             proposal.setProposalStatus(ProposalStatus.FINAL_ACCEPTED);
-            proposal.setActionRequiredBy(null);
+            //proposal.setActionRequiredBy(Role.none);
+            proposal.setActionRequiredBy(role);
         }
 
         proposalRepository.save(proposal);
@@ -642,6 +668,17 @@ public class ProposalServiceImpl implements ProposalService {
 
                 .startYear(p.getStartYear())
                 .endYear(p.getEndYear())
+                .deliveryWindow(p.getDeliveryWindow())
+                .inputProvided(p.getInputProvided())
+                .allowCropChangeBetweenSeasons(p.getAllowCropChangeBetweenSeasons())
+
+                .advancePercent(p.getAdvancePercent())
+                .midCyclePercent(p.getMidCyclePercent())
+                .finalPercent(p.getFinalPercent())
+
+                .escrowApplicable(p.getEscrowApplicable())
+                .remarks(p.getRemarks())
+
 
                 .proposalStatus(p.getProposalStatus().name())
 
