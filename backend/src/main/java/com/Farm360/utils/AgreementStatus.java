@@ -3,5 +3,7 @@ package com.Farm360.utils;
 public enum AgreementStatus {
     ACTIVE,
     COMPLETED,
-    TERMINATED
+    TERMINATED,
+    SIGNED, DISPUTED
 }
+

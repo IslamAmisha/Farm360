@@ -1,0 +1,211 @@
+package com.Farm360.service.agreement;
+
+import com.Farm360.dto.request.agreement.AgreementCreateRQ;
+import com.Farm360.dto.response.agreement.AgreementCropSnapshotRS;
+import com.Farm360.dto.response.agreement.AgreementListRS;
+import com.Farm360.dto.response.agreement.AgreementRS;
+import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
+import com.Farm360.mapper.agreement.AgreementMapper;
+import com.Farm360.model.agreement.AgreementEntity;
+import com.Farm360.model.proposal.ProposalEntity;
+import com.Farm360.repository.agreement.AgreementRepo;
+import com.Farm360.repository.proposal.ProposalRepo;
+import com.Farm360.utils.AgreementStatus;
+import com.Farm360.utils.ProposalStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@Transactional
+public class AgreementServiceImpl implements AgreementService {
+
+    @Autowired
+    private ProposalRepo proposalRepo;
+    @Autowired
+    private AgreementRepo agreementRepo;
+    @Autowired
+    private AgreementMapper agreementMapper;
+
+    //create agreement from proposal
+    @Override
+    public AgreementRS createAgreement(AgreementCreateRQ rq) {
+
+        ProposalEntity proposal =
+                proposalRepo.findById(rq.getProposalId())
+                        .orElseThrow(() -> new RuntimeException("Proposal not found"));
+
+
+        if (proposal.getProposalStatus() != ProposalStatus.FINAL_ACCEPTED) {
+            throw new RuntimeException("Agreement can be created only from FINAL_ACCEPTED proposal");
+        }
+
+        if (!proposal.getSenderUserId().equals(rq.getUserId()) &&
+                !proposal.getReceiverUserId().equals(rq.getUserId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        if (proposal.getPricePerUnit() == null)
+            throw new RuntimeException("Price missing");
+
+        if (proposal.getTotalContractAmount() == null)
+            throw new RuntimeException("Total amount missing");
+
+        if (proposal.getDeliveryWindow() == null)
+            throw new RuntimeException("Delivery window missing");
+
+        if (proposal.getInputProvided() == null)
+            throw new RuntimeException("Input responsibility missing");
+
+        if (proposal.getAllowCropChangeBetweenSeasons() == null)
+            throw new RuntimeException("Crop change permission missing");
+
+        if (proposal.getProposalCrops().isEmpty())
+            throw new RuntimeException("Crops missing");
+
+
+        if (agreementRepo.existsByProposalId(proposal.getProposalId())) {
+            throw new RuntimeException("Agreement already exists for this proposal");
+        }
+
+        Long farmerId =
+                proposal.getCreatedByRole().name().equalsIgnoreCase("farmer")
+                        ? proposal.getSenderUserId()
+                        : proposal.getReceiverUserId();
+
+        Long buyerId =
+                farmerId.equals(proposal.getSenderUserId())
+                        ? proposal.getReceiverUserId()
+                        : proposal.getSenderUserId();
+
+        //BUILD SNAPSHOT
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+
+        AgreementSnapshotRS snapshotObj =
+                buildSnapshotObject(proposal, farmerId, buyerId);
+
+        String snapshotJson;
+        try {
+            snapshotJson = mapper.writeValueAsString(snapshotObj);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create agreement snapshot", e);
+        }
+
+
+
+        //create agreement entity
+        AgreementEntity agreement = AgreementEntity.builder()
+                .proposalId(proposal.getProposalId())
+                .proposalVersion(proposal.getProposalVersion())
+                .requestId(proposal.getRequestId())
+                .farmerUserId(farmerId)
+                .buyerUserId(buyerId)
+                .status(AgreementStatus.SIGNED)
+                .signedAt(LocalDateTime.now())
+                .agreementSnapshot(snapshotJson)
+                .locked(true)
+                .build();
+
+        agreementRepo.save(agreement);
+
+        return agreementMapper.toRS(agreement);
+    }
+
+    //get agreement by id
+    @Override
+    public AgreementRS getAgreement(Long agreementId, Long userId) {
+
+        AgreementEntity agreement =
+                agreementRepo.findById(agreementId)
+                        .orElseThrow(() -> new RuntimeException("Agreement not found"));
+
+        if (!agreement.getFarmerUserId().equals(userId) &&
+                !agreement.getBuyerUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return agreementMapper.toRS(agreement);
+    }
+
+  //list agreements for a user
+    @Override
+    public List<AgreementListRS> getMyAgreements(Long userId) {
+
+        List<AgreementEntity> agreements =
+                agreementRepo.findByFarmerUserIdOrBuyerUserId(userId, userId);
+
+        return agreements.stream().map(a -> {
+
+            AgreementListRS rs = agreementMapper.toListRS(a);
+
+            if (a.getFarmerUserId().equals(userId)) {
+                rs.setCounterPartyRole("buyer");
+                rs.setCounterPartyName("User-" + a.getBuyerUserId());
+            } else {
+                rs.setCounterPartyRole("farmer");
+                rs.setCounterPartyName("User-" + a.getFarmerUserId());
+            }
+
+            return rs;
+        }).toList();
+    }
+
+  //build agreement snapshot from proposal
+  private AgreementSnapshotRS buildSnapshotObject(
+          ProposalEntity p,
+          Long farmerId,
+          Long buyerId
+  ) {
+      return AgreementSnapshotRS.builder()
+              .proposalId(p.getProposalId())
+              .proposalVersion(p.getProposalVersion())
+              .requestId(p.getRequestId())
+              .farmerUserId(farmerId)
+              .buyerUserId(buyerId)
+
+              .landId(p.getLandId())
+              .landAreaUsed(p.getLandAreaUsed())
+
+              .contractModel(p.getContractModel())
+              .season(p.getSeason())
+              .startYear(p.getStartYear())
+              .endYear(p.getEndYear())
+
+              .pricePerUnit(p.getPricePerUnit())
+              .totalContractAmount(p.getTotalContractAmount())
+              .escrowApplicable(p.getEscrowApplicable())
+              .advancePercent(p.getAdvancePercent())
+              .midCyclePercent(p.getMidCyclePercent())
+              .finalPercent(p.getFinalPercent())
+
+              .deliveryLocation(p.getDeliveryLocation())
+              .deliveryWindow(p.getDeliveryWindow())
+              .logisticsHandledBy(p.getLogisticsHandledBy())
+
+              .inputProvided(p.getInputProvided())
+              .allowCropChangeBetweenSeasons(p.getAllowCropChangeBetweenSeasons())
+
+              .remarks(p.getRemarks())
+
+              .crops(
+                      p.getProposalCrops().stream()
+                              .map(c -> AgreementCropSnapshotRS.builder()
+                                      .cropId(c.getCropId())
+                                      .cropSubCategoryId(c.getCropSubCategoryId())
+                                      .season(c.getSeason())
+                                      .expectedQuantity(c.getExpectedQuantity())
+                                      .unit(c.getUnit())
+                                      .landAreaUsed(c.getLandAreaUsed())
+                                      .build())
+                              .toList()
+              )
+              .build();
+  }
+
+}

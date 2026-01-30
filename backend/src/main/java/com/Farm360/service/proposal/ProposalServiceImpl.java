@@ -1,5 +1,6 @@
 package com.Farm360.service.proposal;
 
+import com.Farm360.dto.request.agreement.AgreementCreateRQ;
 import com.Farm360.dto.request.proposal.ProposalCreateRQ;
 import com.Farm360.dto.response.proposal.ProposalCropRS;
 import com.Farm360.dto.response.proposal.ProposalRS;
@@ -14,6 +15,7 @@ import com.Farm360.repository.master.CropSubCategoriesRepo;
 import com.Farm360.repository.proposal.ProposalActionHistoryRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.request.RequestRepo;
+import com.Farm360.service.agreement.AgreementService;
 import com.Farm360.utils.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class ProposalServiceImpl implements ProposalService {
 
     @Autowired
@@ -47,6 +49,10 @@ public class ProposalServiceImpl implements ProposalService {
 
     @Autowired
     private ProposalActionHistoryRepo actionHistoryRepo;
+
+    @Autowired
+    private AgreementService agreementService;
+
 
 
     @Override
@@ -362,12 +368,23 @@ public class ProposalServiceImpl implements ProposalService {
             proposal.setActionDueAt(expiry);
             proposal.setValidUntil(expiry);
         }
-        // ✅ SECOND ACCEPT → FINAL
+        // SECOND ACCEPT → FINAL
         else {
             proposal.setProposalStatus(ProposalStatus.FINAL_ACCEPTED);
-            //proposal.setActionRequiredBy(Role.none);
-            proposal.setActionRequiredBy(role);
+            proposal.setLocked(true);
+            proposal.setActionRequiredBy(Role.none);
+
+            proposalRepository.save(proposal);
+
+            agreementService.createAgreement(
+                    AgreementCreateRQ.builder()
+                            .proposalId(proposal.getProposalId())
+                            .userId(userId)
+                            .build()
+            );
+            return;
         }
+
 
         proposalRepository.save(proposal);
 
