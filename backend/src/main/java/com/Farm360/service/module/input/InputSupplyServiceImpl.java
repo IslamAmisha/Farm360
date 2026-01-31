@@ -1,0 +1,281 @@
+package com.Farm360.service.module.input;
+
+import com.Farm360.dto.request.module.input.InputSupplyApprovalRQ;
+import com.Farm360.dto.request.module.input.InputSupplyOrderCreateRQ;
+import com.Farm360.dto.request.module.input.InputSupplyProofUploadRQ;
+import com.Farm360.dto.response.module.input.InputSupplyApprovalRS;
+import com.Farm360.dto.response.module.input.InputSupplyOrderRS;
+import com.Farm360.dto.response.module.input.InputSupplyProofRS;
+import com.Farm360.mapper.module.input.InputSupplyApprovalMapper;
+import com.Farm360.mapper.module.input.InputSupplyOrderMapper;
+import com.Farm360.mapper.module.input.InputSupplyProofMapper;
+import com.Farm360.model.agreement.AgreementEntity;
+import com.Farm360.model.module.input.*;
+import com.Farm360.repository.agreement.AgreementRepo;
+import com.Farm360.repository.module.input.*;
+import com.Farm360.service.agreement.AgreementService;
+import com.Farm360.service.escrow.EscrowService;
+import com.Farm360.utils.*;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class InputSupplyServiceImpl implements InputSupplyService {
+
+    private final AgreementRepo agreementRepo;
+    private final InputSupplyOrderRepository orderRepo;
+    private final InputSupplyItemRepository itemRepo;
+    private final InputSupplyProofRepository proofRepo;
+    private final InputSupplyApprovalRepository approvalRepo;
+
+    private final InputSupplyOrderMapper orderMapper;
+    private final InputSupplyProofMapper proofMapper;
+    private final InputSupplyApprovalMapper approvalMapper;
+
+    private final EscrowService escrowService;
+
+
+    @Override
+    public InputSupplyOrderRS createOrder(
+            Long agreementId,
+            InputSupplyOrderCreateRQ rq,
+            Long buyerUserId
+    ) {
+
+        AgreementEntity agreement = agreementRepo.findById(agreementId)
+                .orElseThrow(() -> new RuntimeException("Agreement not found"));
+
+        if (!agreement.getBuyerUserId().equals(buyerUserId)) {
+            throw new RuntimeException("Only buyer can initiate input supply");
+        }
+
+        if (orderRepo.existsByAgreementIdAndStatusIn(
+                agreementId,
+                List.of(
+                        InputSupplyStatus.PENDING_UPLOAD,
+                        InputSupplyStatus.PENDING_APPROVAL
+                )
+
+        )) {
+            throw new RuntimeException("Input supply already in progress");
+        }
+
+        if (rq.getItems() == null || rq.getItems().isEmpty()) {
+            throw new RuntimeException("At least one input item required");
+        }
+
+        if (rq.getTotalAmount() == null || rq.getTotalAmount() <= 0) {
+            throw new RuntimeException("Invalid total amount");
+        }
+
+        InputSupplyOrderEntity order = InputSupplyOrderEntity.builder()
+                .agreementId(agreementId)
+                .proposalVersion(agreement.getProposalVersion())
+                .stage(InputSupplyStage.INITIAL)
+                .status(InputSupplyStatus.PENDING_UPLOAD)
+                .totalAmount(rq.getTotalAmount())
+                .escrowStatus(InputEscrowStatus.HELD)
+                .uploadDueAt(LocalDateTime.now().plusDays(7))
+                .attemptCount(0)
+                .build();
+
+        order.setItems(
+                rq.getItems().stream()
+                        .map(i -> InputSupplyItemEntity.builder()
+                                .order(order)
+                                .inputType(i.getInputType())
+                                .brandName(i.getBrandName())
+                                .productName(i.getProductName())
+                                .quantity(i.getQuantity())
+                                .unit(i.getUnit())
+                                .expectedPrice(i.getExpectedPrice())
+                                .build())
+                        .toList()
+        );
+
+        orderRepo.save(order);
+
+        escrowService.holdFromBuyer(
+                agreement.getBuyerUserId(),
+                order.getTotalAmount(),
+                "INPUT_SUPPLY_" + order.getId()
+        );
+
+        return orderMapper.toRS(order);
+    }
+
+    @Override
+    public InputSupplyProofRS uploadProof(
+            Long orderId,
+            InputSupplyProofUploadRQ rq,
+            Long farmerUserId
+    ) {
+
+        InputSupplyOrderEntity order = getOrderOrThrow(orderId);
+
+        if (order.getStatus() != InputSupplyStatus.PENDING_UPLOAD) {
+            throw new RuntimeException("Upload not allowed now");
+        }
+
+        if (order.getAttemptCount() >= 2) {
+            throw new RuntimeException("Maximum attempts exceeded");
+        }
+
+        if (order.getUploadDueAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Upload window expired");
+        }
+
+        AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
+                .orElseThrow();
+
+        if (!agreement.getFarmerUserId().equals(farmerUserId)) {
+            throw new RuntimeException("Only farmer can upload proof");
+        }
+
+        int attemptNo = order.getAttemptCount() + 1;
+
+        InputSupplyProofEntity proof = InputSupplyProofEntity.builder()
+                .order(order)
+                .imageUrl(rq.getImageUrl())
+                .geoLat(rq.getGeoLat())
+                .geoLng(rq.getGeoLng())
+                .remarks(rq.getRemarks())
+                .uploadedAt(LocalDateTime.now())
+                .attemptNo(attemptNo)
+                .build();
+
+        proofRepo.save(proof);
+
+        order.setAttemptCount(attemptNo);
+        order.setStage(InputSupplyStage.INITIAL);
+        order.setStatus(InputSupplyStatus.PENDING_APPROVAL);
+        order.setApprovalDueAt(LocalDateTime.now().plusDays(7));
+
+        orderRepo.save(order);
+
+        return proofMapper.toRS(proof);
+    }
+
+    @Override
+    public InputSupplyApprovalRS approveOrReject(
+            Long orderId,
+            InputSupplyApprovalRQ rq,
+            Long buyerUserId
+    ) {
+
+        InputSupplyOrderEntity order = getOrderOrThrow(orderId);
+
+        if (order.getApprovalDueAt().isBefore(LocalDateTime.now())) {
+
+            AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
+                    .orElseThrow();
+
+
+            order.setStatus(InputSupplyStatus.AUTO_APPROVED);
+            order.setEscrowStatus(InputEscrowStatus.RELEASED);
+
+            escrowService.releaseToFarmer(
+                    agreement.getFarmerUserId(),
+                    order.getTotalAmount()
+            );
+
+            orderRepo.save(order);
+
+            throw new RuntimeException("Auto-approved due to buyer inactivity");
+        }
+
+        AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
+                .orElseThrow();
+
+        if (!agreement.getBuyerUserId().equals(buyerUserId)) {
+            throw new RuntimeException("Only buyer can approve or reject");
+        }
+
+        if (!rq.getApproved() &&
+                (rq.getReason() == null || rq.getReason().isBlank())) {
+            throw new RuntimeException("Rejection reason required");
+        }
+
+        InputSupplyApprovalEntity approval =
+                InputSupplyApprovalEntity.builder()
+                        .order(order)
+                        .approved(rq.getApproved())
+                        .reason(rq.getReason())
+                        .build();
+
+        approvalRepo.save(approval);
+
+        if (rq.getApproved()) {
+
+            order.setStatus(InputSupplyStatus.APPROVED);
+            order.setEscrowStatus(InputEscrowStatus.RELEASED);
+            order.setApprovalDueAt(null);
+
+            escrowService.releaseToFarmer(
+                    agreement.getFarmerUserId(),
+                    order.getTotalAmount()
+            );
+
+        } else {
+
+            if (order.getAttemptCount() >= 2) {
+
+                order.setStatus(InputSupplyStatus.FAILED);
+                order.setEscrowStatus(InputEscrowStatus.REFUNDED);
+                order.setApprovalDueAt(null);
+
+                escrowService.refundToBuyer(
+                        agreement.getBuyerUserId(),
+                        order.getTotalAmount()
+                );
+
+            } else {
+
+                order.setStage(InputSupplyStage.INITIAL);
+                order.setStatus(InputSupplyStatus.PENDING_UPLOAD);
+                order.setUploadDueAt(LocalDateTime.now().plusDays(7));
+                order.setApprovalDueAt(null);
+            }
+        }
+
+        orderRepo.save(order);
+
+        return approvalMapper.toRS(approval);
+    }
+
+    @Override
+    public InputSupplyOrderRS getOrder(Long orderId, Long userId) {
+
+        InputSupplyOrderEntity order = getOrderOrThrow(orderId);
+
+        AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
+                .orElseThrow();
+
+        if (!agreement.getBuyerUserId().equals(userId)
+                && !agreement.getFarmerUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return orderMapper.toRS(order);
+    }
+
+    @Override
+    public List<InputSupplyOrderRS> getOrdersByAgreement(Long agreementId) {
+
+        return orderRepo.findByAgreementId(agreementId)
+                .stream()
+                .map(orderMapper::toRS)
+                .toList();
+    }
+
+    private InputSupplyOrderEntity getOrderOrThrow(Long orderId) {
+        return orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Input supply order not found"));
+    }
+}
