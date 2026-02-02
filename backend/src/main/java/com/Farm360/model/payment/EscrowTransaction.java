@@ -2,6 +2,7 @@ package com.Farm360.model.payment;
 
 import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.FarmerEntity;
+import com.Farm360.utils.EscrowPurpose;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,9 +23,16 @@ public class EscrowTransaction {
 
     private Double amount;
 
-    private String type; // BUYER_TO_FARMER, FARMER_TO_VENDOR, REFUND
+//    private String type; // BUYER_TO_FARMER, FARMER_TO_VENDOR, REFUND
 
-    private String description;
+    @Enumerated(EnumType.STRING)
+    private EscrowPurpose purpose;
+
+    private String action;
+
+    private String reference;
+
+//    private String description;
 
     @ManyToOne
     @JoinColumn(name = "buyer_id")
@@ -34,5 +42,5 @@ public class EscrowTransaction {
     @JoinColumn(name = "farmer_id")
     private FarmerEntity farmer;
 
-    private Date timestamp = new Date();
+    private Date timestamp;
 }

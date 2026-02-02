@@ -17,5 +17,5 @@ public interface BuyerWalletRepository extends JpaRepository<BuyerWallet, Long> 
     @Query("select w from BuyerWallet w where w.buyer.id = :buyerId")
     Optional<BuyerWallet> findByBuyerIdForUpdate(@Param("buyerId") Long buyerId);
 
-    Optional<BuyerWallet> findByBuyer_Id(Long buyerId);
+    Optional<BuyerWallet> findByBuyerId(Long buyerId);
 }

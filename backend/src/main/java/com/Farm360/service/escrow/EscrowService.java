@@ -1,18 +1,28 @@
 package com.Farm360.service.escrow;
 
-public class EscrowService {
+import com.Farm360.utils.EscrowPurpose;
 
-    public void holdFromBuyer(Long buyerUserId, Double amount, String reference) {
-    }
+public interface EscrowService {
 
+    void holdFromBuyer(
+            Long buyerUserId,
+            Double amount,
+            EscrowPurpose purpose,
+            String reference
+    );
 
-    public void releaseToFarmer(Long farmerUserId, Double amount) {
+    void releaseToFarmer(
+            Long buyerUserId,
+            Long farmerUserId,
+            Double amount,
+            EscrowPurpose purpose,
+            String reference
+    );
 
-    }
-
-
-    public void refundToBuyer(Long buyerUserId, Double amount) {
-
-    }
-
+    void refundToBuyer(
+            Long buyerUserId,
+            Double amount,
+            EscrowPurpose purpose,
+            String reference
+    );
 }

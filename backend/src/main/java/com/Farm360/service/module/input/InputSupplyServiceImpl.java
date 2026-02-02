@@ -104,8 +104,10 @@ public class InputSupplyServiceImpl implements InputSupplyService {
         escrowService.holdFromBuyer(
                 agreement.getBuyerUserId(),
                 order.getTotalAmount(),
+                EscrowPurpose.INPUT_SUPPLY,
                 "INPUT_SUPPLY_" + order.getId()
         );
+
 
         return orderMapper.toRS(order);
     }
@@ -171,23 +173,38 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
         InputSupplyOrderEntity order = getOrderOrThrow(orderId);
 
-        if (order.getApprovalDueAt().isBefore(LocalDateTime.now())) {
+        if (order.getApprovalDueAt() != null &&
+                order.getApprovalDueAt().isBefore(LocalDateTime.now())) {
+
+            if (order.getStatus() != InputSupplyStatus.PENDING_APPROVAL) {
+                throw new RuntimeException("Order is not awaiting approval");
+            }
 
             AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
                     .orElseThrow();
 
-
             order.setStatus(InputSupplyStatus.AUTO_APPROVED);
             order.setEscrowStatus(InputEscrowStatus.RELEASED);
+            order.setApprovalDueAt(null);
+            order.setSystemRemark("Auto approved due to buyer inactivity");
 
             escrowService.releaseToFarmer(
+                    agreement.getBuyerUserId(),
                     agreement.getFarmerUserId(),
-                    order.getTotalAmount()
+                    order.getTotalAmount(),
+                    EscrowPurpose.INPUT_SUPPLY,
+                    "INPUT_SUPPLY_" + order.getId()
             );
 
             orderRepo.save(order);
 
-            throw new RuntimeException("Auto-approved due to buyer inactivity");
+            return approvalMapper.toRS(
+                    InputSupplyApprovalEntity.builder()
+                            .order(order)
+                            .approved(true)
+                            .reason("Auto-approved (buyer inactive)")
+                            .build()
+            );
         }
 
         AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
@@ -218,9 +235,13 @@ public class InputSupplyServiceImpl implements InputSupplyService {
             order.setApprovalDueAt(null);
 
             escrowService.releaseToFarmer(
+                    agreement.getBuyerUserId(),
                     agreement.getFarmerUserId(),
-                    order.getTotalAmount()
+                    order.getTotalAmount(),
+                    EscrowPurpose.INPUT_SUPPLY,
+                    "INPUT_SUPPLY_" + order.getId()
             );
+
 
         } else {
 
@@ -232,8 +253,11 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
                 escrowService.refundToBuyer(
                         agreement.getBuyerUserId(),
-                        order.getTotalAmount()
+                        order.getTotalAmount(),
+                        EscrowPurpose.INPUT_SUPPLY,
+                        "INPUT_SUPPLY_" + order.getId()
                 );
+
 
             } else {
 
