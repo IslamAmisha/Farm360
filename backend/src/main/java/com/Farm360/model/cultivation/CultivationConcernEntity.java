@@ -55,4 +55,7 @@ public class CultivationConcernEntity extends AuditTable<String> {
      */
     @Column
     private Instant escalatedAt;
+
+    @Column
+    private Instant resolvedAt;
 }
