@@ -63,8 +63,7 @@ public class CultivationMapper {
 
         return CultivationExecutionEntity.builder()
                 .agreementId(rq.getAgreementId())
-                .farmerId(rq.getFarmerId())
-                .buyerId(rq.getBuyerId())
+
                 .startWindowFrom(rq.getCultivationStartDate())
                 .startWindowTo(rq.getExpectedHarvestStartDate())
                 .expectedCompletionDate(rq.getExpectedHarvestEndDate())
@@ -79,8 +78,7 @@ public class CultivationMapper {
         return CultivationExecutionRS.builder()
                 .cultivationExecutionId(entity.getId())
                 .agreementId(entity.getAgreementId())
-                .farmerId(entity.getFarmerId())
-                .buyerId(entity.getBuyerId())
+
                 .cultivationStartDate(entity.getStartWindowFrom())
                 .expectedHarvestStartDate(entity.getStartWindowTo())
                 .expectedHarvestEndDate(entity.getExpectedCompletionDate())
@@ -103,7 +101,7 @@ public class CultivationMapper {
 
         return CultivationConcernEntity.builder()
                 .cultivationExecutionId(rq.getCultivationExecutionId())
-                .raisedByBuyerId(rq.getBuyerId())
+
                 .summary(rq.getDescription())
                 .status(CultivationConcernStatus.OPEN)
                 .raisedAt(Instant.now())
@@ -117,7 +115,7 @@ public class CultivationMapper {
         return CultivationConcernRS.builder()
                 .cultivationConcernId(entity.getId())
                 .cultivationExecutionId(entity.getCultivationExecutionId())
-                .buyerId(entity.getRaisedByBuyerId())
+
                 .description(entity.getSummary())
                 .status(entity.getStatus())
                 .raisedAt(toLocalDateTime(entity.getRaisedAt()))
@@ -135,7 +133,7 @@ public class CultivationMapper {
 
         return CultivationFeedbackEntity.builder()
                 .cultivationExecutionId(rq.getCultivationExecutionId())
-                .buyerId(rq.getBuyerId())
+
                 .feedbackType(rq.getFeedbackType())
                 .message(rq.getRemarks())
                 .createdAt(Instant.now())
@@ -148,7 +146,7 @@ public class CultivationMapper {
         return CultivationFeedbackRS.builder()
                 .cultivationFeedbackId(entity.getId())
                 .cultivationExecutionId(entity.getCultivationExecutionId())
-                .buyerId(entity.getBuyerId())
+
                 .feedbackType(entity.getFeedbackType())
                 .remarks(entity.getMessage())
                 .createdAt(toLocalDateTime(entity.getCreatedAt()))
