@@ -30,5 +30,7 @@ public interface InputSupplyOrderRepository extends JpaRepository<InputSupplyOrd
             Long agreementId,
             List<InputSupplyStatus> statuses
     );
+
+    List<InputSupplyOrderEntity> findByStatusAndApprovalDueAtBefore(InputSupplyStatus inputSupplyStatus, LocalDateTime now);
 }
 

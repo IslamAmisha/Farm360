@@ -1,4 +1,4 @@
-package com.Farm360.dto.request.cultivation;
+package com.Farm360.dto.request.module.cultivation;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

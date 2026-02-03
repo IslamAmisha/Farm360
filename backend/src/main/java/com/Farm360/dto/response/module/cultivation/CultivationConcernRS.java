@@ -1,4 +1,4 @@
-package com.Farm360.dto.response.cultivation;
+package com.Farm360.dto.response.module.cultivation;
 
 import com.Farm360.utils.CultivationConcernStatus;
 import lombok.*;

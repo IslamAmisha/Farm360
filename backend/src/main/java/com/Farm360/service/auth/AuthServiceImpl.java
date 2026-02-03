@@ -9,6 +9,7 @@ import com.Farm360.dto.response.OtpVerifyRS;
 import com.Farm360.model.UserEntity;
 import com.Farm360.repository.UserRepo;
 import com.Farm360.security.jwt.JwtUtils;
+import com.Farm360.service.escrow.WalletBootstrapService;
 import com.Farm360.utils.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class AuthServiceImpl implements AuthService {
     private UserRepo userRepo;
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private WalletBootstrapService walletBootstrapService;
 
     private final RestTemplate rest = new RestTemplate();
 
@@ -103,6 +107,13 @@ public class AuthServiceImpl implements AuthService {
         // Find user by phone
         UserEntity user = userRepo.findByPhoneNumber(rq.getPhoneNumber())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == Role.buyer) {
+            walletBootstrapService.ensureBuyerWallet(user.getId());
+        }
+        if (user.getRole() == Role.farmer) {
+            walletBootstrapService.ensureFarmerWallet(user.getId());
+        }
 
         // Generate token
         String token = jwtUtils.generateJwt(user.getPhoneNumber(), user.getRole());

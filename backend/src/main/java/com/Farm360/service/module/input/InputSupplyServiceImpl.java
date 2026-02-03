@@ -3,6 +3,7 @@ package com.Farm360.service.module.input;
 import com.Farm360.dto.request.module.input.InputSupplyApprovalRQ;
 import com.Farm360.dto.request.module.input.InputSupplyOrderCreateRQ;
 import com.Farm360.dto.request.module.input.InputSupplyProofUploadRQ;
+import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
 import com.Farm360.dto.response.module.input.InputSupplyApprovalRS;
 import com.Farm360.dto.response.module.input.InputSupplyOrderRS;
 import com.Farm360.dto.response.module.input.InputSupplyProofRS;
@@ -16,6 +17,8 @@ import com.Farm360.repository.module.input.*;
 import com.Farm360.service.agreement.AgreementService;
 import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.utils.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -69,21 +72,34 @@ public class InputSupplyServiceImpl implements InputSupplyService {
         if (rq.getItems() == null || rq.getItems().isEmpty()) {
             throw new RuntimeException("At least one input item required");
         }
-
-        if (rq.getTotalAmount() == null || rq.getTotalAmount() <= 0) {
-            throw new RuntimeException("Invalid total amount");
+        if (agreement.getStatus() != AgreementStatus.SIGNED) {
+            throw new RuntimeException("Input supply allowed only for active agreements");
         }
+
+
+        AgreementSnapshotRS snap = getAgreementSnapshot(agreement);
+
+        Double inputAmount =
+                snap.getTotalContractAmount()
+                        * snap.getAdvancePercent()
+                        / 100.0;
+
 
         InputSupplyOrderEntity order = InputSupplyOrderEntity.builder()
                 .agreementId(agreementId)
                 .proposalVersion(agreement.getProposalVersion())
                 .stage(InputSupplyStage.INITIAL)
                 .status(InputSupplyStatus.PENDING_UPLOAD)
-                .totalAmount(rq.getTotalAmount())
+                .totalAmount(inputAmount)
                 .escrowStatus(InputEscrowStatus.HELD)
                 .uploadDueAt(LocalDateTime.now().plusDays(7))
                 .attemptCount(0)
                 .build();
+
+        if (order.getEscrowStatus() != InputEscrowStatus.HELD) {
+            throw new RuntimeException("Escrow already settled");
+        }
+
 
         order.setItems(
                 rq.getItems().stream()
@@ -133,6 +149,10 @@ public class InputSupplyServiceImpl implements InputSupplyService {
             throw new RuntimeException("Upload window expired");
         }
 
+        if (order.getEscrowStatus() != InputEscrowStatus.HELD) {
+            throw new RuntimeException("Escrow already settled");
+        }
+
         AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
                 .orElseThrow();
 
@@ -154,7 +174,7 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
         proofRepo.save(proof);
 
-        order.setAttemptCount(attemptNo);
+        order.setAttemptCount(order.getAttemptCount());
         order.setStage(InputSupplyStage.INITIAL);
         order.setStatus(InputSupplyStatus.PENDING_APPROVAL);
         order.setApprovalDueAt(LocalDateTime.now().plusDays(7));
@@ -178,6 +198,10 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
             if (order.getStatus() != InputSupplyStatus.PENDING_APPROVAL) {
                 throw new RuntimeException("Order is not awaiting approval");
+            }
+
+            if (order.getEscrowStatus() != InputEscrowStatus.HELD) {
+                throw new RuntimeException("Escrow already settled");
             }
 
             AgreementEntity agreement = agreementRepo.findById(order.getAgreementId())
@@ -302,4 +326,25 @@ public class InputSupplyServiceImpl implements InputSupplyService {
         return orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Input supply order not found"));
     }
+
+    private AgreementSnapshotRS getAgreementSnapshot(AgreementEntity agreement) {
+
+        if (agreement.getAgreementSnapshot() == null) {
+            throw new RuntimeException("Agreement snapshot missing");
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+
+            return mapper.readValue(
+                    agreement.getAgreementSnapshot(),
+                    AgreementSnapshotRS.class
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse agreement snapshot", e);
+        }
+    }
+
 }

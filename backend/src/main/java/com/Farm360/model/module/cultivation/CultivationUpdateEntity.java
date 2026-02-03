@@ -1,20 +1,20 @@
-package com.Farm360.model.cultivation;
+package com.Farm360.model.module.cultivation;
 
 import com.Farm360.model.audit.AuditTable;
-import com.Farm360.utils.CultivationFeedbackType;
+import com.Farm360.utils.CultivationUpdateType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "cultivation_feedback")
+@Table(name = "cultivation_updates")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CultivationFeedbackEntity extends AuditTable<String> {
+public class CultivationUpdateEntity extends AuditTable<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,23 +25,20 @@ public class CultivationFeedbackEntity extends AuditTable<String> {
     @Column(nullable = false)
     private Long cultivationExecutionId;
 
-    @Column(nullable = false)
-    private Long buyerId;
-
-    /* -------------------- FEEDBACK -------------------- */
+    /* -------------------- UPDATE DETAILS -------------------- */
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CultivationFeedbackType feedbackType;
+    private CultivationUpdateType updateType;
 
     /**
-     * Optional message.
-     * - COMMENT: usually present
-     * - APPROVAL: usually null
-     * - QUALITY_CONCERN: short summary
+     * Can store:
+     * - file reference ID (photo / document)
+     * - short textual note
+     * Interpretation is intentionally outside this module.
      */
     @Column(columnDefinition = "TEXT")
-    private String message;
+    private String contentRef;
 
     /* -------------------- TRACEABILITY -------------------- */
 

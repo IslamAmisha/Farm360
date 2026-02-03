@@ -1,6 +1,6 @@
-package com.Farm360.repository.cultivation;
+package com.Farm360.repository.module.cultivation;
 
-import com.Farm360.model.cultivation.CultivationConcernEntity;
+import com.Farm360.model.module.cultivation.CultivationConcernEntity;
 import com.Farm360.utils.CultivationConcernStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

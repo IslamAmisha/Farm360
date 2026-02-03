@@ -1,4 +1,4 @@
-package com.Farm360.model.cultivation;
+package com.Farm360.model.module.cultivation;
 
 import com.Farm360.model.audit.AuditTable;
 import com.Farm360.utils.CultivationConcernStatus;

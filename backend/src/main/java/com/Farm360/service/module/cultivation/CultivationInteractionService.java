@@ -1,11 +1,11 @@
-package com.Farm360.service.cultivation;
+package com.Farm360.service.module.cultivation;
 
-import com.Farm360.dto.request.cultivation.CultivationConcernCreateRQ;
-import com.Farm360.dto.request.cultivation.CultivationFeedbackCreateRQ;
-import com.Farm360.dto.request.cultivation.CultivationUpdateCreateRQ;
-import com.Farm360.dto.response.cultivation.CultivationConcernRS;
-import com.Farm360.dto.response.cultivation.CultivationFeedbackRS;
-import com.Farm360.dto.response.cultivation.CultivationUpdateRS;
+import com.Farm360.dto.request.module.cultivation.CultivationConcernCreateRQ;
+import com.Farm360.dto.request.module.cultivation.CultivationFeedbackCreateRQ;
+import com.Farm360.dto.request.module.cultivation.CultivationUpdateCreateRQ;
+import com.Farm360.dto.response.module.cultivation.CultivationConcernRS;
+import com.Farm360.dto.response.module.cultivation.CultivationFeedbackRS;
+import com.Farm360.dto.response.module.cultivation.CultivationUpdateRS;
 
 import java.util.List;
 
