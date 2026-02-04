@@ -37,12 +37,14 @@ public class CultivationController {
 
     @PostMapping("/execution")
     public ResponseEntity<CultivationExecutionRS> createExecution(
-            @RequestBody CultivationExecutionCreateRQ rq
+            @RequestBody CultivationExecutionCreateRQ rq,
+            @RequestHeader("X-User-Id") Long currentUserId  // pass the current user ID from request header or security context
     ) {
         return ResponseEntity.ok(
-                cultivationExecutionService.createExecution(rq)
+                cultivationExecutionService.createExecution(currentUserId, rq)
         );
     }
+
 
     @PutMapping("/execution/{executionId}/status")
     public ResponseEntity<CultivationExecutionRS> updateExecutionStatus(

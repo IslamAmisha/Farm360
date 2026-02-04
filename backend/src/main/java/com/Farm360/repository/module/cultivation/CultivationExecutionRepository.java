@@ -9,10 +9,6 @@ import java.util.List;
 @Repository
 public interface CultivationExecutionRepository extends JpaRepository<CultivationExecutionEntity, Long> {
 
-    /**
-     * Find all cultivation executions for a given farmer.
-     */
-    List<CultivationExecutionEntity> findByFarmerId(Long farmerId);
 
     /**
      * Find all cultivation executions associated with a specific agreement.

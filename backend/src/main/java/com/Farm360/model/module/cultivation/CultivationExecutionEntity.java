@@ -27,12 +27,6 @@ public class CultivationExecutionEntity extends AuditTable<String>
    @Column(nullable = false)
    private Long agreementId;
 
-   @Column(nullable = false)
-   private Long farmerId;
-
-   @Column(nullable = false)
-   private Long buyerId;
-
    /* -------------------- TIME WINDOWS -------------------- */
 
    @Column(nullable = false)
