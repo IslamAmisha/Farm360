@@ -9,8 +9,8 @@ import com.Farm360.dto.response.module.cultivation.CultivationUpdateRS;
 import com.Farm360.mapper.module.cultivation.CultivationMapper;
 import com.Farm360.model.module.cultivation.CultivationConcernEntity;
 import com.Farm360.model.module.cultivation.CultivationExecutionEntity;
-import com.Farm360.model.cultivation.CultivationFeedbackEntity;
-import com.Farm360.model.cultivation.CultivationUpdateEntity;
+import com.Farm360.model.module.cultivation.CultivationFeedbackEntity;
+import com.Farm360.model.module.cultivation.CultivationUpdateEntity;
 import com.Farm360.repository.module.cultivation.CultivationConcernRepository;
 import com.Farm360.repository.module.cultivation.CultivationExecutionRepository;
 import com.Farm360.repository.module.cultivation.CultivationFeedbackRepository;
@@ -34,7 +34,7 @@ public class CultivationInteractionServiceImpl
     private final CultivationConcernRepository cultivationConcernRepository;
     private final CultivationMapper cultivationMapper;
 
-    /* ---------------- INTERNAL VALIDATION ---------------- */
+    /* ---------------- INTERNAL LOAD ---------------- */
 
     private CultivationExecutionEntity loadExecutionOrThrow(Long executionId) {
         return cultivationExecutionRepository.findById(executionId)
@@ -53,9 +53,7 @@ public class CultivationInteractionServiceImpl
         CultivationExecutionEntity execution =
                 loadExecutionOrThrow(rq.getCultivationExecutionId());
 
-        // NOTE:
-        // Farmer ownership validation (if any) is assumed
-        // to be enforced at controller/security layer.
+
 
         CultivationUpdateEntity entity =
                 cultivationMapper.toEntity(rq);
@@ -75,7 +73,9 @@ public class CultivationInteractionServiceImpl
 
         return cultivationMapper.toUpdateResponseList(
                 cultivationUpdateRepository
-                        .findByCultivationExecutionIdOrderByCreatedAtAsc(cultivationExecutionId)
+                        .findByCultivationExecutionIdOrderByCreatedAtAsc(
+                                cultivationExecutionId
+                        )
         );
     }
 
@@ -87,8 +87,7 @@ public class CultivationInteractionServiceImpl
         CultivationExecutionEntity execution =
                 loadExecutionOrThrow(rq.getCultivationExecutionId());
 
-        // Buyer ownership check intentionally NOT duplicated here.
-        // Execution already carries buyerId for upstream validation.
+
 
         CultivationFeedbackEntity entity =
                 cultivationMapper.toEntity(rq);
@@ -108,7 +107,9 @@ public class CultivationInteractionServiceImpl
 
         return cultivationMapper.toFeedbackResponseList(
                 cultivationFeedbackRepository
-                        .findByCultivationExecutionIdOrderByCreatedAtAsc(cultivationExecutionId)
+                        .findByCultivationExecutionIdOrderByCreatedAtAsc(
+                                cultivationExecutionId
+                        )
         );
     }
 
@@ -120,13 +121,7 @@ public class CultivationInteractionServiceImpl
         CultivationExecutionEntity execution =
                 loadExecutionOrThrow(rq.getCultivationExecutionId());
 
-        // Critical invariant:
-        // Concern must be raised by the buyer tied to execution.
-        if (!execution.getBuyerId().equals(rq.getBuyerId())) {
-            throw new IllegalStateException(
-                    "Buyer not authorized to raise concern for this cultivation execution"
-            );
-        }
+
 
         CultivationConcernEntity entity =
                 cultivationMapper.toEntity(rq);
@@ -146,7 +141,9 @@ public class CultivationInteractionServiceImpl
 
         return cultivationMapper.toConcernResponseList(
                 cultivationConcernRepository
-                        .findByCultivationExecutionIdOrderByRaisedAtAsc(cultivationExecutionId)
+                        .findByCultivationExecutionIdOrderByRaisedAtAsc(
+                                cultivationExecutionId
+                        )
         );
     }
 }

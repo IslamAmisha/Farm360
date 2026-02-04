@@ -25,10 +25,7 @@ public class CultivationConcernEntity extends AuditTable<String> {
     @Column(nullable = false)
     private Long cultivationExecutionId;
 
-    @Column(nullable = false)
-    private Long raisedByBuyerId;
-
-    /* -------------------- CONCERN STATE -------------------- */
+       /* -------------------- CONCERN STATE -------------------- */
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
