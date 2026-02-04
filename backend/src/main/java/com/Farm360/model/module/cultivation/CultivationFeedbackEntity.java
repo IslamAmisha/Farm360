@@ -25,6 +25,8 @@ public class CultivationFeedbackEntity extends AuditTable<String> {
     @Column(nullable = false)
     private Long cultivationExecutionId;
 
+    @Column(nullable = false)
+    private Long buyerId;
 
     /* -------------------- FEEDBACK -------------------- */
 

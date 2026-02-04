@@ -14,7 +14,7 @@ public interface CultivationExecutionService {
      * Initialize a cultivation execution for an active agreement.
      * Usually system-triggered at agreement activation.
      */
-    CultivationExecutionRS createExecution(Long currentUserId,CultivationExecutionCreateRQ rq);
+    CultivationExecutionRS createExecution(CultivationExecutionCreateRQ rq);
 
     /**
      * System-controlled status transition.

@@ -16,48 +16,54 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class CultivationExecutionEntity extends AuditTable<String>
- {
+{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long id;
 
-    /* -------------------- OWNERSHIP -------------------- */
+   /* -------------------- OWNERSHIP -------------------- */
 
-    @Column(nullable = false)
-    private Long agreementId;
+   @Column(nullable = false)
+   private Long agreementId;
 
-    /* -------------------- TIME WINDOWS -------------------- */
+   @Column(nullable = false)
+   private Long farmerId;
 
-    @Column(nullable = false)
-    private LocalDate startWindowFrom;
+   @Column(nullable = false)
+   private Long buyerId;
 
-    @Column(nullable = false)
-    private LocalDate startWindowTo;
+   /* -------------------- TIME WINDOWS -------------------- */
 
-    @Column(nullable = false)
-    private LocalDate expectedCompletionDate;
+   @Column(nullable = false)
+   private LocalDate startWindowFrom;
 
-    @Column(nullable = false)
-    private LocalDate hardExpiryDate;
+   @Column(nullable = false)
+   private LocalDate startWindowTo;
 
-    /* -------------------- LIFECYCLE -------------------- */
+   @Column(nullable = false)
+   private LocalDate expectedCompletionDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CultivationStatus status;
+   @Column(nullable = false)
+   private LocalDate hardExpiryDate;
 
-    @Column
-    private Instant startedAt;
+   /* -------------------- LIFECYCLE -------------------- */
 
-    @Column
-    private Instant declaredCompletedAt;
+   @Enumerated(EnumType.STRING)
+   @Column(nullable = false)
+   private CultivationStatus status;
 
-    @Column
-    private Instant completedAt;
+   @Column
+   private Instant startedAt;
 
-    /* -------------------- TRACEABILITY -------------------- */
+   @Column
+   private Instant declaredCompletedAt;
 
-    @Column
-    private Instant lastFarmerActionAt;
+   @Column
+   private Instant completedAt;
+
+   /* -------------------- TRACEABILITY -------------------- */
+
+   @Column
+   private Instant lastFarmerActionAt;
 }
