@@ -25,14 +25,14 @@ import org.springframework.stereotype.Service;
     private FarmerRepo farmerRepo;
 
     @Transactional
-    public void ensureBuyerWallet(Long buyerId) {
+    public void ensureBuyerWallet(Long buyerUserId) {
 
-        if (buyerWalletRepo.findByBuyerId(buyerId).isPresent()) {
+        if (buyerWalletRepo.findByBuyerUserId(buyerUserId).isPresent()) {
             return;
         }
 
-        BuyerEntity buyer = buyerRepo.findById(buyerId)
-                .orElseThrow(() -> new RuntimeException("Buyer not found"));
+        BuyerEntity buyer = buyerRepo.findByUserId(buyerUserId)
+                .orElseThrow(() -> new RuntimeException("Buyer profile not found"));
 
         BuyerWallet wallet = new BuyerWallet();
         wallet.setBuyer(buyer);
@@ -42,15 +42,16 @@ import org.springframework.stereotype.Service;
         buyerWalletRepo.save(wallet);
     }
 
-    @Transactional
-    public void ensureFarmerWallet(Long farmerId) {
 
-        if (farmerWalletRepo.findByFarmerId(farmerId).isPresent()) {
+    @Transactional
+    public void ensureFarmerWallet(Long farmerUserId) {
+
+        if (farmerWalletRepo.findByFarmerUserId(farmerUserId).isPresent()) {
             return;
         }
 
-        FarmerEntity farmer = farmerRepo.findById(farmerId)
-                .orElseThrow(() -> new RuntimeException("Farmer not found"));
+        FarmerEntity farmer = farmerRepo.findByUserId(farmerUserId)
+                .orElseThrow(() -> new RuntimeException("Farmer profile not found"));
 
         FarmerWallet wallet = new FarmerWallet();
         wallet.setFarmer(farmer);
@@ -60,4 +61,5 @@ import org.springframework.stereotype.Service;
 
         farmerWalletRepo.save(wallet);
     }
+
 }

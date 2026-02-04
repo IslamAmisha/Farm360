@@ -22,7 +22,7 @@ public class RoleServiceImpl implements RoleService{
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setRole(rq.getRole()); // ✔ SET ROLE HERE
+        user.setRole(rq.getRole());
         userRepo.save(user);
 
         RoleRS rs = new RoleRS();

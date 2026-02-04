@@ -11,4 +11,8 @@ public interface EscrowTransactionRepository extends JpaRepository<EscrowTransac
     List<EscrowTransaction> findByBuyerIdOrderByTimestampDesc(Long id);
 
     List<EscrowTransaction> findByFarmerIdOrderByTimestampDesc(Long id);
+
+    List<EscrowTransaction> findByBuyerUserIdOrderByTimestampDesc(Long id);
+
+    List<EscrowTransaction> findByFarmerUserIdOrderByTimestampDesc(Long id);
 }

@@ -14,8 +14,10 @@ import java.util.Optional;
 public interface BuyerWalletRepository extends JpaRepository<BuyerWallet, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select w from BuyerWallet w where w.buyer.id = :buyerId")
-    Optional<BuyerWallet> findByBuyerIdForUpdate(@Param("buyerId") Long buyerId);
+    @Query("select w from BuyerWallet w where w.buyer.user.id = :userId")
+    Optional<BuyerWallet> findByBuyerUserIdForUpdate(@Param("userId") Long userId);
 
-    Optional<BuyerWallet> findByBuyerId(Long buyerId);
+    @Query("select w from BuyerWallet w where w.buyer.user.id = :userId")
+    Optional<BuyerWallet> findByBuyerUserId(@Param("userId") Long userId);
 }
+

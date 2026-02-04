@@ -22,10 +22,10 @@ public class EscrowServiceImpl implements EscrowService {
     private BuyerWalletRepository buyerWalletRepo;
 
     @Autowired
-    private EscrowTransactionRepository escrowTxnRepo;
+    private FarmerWalletRepository farmerWalletRepo;
 
     @Autowired
-    private FarmerWalletRepository farmerWalletRepo;
+    private EscrowTransactionRepository escrowTxnRepo;
 
     @Override
     @Transactional
@@ -35,7 +35,9 @@ public class EscrowServiceImpl implements EscrowService {
             EscrowPurpose purpose,
             String reference
     ) {
-        BuyerWallet wallet = buyerWalletRepo.findByBuyerId(buyerUserId)
+
+        BuyerWallet wallet = buyerWalletRepo
+                .findByBuyerUserIdForUpdate(buyerUserId)
                 .orElseThrow(() -> new RuntimeException("Buyer wallet not found"));
 
         if (wallet.getBalance() < amount) {
@@ -70,11 +72,14 @@ public class EscrowServiceImpl implements EscrowService {
             EscrowPurpose purpose,
             String reference
     ) {
-        BuyerWallet buyerWallet = buyerWalletRepo.findByBuyerId(buyerUserId)
-                .orElseThrow();
 
-        FarmerWallet farmerWallet = farmerWalletRepo.findByFarmerId(farmerUserId)
-                .orElseThrow();
+        BuyerWallet buyerWallet = buyerWalletRepo
+                .findByBuyerUserIdForUpdate(buyerUserId)
+                .orElseThrow(() -> new RuntimeException("Buyer wallet not found"));
+
+        FarmerWallet farmerWallet = farmerWalletRepo
+                .findByFarmerUserId(farmerUserId)
+                .orElseThrow(() -> new RuntimeException("Farmer wallet not found"));
 
         buyerWallet.setLockedAmount(buyerWallet.getLockedAmount() - amount);
         farmerWallet.setAvailableBalance(
@@ -106,8 +111,10 @@ public class EscrowServiceImpl implements EscrowService {
             EscrowPurpose purpose,
             String reference
     ) {
-        BuyerWallet wallet = buyerWalletRepo.findByBuyerId(buyerUserId)
-                .orElseThrow();
+
+        BuyerWallet wallet = buyerWalletRepo
+                .findByBuyerUserIdForUpdate(buyerUserId)
+                .orElseThrow(() -> new RuntimeException("Buyer wallet not found"));
 
         wallet.setLockedAmount(wallet.getLockedAmount() - amount);
         wallet.setBalance(wallet.getBalance() + amount);
@@ -127,6 +134,4 @@ public class EscrowServiceImpl implements EscrowService {
                 )
         );
     }
-
-
 }

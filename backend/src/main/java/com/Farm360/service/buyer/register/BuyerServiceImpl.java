@@ -104,10 +104,6 @@ public class BuyerServiceImpl implements BuyerService {
         buyer.setUser(user);
         user.setBuyer(buyer);
 
-        // Create Wallet
-        BuyerWallet wallet = new BuyerWallet();
-        wallet.setBuyer(buyer);
-        buyer.setWallet(wallet);
 
         // SAVE BUYER
         BuyerEntity savedBuyer = buyerRepo.save(buyer);

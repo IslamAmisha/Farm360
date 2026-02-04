@@ -22,8 +22,10 @@ public class EscrowController {
 
     @Autowired
     private BuyerWalletRepository buyerWalletRepo;
+
     @Autowired
     private FarmerWalletRepository farmerWalletRepo;
+
     @Autowired
     private EscrowTransactionRepository escrowTxnRepo;
 
@@ -36,7 +38,7 @@ public class EscrowController {
         if (user.getRole() == Role.buyer) {
 
             BuyerWallet wallet = buyerWalletRepo
-                    .findByBuyerId(user.getId())
+                    .findByBuyerUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Buyer wallet not found"));
 
             return WalletBalanceRS.builder()
@@ -47,7 +49,7 @@ public class EscrowController {
         } else if (user.getRole() == Role.farmer) {
 
             FarmerWallet wallet = farmerWalletRepo
-                    .findByFarmerId(user.getId())
+                    .findByFarmerUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Farmer wallet not found"));
 
             return WalletBalanceRS.builder()
@@ -70,9 +72,11 @@ public class EscrowController {
         List<EscrowTransaction> txns;
 
         if (user.getRole() == Role.buyer) {
-            txns = escrowTxnRepo.findByBuyerIdOrderByTimestampDesc(user.getId());
+            txns = escrowTxnRepo
+                    .findByBuyerUserIdOrderByTimestampDesc(user.getId());
         } else if (user.getRole() == Role.farmer) {
-            txns = escrowTxnRepo.findByFarmerIdOrderByTimestampDesc(user.getId());
+            txns = escrowTxnRepo
+                    .findByFarmerUserIdOrderByTimestampDesc(user.getId());
         } else {
             throw new RuntimeException("Unsupported role");
         }

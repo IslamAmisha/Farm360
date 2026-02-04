@@ -100,12 +100,7 @@ public class FarmerServiceImpl implements FarmerService {
                 throw new RuntimeException("Failed to upload image");
             }
         }
-
-        // WALLET
-        FarmerWallet wallet = new FarmerWallet();
-        wallet.setFarmer(farmer);
-        farmer.setWallet(wallet);
-
+        
         // SAVE FARMER FIRST
         FarmerEntity savedFarmer = farmerRepo.save(farmer);
 
