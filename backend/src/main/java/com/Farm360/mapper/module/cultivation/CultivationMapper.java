@@ -10,6 +10,8 @@ import com.Farm360.dto.response.module.cultivation.CultivationFeedbackRS;
 import com.Farm360.dto.response.module.cultivation.CultivationUpdateRS;
 import com.Farm360.model.module.cultivation.CultivationConcernEntity;
 import com.Farm360.model.module.cultivation.CultivationExecutionEntity;
+import com.Farm360.model.module.cultivation.CultivationFeedbackEntity;
+import com.Farm360.model.module.cultivation.CultivationUpdateEntity;
 import com.Farm360.utils.CultivationStatus;
 import com.Farm360.utils.CultivationConcernStatus;
 import org.springframework.stereotype.Component;
