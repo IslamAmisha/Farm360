@@ -47,7 +47,8 @@ public class InputSupplyAutoApprovalScheduler {
             order.setSystemRemark("Auto approved due to buyer inactivity");
             order.setApprovalDueAt(null);
 
-            escrowService.releaseToFarmer(
+            escrowService.releaseForAgreement(
+                    agreement.getAgreementId(),
                     agreement.getBuyerUserId(),
                     agreement.getFarmerUserId(),
                     order.getTotalAmount(),

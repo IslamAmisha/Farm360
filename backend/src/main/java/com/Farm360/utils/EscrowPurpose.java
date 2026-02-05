@@ -5,6 +5,8 @@ public enum EscrowPurpose {
     MACHINERY_RENT,
     HARVEST_DELIVERY,
     PENALTY,
-    REFUND
+    REFUND,
+    ADJUSTMENT,
+    AGREEMENT_LOCK
 }
 

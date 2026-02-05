@@ -7,10 +7,14 @@ import com.Farm360.dto.response.agreement.AgreementRS;
 import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
 import com.Farm360.mapper.agreement.AgreementMapper;
 import com.Farm360.model.agreement.AgreementEntity;
+import com.Farm360.model.payment.AgreementEscrowAllocation;
 import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.repository.agreement.AgreementRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
+import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.utils.AgreementStatus;
+import com.Farm360.utils.EscrowPurpose;
+import com.Farm360.utils.EscrowStatus;
 import com.Farm360.utils.ProposalStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -31,6 +35,13 @@ public class AgreementServiceImpl implements AgreementService {
     private AgreementRepo agreementRepo;
     @Autowired
     private AgreementMapper agreementMapper;
+
+    @Autowired
+    private EscrowService escrowService;
+
+    @Autowired
+    private AgreementEscrowAllocationService allocationService;
+
 
     //create agreement from proposal
     @Override
@@ -113,6 +124,35 @@ public class AgreementServiceImpl implements AgreementService {
                 .build();
 
         agreementRepo.save(agreement);
+
+        double total = snapshotObj.getTotalContractAmount();
+
+        double advance = total * snapshotObj.getAdvancePercent() / 100;
+        double mid = total * snapshotObj.getMidCyclePercent() / 100;
+        double fin = total * snapshotObj.getFinalPercent() / 100;
+
+        AgreementEscrowAllocation allocation =
+                AgreementEscrowAllocation.builder()
+                        .agreementId(agreement.getAgreementId())
+                        .buyerUserId(buyerId)
+                        .totalAllocated(total)
+                        .advanceAllocated(advance)
+                        .midAllocated(mid)
+                        .finalAllocated(fin)
+                        .remainingLocked(0.0)
+                        .status(EscrowStatus.LOCKED)
+                        .build();
+
+        allocationService.save(allocation);
+
+// FULL CONTRACT LOCK
+        escrowService.lockForAgreement(
+                agreement.getAgreementId(),
+                buyerId,
+                total,
+                EscrowPurpose.AGREEMENT_LOCK,
+                "AGREEMENT_" + agreement.getAgreementId()
+        );
 
         return agreementMapper.toRS(agreement);
     }

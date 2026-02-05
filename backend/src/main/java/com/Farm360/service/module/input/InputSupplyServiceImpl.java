@@ -12,8 +12,10 @@ import com.Farm360.mapper.module.input.InputSupplyOrderMapper;
 import com.Farm360.mapper.module.input.InputSupplyProofMapper;
 import com.Farm360.model.agreement.AgreementEntity;
 import com.Farm360.model.module.input.*;
+import com.Farm360.model.payment.AgreementEscrowAllocation;
 import com.Farm360.repository.agreement.AgreementRepo;
 import com.Farm360.repository.module.input.*;
+import com.Farm360.service.agreement.AgreementEscrowAllocationService;
 import com.Farm360.service.agreement.AgreementService;
 import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.utils.*;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -42,6 +45,8 @@ public class InputSupplyServiceImpl implements InputSupplyService {
     private final InputSupplyApprovalMapper approvalMapper;
 
     private final EscrowService escrowService;
+
+    private final AgreementEscrowAllocationService allocationService;
 
 
     @Override
@@ -79,10 +84,10 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
         AgreementSnapshotRS snap = getAgreementSnapshot(agreement);
 
-        Double inputAmount =
-                snap.getTotalContractAmount()
-                        * snap.getAdvancePercent()
-                        / 100.0;
+        AgreementEscrowAllocation allocation =
+                allocationService.getByAgreementId(agreementId);
+
+        Double inputAmount = allocation.getAdvanceAllocated();
 
 
         InputSupplyOrderEntity order = InputSupplyOrderEntity.builder()
@@ -117,12 +122,6 @@ public class InputSupplyServiceImpl implements InputSupplyService {
 
         orderRepo.save(order);
 
-        escrowService.holdFromBuyer(
-                agreement.getBuyerUserId(),
-                order.getTotalAmount(),
-                EscrowPurpose.INPUT_SUPPLY,
-                "INPUT_SUPPLY_" + order.getId()
-        );
 
 
         return orderMapper.toRS(order);
@@ -212,14 +211,6 @@ public class InputSupplyServiceImpl implements InputSupplyService {
             order.setApprovalDueAt(null);
             order.setSystemRemark("Auto approved due to buyer inactivity");
 
-            escrowService.releaseToFarmer(
-                    agreement.getBuyerUserId(),
-                    agreement.getFarmerUserId(),
-                    order.getTotalAmount(),
-                    EscrowPurpose.INPUT_SUPPLY,
-                    "INPUT_SUPPLY_" + order.getId()
-            );
-
             orderRepo.save(order);
 
             return approvalMapper.toRS(
@@ -258,14 +249,6 @@ public class InputSupplyServiceImpl implements InputSupplyService {
             order.setEscrowStatus(InputEscrowStatus.RELEASED);
             order.setApprovalDueAt(null);
 
-            escrowService.releaseToFarmer(
-                    agreement.getBuyerUserId(),
-                    agreement.getFarmerUserId(),
-                    order.getTotalAmount(),
-                    EscrowPurpose.INPUT_SUPPLY,
-                    "INPUT_SUPPLY_" + order.getId()
-            );
-
 
         } else {
 
@@ -275,12 +258,6 @@ public class InputSupplyServiceImpl implements InputSupplyService {
                 order.setEscrowStatus(InputEscrowStatus.REFUNDED);
                 order.setApprovalDueAt(null);
 
-                escrowService.refundToBuyer(
-                        agreement.getBuyerUserId(),
-                        order.getTotalAmount(),
-                        EscrowPurpose.INPUT_SUPPLY,
-                        "INPUT_SUPPLY_" + order.getId()
-                );
 
 
             } else {
