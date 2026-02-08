@@ -49,7 +49,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/auth/logout",
-                                "/master/**"
+                                "/master/**",
+                                "/api/cultivation/**"
                 ).permitAll()
                         // everything else secured
                         .anyRequest().authenticated()
