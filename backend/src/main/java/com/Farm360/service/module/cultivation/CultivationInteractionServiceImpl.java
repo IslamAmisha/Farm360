@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -61,6 +63,11 @@ public class CultivationInteractionServiceImpl
         CultivationUpdateEntity saved =
                 cultivationUpdateRepository.save(entity);
 
+
+          // Touch farmer activity timestamp
+        execution.setLastFarmerActionAt(Instant.now());
+        cultivationExecutionRepository.save(execution);
+
         return cultivationMapper.toResponse(saved);
     }
 
@@ -91,6 +98,7 @@ public class CultivationInteractionServiceImpl
 
         CultivationFeedbackEntity entity =
                 cultivationMapper.toEntity(rq);
+
 
         CultivationFeedbackEntity saved =
                 cultivationFeedbackRepository.save(entity);
