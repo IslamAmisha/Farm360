@@ -5,6 +5,7 @@ public enum Role {
     pending,
     farmer,
     buyer,
+    supplier,
     system,
     none
 

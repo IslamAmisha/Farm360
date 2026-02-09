@@ -1,12 +1,11 @@
 package com.Farm360.utils;
 
 public enum EscrowPurpose {
-    INPUT_SUPPLY,
-    MACHINERY_RENT,
-    HARVEST_DELIVERY,
-    PENALTY,
-    REFUND,
-    ADJUSTMENT,
-    AGREEMENT_LOCK
-}
 
+    AGREEMENT_LOCK,
+    SUPPLIER_ADVANCE,
+    SUPPLIER_MID,
+    SUPPLIER_FINAL,
+    FARMER_PROFIT,
+    REFUND
+}

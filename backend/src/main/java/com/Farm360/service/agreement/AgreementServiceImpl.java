@@ -8,8 +8,10 @@ import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
 import com.Farm360.mapper.agreement.AgreementMapper;
 import com.Farm360.model.agreement.AgreementEntity;
 import com.Farm360.model.payment.AgreementEscrowAllocation;
+import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.repository.agreement.AgreementRepo;
+import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.utils.AgreementStatus;
@@ -41,6 +43,9 @@ public class AgreementServiceImpl implements AgreementService {
 
     @Autowired
     private AgreementEscrowAllocationService allocationService;
+
+    @Autowired
+    private BuyerWalletRepository buyerWalletRepo;
 
 
     //create agreement from proposal
@@ -110,6 +115,14 @@ public class AgreementServiceImpl implements AgreementService {
 
 
 
+        double total = snapshotObj.getTotalContractAmount();
+        buyerWalletRepo.findByBuyerUserIdForUpdate(buyerId)
+                .filter(w -> w.getBalance() >= total)
+                .orElseThrow(() -> new RuntimeException(
+                        "Insufficient wallet balance to create agreement"
+                ));
+
+
         //create agreement entity
         AgreementEntity agreement = AgreementEntity.builder()
                 .proposalId(proposal.getProposalId())
@@ -125,8 +138,6 @@ public class AgreementServiceImpl implements AgreementService {
 
         agreementRepo.save(agreement);
 
-        double total = snapshotObj.getTotalContractAmount();
-
         double advance = total * snapshotObj.getAdvancePercent() / 100;
         double mid = total * snapshotObj.getMidCyclePercent() / 100;
         double fin = total * snapshotObj.getFinalPercent() / 100;
@@ -139,18 +150,17 @@ public class AgreementServiceImpl implements AgreementService {
                         .advanceAllocated(advance)
                         .midAllocated(mid)
                         .finalAllocated(fin)
-                        .remainingLocked(0.0)
+                        .supplierRemainingLocked(total)
                         .status(EscrowStatus.LOCKED)
                         .build();
 
         allocationService.save(allocation);
 
 // FULL CONTRACT LOCK
-        escrowService.lockForAgreement(
+        escrowService.lockSupplierEscrow(
                 agreement.getAgreementId(),
                 buyerId,
                 total,
-                EscrowPurpose.AGREEMENT_LOCK,
                 "AGREEMENT_" + agreement.getAgreementId()
         );
 
@@ -223,6 +233,7 @@ public class AgreementServiceImpl implements AgreementService {
               .advancePercent(p.getAdvancePercent())
               .midCyclePercent(p.getMidCyclePercent())
               .finalPercent(p.getFinalPercent())
+              .farmerProfitPercent(p.getFarmerProfitPercent())
 
               .deliveryLocation(p.getDeliveryLocation())
               .deliveryWindow(p.getDeliveryWindow())

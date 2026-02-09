@@ -31,5 +31,8 @@ public class UserEntity extends AuditTable<String> {
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private BuyerEntity buyer;
 
+        @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+        private SupplierEntity supplier;
+
 
 }

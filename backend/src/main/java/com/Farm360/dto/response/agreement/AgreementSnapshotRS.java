@@ -36,6 +36,7 @@ public class AgreementSnapshotRS {
     private Integer advancePercent;
     private Integer midCyclePercent;
     private Integer finalPercent;
+    private Integer farmerProfitPercent;
 
     private DeliveryLocation deliveryLocation;
     private String deliveryWindow;

@@ -152,6 +152,7 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
         proposal.setStartYear(rq.getStartYear());
         proposal.setEndYear(rq.getEndYear());
+        proposal.setFarmerProfitPercent(rq.getFarmerProfitPercent());
 
         if (rq.getDeliveryLocation() != null) {
             proposal.setDeliveryLocation(
@@ -177,6 +178,9 @@ public class ProposalServiceImpl implements ProposalService {
 
         if (rq.getAllowCropChangeBetweenSeasons() == null) {
             throw new RuntimeException("Crop change permission is required");
+        }
+        if (!isNewProposal && proposal.getProposalStatus() != ProposalStatus.DRAFT) {
+            throw new RuntimeException("Only DRAFT proposals can be modified");
         }
 
 
@@ -297,6 +301,23 @@ public class ProposalServiceImpl implements ProposalService {
 
         if (proposal.getLogisticsHandledBy() == null) {
             throw new RuntimeException("Logistics handler is required");
+        }
+
+        if (proposal.getFarmerProfitPercent() == null ||
+                proposal.getFarmerProfitPercent() <= 0 ||
+                proposal.getFarmerProfitPercent() > 100) {
+            throw new RuntimeException("Invalid farmer profit percentage");
+        }
+
+        if (Boolean.TRUE.equals(proposal.getEscrowApplicable())) {
+            int totalPercent =
+                    (proposal.getAdvancePercent() == null ? 0 : proposal.getAdvancePercent()) +
+                            (proposal.getMidCyclePercent() == null ? 0 : proposal.getMidCyclePercent()) +
+                            (proposal.getFinalPercent() == null ? 0 : proposal.getFinalPercent());
+
+            if (totalPercent != 100) {
+                throw new RuntimeException("Escrow percentages must total 100");
+            }
         }
 
         int totalPercent =
@@ -552,6 +573,7 @@ public class ProposalServiceImpl implements ProposalService {
                 .startYear(old.getStartYear())
                 .endYear(old.getEndYear())
                 .remarks(old.getRemarks())
+                .farmerProfitPercent(old.getFarmerProfitPercent())
                 .proposalStatus(ProposalStatus.DRAFT)
                 .proposalVersion(old.getProposalVersion() + 1)
                 .parentProposalId(old.getProposalId())
@@ -695,6 +717,7 @@ public class ProposalServiceImpl implements ProposalService {
 
                 .escrowApplicable(p.getEscrowApplicable())
                 .remarks(p.getRemarks())
+                .farmerProfitPercent(p.getFarmerProfitPercent())
 
 
                 .proposalStatus(p.getProposalStatus().name())

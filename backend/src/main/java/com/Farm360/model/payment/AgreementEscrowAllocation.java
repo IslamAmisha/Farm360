@@ -33,7 +33,7 @@ public class AgreementEscrowAllocation {
     private Double midReleased = 0.0;
     private Double finalReleased = 0.0;
 
-    private Double remainingLocked;
+    private Double supplierRemainingLocked;
 
     @Enumerated(EnumType.STRING)
     private EscrowStatus status;

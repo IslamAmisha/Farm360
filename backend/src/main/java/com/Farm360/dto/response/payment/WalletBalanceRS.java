@@ -5,11 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@Builder
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class WalletBalanceRS {
-    private Double availableBalance;
-    private Double lockedAmount;
+
+    private Double balance;
+
+    private Double supplierLocked;
+
+    private Double farmerProfitLocked;
 }

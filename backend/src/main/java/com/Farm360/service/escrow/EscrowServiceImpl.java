@@ -1,10 +1,10 @@
 package com.Farm360.service.escrow;
 
+import com.Farm360.model.SupplierEntity;
 import com.Farm360.model.payment.*;
-import com.Farm360.repository.payment.AgreementEscrowAdjustmentRepository;
-import com.Farm360.repository.payment.BuyerWalletRepository;
-import com.Farm360.repository.payment.EscrowTransactionRepository;
-import com.Farm360.repository.payment.FarmerWalletRepository;
+import com.Farm360.repository.farmer.FarmerRepo;
+import com.Farm360.repository.payment.*;
+import com.Farm360.repository.supplier.SupplierRepo;
 import com.Farm360.service.agreement.AgreementEscrowAllocationService;
 import com.Farm360.utils.AdjustmentType;
 import com.Farm360.utils.EscrowPurpose;
@@ -21,28 +21,25 @@ import java.util.Date;
 @Transactional
 public class EscrowServiceImpl implements EscrowService {
 
-    @Autowired
-    private BuyerWalletRepository buyerWalletRepo;
-    @Autowired
-    private FarmerWalletRepository farmerWalletRepo;
-    @Autowired
-    private EscrowTransactionRepository escrowTxnRepo;
+    @Autowired private BuyerWalletRepository buyerWalletRepo;
+    @Autowired private SupplierWalletRepository supplierWalletRepo;
+    @Autowired private FarmerWalletRepository farmerWalletRepo;
+    @Autowired private EscrowTransactionRepository escrowTxnRepo;
+    @Autowired private SupplierRepo supplierRepo;
+    @Autowired private FarmerRepo farmerRepo;
     @Autowired
     private AgreementEscrowAllocationService allocationService;
-    @Autowired
-    private AgreementEscrowAdjustmentRepository adjustmentRepo;
 
 
 
     @Override
-    public void lockForAgreement(
+    @Transactional
+    public void lockSupplierEscrow(
             Long agreementId,
             Long buyerUserId,
             Double amount,
-            EscrowPurpose purpose,
             String reference
     ) {
-
         BuyerWallet wallet = buyerWalletRepo
                 .findByBuyerUserIdForUpdate(buyerUserId)
                 .orElseThrow();
@@ -50,148 +47,209 @@ public class EscrowServiceImpl implements EscrowService {
         if (wallet.getBalance() < amount)
             throw new RuntimeException("Insufficient balance");
 
+        wallet.setBalance(wallet.getBalance() - amount);
+        wallet.setSupplierLocked(wallet.getSupplierLocked() + amount);
+
+        buyerWalletRepo.save(wallet);
+
         AgreementEscrowAllocation allocation =
                 allocationService.getByAgreementId(agreementId);
 
-        wallet.setBalance(wallet.getBalance() - amount);
-        wallet.setLockedAmount(wallet.getLockedAmount() + amount);
-
-        allocation.setRemainingLocked(
-                allocation.getRemainingLocked() + amount
+        allocation.setSupplierRemainingLocked(
+                allocation.getSupplierRemainingLocked() - amount
         );
 
-        buyerWalletRepo.save(wallet);
         allocationService.save(allocation);
 
+
         escrowTxnRepo.save(new EscrowTransaction(
-                null, amount, purpose, "LOCK",
-                reference, wallet.getBuyer(), null, new Date()
+                null,
+                amount,
+                EscrowPurpose.SUPPLIER_ADVANCE,
+                "LOCK",
+                reference,
+                wallet.getBuyer(),
+                null,
+                null,
+                new Date()
         ));
     }
 
     @Override
-    public void releaseForAgreement(
+    @Transactional
+    public void releaseToSupplier(
             Long agreementId,
             Long buyerUserId,
-            Long farmerUserId,
+            Long supplierUserId,
             Double amount,
             EscrowPurpose purpose,
             String reference
     ) {
-
         BuyerWallet buyerWallet =
                 buyerWalletRepo.findByBuyerUserIdForUpdate(buyerUserId)
                         .orElseThrow();
 
-        FarmerWallet farmerWallet =
-                farmerWalletRepo.findByFarmerUserId(farmerUserId)
+        if (buyerWallet.getSupplierLocked() < amount)
+            throw new RuntimeException("Insufficient supplier escrow");
+
+        SupplierEntity supplier =
+                supplierRepo.findByUser_Id(supplierUserId)
                         .orElseThrow();
+
+        SupplierWallet supplierWallet =
+                supplierWalletRepo.findBySupplier_User_Id(supplierUserId)
+                        .orElseThrow();
+
+        buyerWallet.setSupplierLocked(
+                buyerWallet.getSupplierLocked() - amount
+        );
+
+        supplierWallet.setAvailableBalance(
+                supplierWallet.getAvailableBalance() + amount
+        );
+
+        buyerWalletRepo.save(buyerWallet);
+        supplierWalletRepo.save(supplierWallet);
 
         AgreementEscrowAllocation allocation =
                 allocationService.getByAgreementId(agreementId);
 
-        if (buyerWallet.getLockedAmount() < amount)
-            throw new RuntimeException("Invalid release");
+        if (purpose == EscrowPurpose.SUPPLIER_ADVANCE) {
+            allocation.setAdvanceReleased(
+                    allocation.getAdvanceReleased() + amount
+            );
+        } else if (purpose == EscrowPurpose.SUPPLIER_MID) {
+            allocation.setMidReleased(
+                    allocation.getMidReleased() + amount
+            );
+        } else if (purpose == EscrowPurpose.SUPPLIER_FINAL) {
+            allocation.setFinalReleased(
+                    allocation.getFinalReleased() + amount
+            );
+        }
 
-        buyerWallet.setLockedAmount(buyerWallet.getLockedAmount() - amount);
-        farmerWallet.setAvailableBalance(
-                farmerWallet.getAvailableBalance() + amount
-        );
-
-        allocation.setRemainingLocked(
-                allocation.getRemainingLocked() - amount
-        );
-
-        buyerWalletRepo.save(buyerWallet);
-        farmerWalletRepo.save(farmerWallet);
         allocationService.save(allocation);
-
         escrowTxnRepo.save(new EscrowTransaction(
-                null, amount, purpose, "RELEASE",
-                reference, buyerWallet.getBuyer(), farmerWallet.getFarmer(), new Date()
+                null,
+                amount,
+                purpose,
+                "RELEASE",
+                reference,
+                buyerWallet.getBuyer(),
+                supplier,
+                null,
+                new Date()
         ));
     }
 
     /* ---------------- REFUND ---------------- */
 
     @Override
-    public void refundForAgreement(
+    @Transactional
+    public void refundSupplierEscrow(
             Long agreementId,
             Long buyerUserId,
             Double amount,
-            EscrowPurpose purpose,
             String reference
     ) {
-
         BuyerWallet wallet =
                 buyerWalletRepo.findByBuyerUserIdForUpdate(buyerUserId)
                         .orElseThrow();
 
-        AgreementEscrowAllocation allocation =
-                allocationService.getByAgreementId(agreementId);
+        if (wallet.getSupplierLocked() < amount)
+            throw new RuntimeException("Invalid refund");
 
-        wallet.setLockedAmount(wallet.getLockedAmount() - amount);
+        wallet.setSupplierLocked(wallet.getSupplierLocked() - amount);
         wallet.setBalance(wallet.getBalance() + amount);
 
-        allocation.setRemainingLocked(
-                allocation.getRemainingLocked() - amount
-        );
-
         buyerWalletRepo.save(wallet);
-        allocationService.save(allocation);
 
         escrowTxnRepo.save(new EscrowTransaction(
-                null, amount, purpose, "REFUND",
-                reference, wallet.getBuyer(), null, new Date()
+                null,
+                amount,
+                EscrowPurpose.REFUND,
+                "REFUND",
+                reference,
+                wallet.getBuyer(),
+                null,
+                null,
+                new Date()
         ));
     }
 
 
     @Override
-    public void addExtraFunding(
-            Long agreementId,
+    @Transactional
+    public void lockFarmerProfit(
             Long buyerUserId,
             Double amount,
-            FundingStage stage,
-            String reason
+            String reference
     ) {
+        BuyerWallet wallet =
+                buyerWalletRepo.findByBuyerUserIdForUpdate(buyerUserId)
+                        .orElseThrow();
 
-        lockForAgreement(
-                agreementId,
-                buyerUserId,
+        if (wallet.getBalance() < amount)
+            throw new RuntimeException("Insufficient balance for farmer profit");
+
+        wallet.setBalance(wallet.getBalance() - amount);
+        wallet.setFarmerProfitLocked(wallet.getFarmerProfitLocked() + amount);
+
+        buyerWalletRepo.save(wallet);
+
+        escrowTxnRepo.save(new EscrowTransaction(
+                null,
                 amount,
-                EscrowPurpose.ADJUSTMENT,
-                "TOPUP_" + agreementId
+                EscrowPurpose.FARMER_PROFIT,
+                "LOCK",
+                reference,
+                wallet.getBuyer(),
+                null,
+                null,
+                new Date()
+        ));
+    }
+
+    @Override
+    @Transactional
+    public void releaseFarmerProfit(
+            Long buyerUserId,
+            Long farmerUserId,
+            Double amount,
+            String reference
+    ) {
+        BuyerWallet buyerWallet =
+                buyerWalletRepo.findByBuyerUserIdForUpdate(buyerUserId)
+                        .orElseThrow();
+
+        if (buyerWallet.getFarmerProfitLocked() < amount)
+            throw new RuntimeException("Invalid farmer profit release");
+
+        FarmerWallet farmerWallet =
+                farmerWalletRepo.findByFarmerUserId(farmerUserId)
+                        .orElseThrow();
+
+        buyerWallet.setFarmerProfitLocked(
+                buyerWallet.getFarmerProfitLocked() - amount
         );
 
-        AgreementEscrowAllocation allocation =
-                allocationService.getByAgreementId(agreementId);
-
-        switch (stage) {
-            case ADVANCE -> allocation.setAdvanceAllocated(
-                    allocation.getAdvanceAllocated() + amount
-            );
-            case MID -> allocation.setMidAllocated(
-                    allocation.getMidAllocated() + amount
-            );
-            case FINAL -> allocation.setFinalAllocated(
-                    allocation.getFinalAllocated() + amount
-            );
-        }
-
-        allocation.setTotalAllocated(
-                allocation.getTotalAllocated() + amount
+        farmerWallet.setAvailableBalance(
+                farmerWallet.getAvailableBalance() + amount
         );
 
-        allocationService.save(allocation);
+        buyerWalletRepo.save(buyerWallet);
+        farmerWalletRepo.save(farmerWallet);
 
-        adjustmentRepo.save(
-                AgreementEscrowAdjustment.builder()
-                        .agreementId(agreementId)
-                        .adjustmentAmount(amount)
-                        .type(AdjustmentType.EXTRA_FUNDING)
-                        .reason(reason)
-                        .build()
-        );
+        escrowTxnRepo.save(new EscrowTransaction(
+                null,
+                amount,
+                EscrowPurpose.FARMER_PROFIT,
+                "RELEASE",
+                reference,
+                buyerWallet.getBuyer(),
+                null,
+                farmerWallet.getFarmer(),
+                new Date()
+        ));
     }
 }

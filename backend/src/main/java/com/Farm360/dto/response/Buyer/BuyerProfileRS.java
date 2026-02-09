@@ -42,7 +42,8 @@ public class BuyerProfileRS {
 
 
     private Double balance;
-    private Double lockedAmount;
+    private Double supplierLocked;
+    private Double farmerProfitLocked;
 
 
     private List<String> crops;

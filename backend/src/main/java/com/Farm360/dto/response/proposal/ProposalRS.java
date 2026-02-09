@@ -58,6 +58,9 @@ public class ProposalRS {
     private String remarks;
     private String actionRequiredBy;
 
+    private Integer farmerProfitPercent;
+    private Boolean sufficientBuyerBalance;
+
     private List<ProposalCropRS> proposalCrops;
 
     private LocalDateTime createdAt;

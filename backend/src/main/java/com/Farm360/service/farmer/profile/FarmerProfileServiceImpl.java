@@ -56,9 +56,7 @@ public class FarmerProfileServiceImpl implements FarmerProfileService {
 
         FarmerWallet wallet = farmer.getWallet();
         if (wallet != null) {
-            rs.setTotalLimit(wallet.getTotalLimit());
             rs.setAvailableBalance(wallet.getAvailableBalance());
-            rs.setLockedAmount(wallet.getLockedAmount());
         }
 
         rs.setLands(farmer.getLands().stream()

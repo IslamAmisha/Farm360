@@ -45,5 +45,8 @@ public class ProposalCreateRQ {
 
     private String remarks;
 
+    private Integer farmerProfitPercent;
+
     private List<ProposalCropCreateRQ> proposalCrops;
+
 }

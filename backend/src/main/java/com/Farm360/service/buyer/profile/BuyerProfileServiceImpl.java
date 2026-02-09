@@ -87,11 +87,11 @@ public class BuyerProfileServiceImpl implements BuyerProfileService {
         rs.setVillage(buyer.getVillage());
         rs.setPinCode(buyer.getPinCode());
 
-        // WALLET (ONLY THESE 2 FIELDS)
         BuyerWallet wallet = buyer.getWallet();
         if (wallet != null) {
             rs.setBalance(wallet.getBalance());
-            rs.setLockedAmount(wallet.getLockedAmount());
+            rs.setSupplierLocked(wallet.getSupplierLocked());
+            rs.setFarmerProfitLocked(wallet.getFarmerProfitLocked());
         }
 
         // CROPS

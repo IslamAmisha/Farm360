@@ -17,11 +17,7 @@ public class FarmerWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Double totalLimit = 0.0;
-
-    private Double availableBalance = 0.0;
-
-    private Double lockedAmount = 0.0;
+    private Double availableBalance;
 
     @OneToOne
     @JoinColumn(name = "farmer_id")

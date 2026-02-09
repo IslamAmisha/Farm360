@@ -111,4 +111,6 @@ public class ProposalEntity extends AuditTable<String> {
     )
     private List<ProposalCropEntity> proposalCrops;
 
+    private Integer farmerProfitPercent;
+
 }

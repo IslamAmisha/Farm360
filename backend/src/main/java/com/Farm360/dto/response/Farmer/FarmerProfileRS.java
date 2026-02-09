@@ -25,9 +25,7 @@ public class FarmerProfileRS {
     private String landPhotoUrl;
 
 
-    private Double totalLimit;
     private Double availableBalance;
-    private Double lockedAmount;
 
     private List<FarmerLandSummaryRS> lands;
 }

@@ -2,12 +2,16 @@ package com.Farm360.service.escrow;
 
 import com.Farm360.model.BuyerEntity;
 import com.Farm360.model.FarmerEntity;
+import com.Farm360.model.SupplierEntity;
 import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.model.payment.FarmerWallet;
+import com.Farm360.model.payment.SupplierWallet;
 import com.Farm360.repository.buyer.BuyerRepo;
 import com.Farm360.repository.farmer.FarmerRepo;
 import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.payment.FarmerWalletRepository;
+import com.Farm360.repository.payment.SupplierWalletRepository;
+import com.Farm360.repository.supplier.SupplierRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,12 @@ import org.springframework.stereotype.Service;
     @Autowired
     private FarmerRepo farmerRepo;
 
+    @Autowired
+    private SupplierWalletRepository supplierWalletRepo;
+
+    @Autowired
+    private SupplierRepo supplierRepo;
+
     @Transactional
     public void ensureBuyerWallet(Long buyerUserId) {
 
@@ -36,8 +46,10 @@ import org.springframework.stereotype.Service;
 
         BuyerWallet wallet = new BuyerWallet();
         wallet.setBuyer(buyer);
+
         wallet.setBalance(0.0);
-        wallet.setLockedAmount(0.0);
+        wallet.setSupplierLocked(0.0);
+        wallet.setFarmerProfitLocked(0.0);
 
         buyerWalletRepo.save(wallet);
     }
@@ -56,10 +68,25 @@ import org.springframework.stereotype.Service;
         FarmerWallet wallet = new FarmerWallet();
         wallet.setFarmer(farmer);
         wallet.setAvailableBalance(0.0);
-        wallet.setLockedAmount(0.0);
-        wallet.setTotalLimit(0.0);
 
         farmerWalletRepo.save(wallet);
+    }
+
+    @Transactional
+    public void ensureSupplierWallet(Long supplierUserId) {
+
+        if (supplierWalletRepo.findBySupplier_User_Id(supplierUserId).isPresent()) {
+            return;
+        }
+
+        SupplierEntity supplier = supplierRepo.findByUser_Id(supplierUserId)
+                .orElseThrow(() -> new RuntimeException("Supplier profile not found"));
+
+        SupplierWallet wallet = new SupplierWallet();
+        wallet.setSupplier(supplier);
+        wallet.setAvailableBalance(0.0);
+
+        supplierWalletRepo.save(wallet);
     }
 
 }

@@ -39,22 +39,23 @@ public class EscrowController {
 
             BuyerWallet wallet = buyerWalletRepo
                     .findByBuyerUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("Buyer wallet not found"));
+                    .orElseThrow();
 
             return WalletBalanceRS.builder()
-                    .availableBalance(wallet.getBalance())
-                    .lockedAmount(wallet.getLockedAmount())
+                    .balance(wallet.getBalance())
+                    .supplierLocked(wallet.getSupplierLocked())
+                    .farmerProfitLocked(wallet.getFarmerProfitLocked())
                     .build();
+        }
 
-        } else if (user.getRole() == Role.farmer) {
+        if (user.getRole() == Role.farmer) {
 
             FarmerWallet wallet = farmerWalletRepo
                     .findByFarmerUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("Farmer wallet not found"));
+                    .orElseThrow();
 
             return WalletBalanceRS.builder()
-                    .availableBalance(wallet.getAvailableBalance())
-                    .lockedAmount(wallet.getLockedAmount())
+                    .balance(wallet.getAvailableBalance())
                     .build();
         }
 

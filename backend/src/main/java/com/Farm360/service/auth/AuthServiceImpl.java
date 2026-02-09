@@ -114,6 +114,9 @@ public class AuthServiceImpl implements AuthService {
         if (user.getRole() == Role.farmer) {
             walletBootstrapService.ensureFarmerWallet(user.getId());
         }
+        if (user.getRole() == Role.supplier) {
+            walletBootstrapService.ensureSupplierWallet(user.getId());
+        }
 
         // Generate token
         String token = jwtUtils.generateJwt(user.getPhoneNumber(), user.getRole());
