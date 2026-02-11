@@ -2,11 +2,13 @@ package com.Farm360.utils;
 
 public enum SupplyStatus {
     CREATED,
+    SUPPLIER_NOTIFIED,
     SUPPLIER_ACCEPTED,
     DISPATCHED,
     DELIVERED,
     FARMER_CONFIRMED,
     APPROVED,
     FAILED,
-    AUTO_APPROVED
+    AUTO_APPROVED,
+    BUYER_CONFIRMED,
 }

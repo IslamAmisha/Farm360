@@ -8,16 +8,14 @@ import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
 import com.Farm360.mapper.agreement.AgreementMapper;
 import com.Farm360.model.agreement.AgreementEntity;
 import com.Farm360.model.payment.AgreementEscrowAllocation;
-import com.Farm360.model.payment.BuyerWallet;
 import com.Farm360.model.proposal.ProposalEntity;
+import com.Farm360.model.supply.SupplyExecutionOrderEntity;
 import com.Farm360.repository.agreement.AgreementRepo;
 import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.proposal.ProposalRepo;
+import com.Farm360.repository.supply.SupplyExecutionOrderRepository;
 import com.Farm360.service.escrow.EscrowService;
-import com.Farm360.utils.AgreementStatus;
-import com.Farm360.utils.EscrowPurpose;
-import com.Farm360.utils.EscrowStatus;
-import com.Farm360.utils.ProposalStatus;
+import com.Farm360.utils.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.transaction.Transactional;
@@ -46,6 +44,9 @@ public class AgreementServiceImpl implements AgreementService {
 
     @Autowired
     private BuyerWalletRepository buyerWalletRepo;
+
+    @Autowired
+    private SupplyExecutionOrderRepository orderRepo;
 
 
     //create agreement from proposal
@@ -150,7 +151,9 @@ public class AgreementServiceImpl implements AgreementService {
                         .advanceAllocated(advance)
                         .midAllocated(mid)
                         .finalAllocated(fin)
-                        .supplierRemainingLocked(total)
+                        .farmerUserId(farmerId)
+                        .farmerProfitLocked(total * snapshotObj.getFarmerProfitPercent() / 100)
+                        .remainingAgreementEscrow(total)
                         .status(EscrowStatus.LOCKED)
                         .build();
 
@@ -164,6 +167,11 @@ public class AgreementServiceImpl implements AgreementService {
                 "AGREEMENT_" + agreement.getAgreementId()
         );
 
+        escrowService.lockFarmerProfit(
+                buyerId,
+                allocation.getFarmerProfitLocked(),
+                "AGREEMENT_" + agreement.getAgreementId() + "_FARMER_PROFIT"
+        );
         return agreementMapper.toRS(agreement);
     }
 
@@ -258,5 +266,44 @@ public class AgreementServiceImpl implements AgreementService {
               )
               .build();
   }
+
+    public void completeAgreement(Long agreementId) {
+
+        List<SupplyExecutionOrderEntity> orders =
+                orderRepo.findByAgreementId(agreementId);
+
+        boolean allApproved = orders.stream()
+                .allMatch(o -> o.getStatus() == SupplyStatus.APPROVED);
+
+        if (!allApproved)
+            throw new RuntimeException("All stages not completed");
+
+        releaseFarmerProfit(agreementId);
+    }
+
+    private void releaseFarmerProfit(Long agreementId) {
+
+        AgreementEscrowAllocation alloc =
+                allocationService.getByAgreementId(agreementId);
+
+        escrowService.releaseFarmerProfit(
+                alloc.getBuyerUserId(),
+                alloc.getFarmerUserId(),
+                alloc.getFarmerProfitLocked(),
+                "AGREEMENT_COMPLETE_" + agreementId
+        );
+
+        alloc.setFarmerProfitLocked(0.0);
+        alloc.setStatus(EscrowStatus.CLOSED);
+        allocationService.save(alloc);
+
+        AgreementEntity agreement =
+                agreementRepo.findById(agreementId).orElseThrow();
+
+        agreement.setStatus(AgreementStatus.COMPLETED);
+        agreement.setCompletedAt(LocalDateTime.now());
+
+        agreementRepo.save(agreement);
+    }
 
 }

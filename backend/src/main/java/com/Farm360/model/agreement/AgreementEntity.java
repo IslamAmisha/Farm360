@@ -46,7 +46,7 @@ public class AgreementEntity extends AuditTable<String> {
     private LocalDateTime terminatedAt;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String agreementSnapshot;
 
     @Column(nullable = false)

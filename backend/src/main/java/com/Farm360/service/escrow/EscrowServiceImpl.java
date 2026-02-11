@@ -52,20 +52,10 @@ public class EscrowServiceImpl implements EscrowService {
 
         buyerWalletRepo.save(wallet);
 
-        AgreementEscrowAllocation allocation =
-                allocationService.getByAgreementId(agreementId);
-
-        allocation.setSupplierRemainingLocked(
-                allocation.getSupplierRemainingLocked() - amount
-        );
-
-        allocationService.save(allocation);
-
-
         escrowTxnRepo.save(new EscrowTransaction(
                 null,
                 amount,
-                EscrowPurpose.SUPPLIER_ADVANCE,
+                EscrowPurpose.SUPPLIER_ADVANCE, // semantic label only
                 "LOCK",
                 reference,
                 wallet.getBuyer(),
@@ -100,6 +90,8 @@ public class EscrowServiceImpl implements EscrowService {
                 supplierWalletRepo.findBySupplier_User_Id(supplierUserId)
                         .orElseThrow();
 
+
+
         buyerWallet.setSupplierLocked(
                 buyerWallet.getSupplierLocked() - amount
         );
@@ -127,7 +119,9 @@ public class EscrowServiceImpl implements EscrowService {
                     allocation.getFinalReleased() + amount
             );
         }
-
+        allocation.setRemainingAgreementEscrow(
+                allocation.getRemainingAgreementEscrow() - amount
+        );
         allocationService.save(allocation);
         escrowTxnRepo.save(new EscrowTransaction(
                 null,

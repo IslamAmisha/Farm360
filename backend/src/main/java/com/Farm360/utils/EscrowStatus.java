@@ -5,5 +5,5 @@ public enum EscrowStatus {
     LOCKED,
     PARTIALLY_RELEASED,
     FULLY_RELEASED,
-    REFUNDED
+    CLOSED, REFUNDED
 }

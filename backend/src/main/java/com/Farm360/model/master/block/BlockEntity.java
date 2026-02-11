@@ -16,7 +16,6 @@ import java.util.List;
 @Table(name = "block")
 public class BlockEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;

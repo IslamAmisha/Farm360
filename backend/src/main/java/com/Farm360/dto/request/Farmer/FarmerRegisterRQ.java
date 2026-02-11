@@ -1,6 +1,5 @@
 package com.Farm360.dto.request.Farmer;
 
-
 import com.Farm360.utils.CroppingPattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
