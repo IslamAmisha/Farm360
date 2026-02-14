@@ -13,6 +13,7 @@ import com.Farm360.repository.master.BlockRepo;
 import com.Farm360.repository.master.CityRepo;
 import com.Farm360.repository.master.DistrictRepo;
 import com.Farm360.repository.supplier.SupplierRepo;
+import com.Farm360.service.supplier.SupplierVerificationService;
 import com.Farm360.utils.Role;
 import com.Farm360.utils.VerificationStatus;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,8 @@ public class SupplierServiceImpl implements SupplierService {
     @Autowired private BlockRepo blockRepo;
     @Autowired private CityRepo cityRepo;
     @Autowired private SupplierMapper mapper;
+    @Autowired
+    private SupplierVerificationService verificationService;
 
     @Override
     public SupplierRS register(Long userId, SupplierRegisterRQ rq) {
@@ -62,6 +65,11 @@ public class SupplierServiceImpl implements SupplierService {
         supplier.setUser(user);
 
         supplierRepo.save(supplier);
+
+        VerificationStatus status =
+                verificationService.verifySupplier(supplier.getId());
+
+        supplier.setVerificationStatus(status);
 
         user.setSupplier(supplier);
         user.setRole(Role.supplier);

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/buyer")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class BuyerController {
 
