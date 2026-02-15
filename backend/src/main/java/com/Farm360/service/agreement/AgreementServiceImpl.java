@@ -15,6 +15,7 @@ import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.supply.SupplyExecutionOrderRepository;
 import com.Farm360.service.escrow.EscrowService;
+import com.Farm360.service.notification.NotificationService;
 import com.Farm360.utils.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -47,6 +48,9 @@ public class AgreementServiceImpl implements AgreementService {
 
     @Autowired
     private SupplyExecutionOrderRepository orderRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     //create agreement from proposal
@@ -171,6 +175,22 @@ public class AgreementServiceImpl implements AgreementService {
                 buyerId,
                 allocation.getFarmerProfitLocked(),
                 "AGREEMENT_" + agreement.getAgreementId() + "_FARMER_PROFIT"
+        );
+
+        notificationService.notifyUser(
+                farmerId,
+                NotificationType.AGREEMENT_CREATED,
+                "Contract Activated",
+                "Your farming agreement is now active",
+                agreement.getAgreementId()
+        );
+
+        notificationService.notifyUser(
+                buyerId,
+                NotificationType.AGREEMENT_CREATED,
+                "Contract Activated",
+                "Agreement created and escrow locked",
+                agreement.getAgreementId()
         );
         return agreementMapper.toRS(agreement);
     }
@@ -304,6 +324,22 @@ public class AgreementServiceImpl implements AgreementService {
         agreement.setCompletedAt(LocalDateTime.now());
 
         agreementRepo.save(agreement);
+
+        notificationService.notifyUser(
+                agreement.getFarmerUserId(),
+                NotificationType.AGREEMENT_COMPLETED,
+                "Farming Completed",
+                "All stages finished successfully",
+                agreementId
+        );
+
+        notificationService.notifyUser(
+                agreement.getBuyerUserId(),
+                NotificationType.AGREEMENT_COMPLETED,
+                "Farming Completed",
+                "All stages finished successfully",
+                agreementId
+        );
     }
 
 }

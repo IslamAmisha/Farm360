@@ -62,6 +62,12 @@
 			<artifactId>byte-buddy</artifactId>
 			<version>1.14.0</version>
 		</dependency>
+<!--firebase-->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.2.0</version>
+		</dependency>
 
 
 		<!-- Swagger / OpenAPI for Spring Boot 3 -->

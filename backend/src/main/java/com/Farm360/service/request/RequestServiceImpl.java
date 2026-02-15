@@ -16,6 +16,8 @@ import com.Farm360.repository.UserRepo;
 import com.Farm360.repository.land.LandRepository;
 import com.Farm360.repository.master.CropRepo;
 import com.Farm360.repository.request.RequestRepo;
+import com.Farm360.service.notification.NotificationService;
+import com.Farm360.utils.NotificationType;
 import com.Farm360.utils.RequestStatus;
 import com.Farm360.utils.SeasonType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class RequestServiceImpl implements RequestService {
 
     @Autowired
     private LandRepository landRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public SendRequestRS sendRequest(Long senderId, SendRequestRQ rq) {
@@ -176,12 +181,18 @@ public class RequestServiceImpl implements RequestService {
 
         requestRepo.save(request);
 
+        notificationService.notifyUser(
+                receiver.getId(),
+                NotificationType.REQUEST_RECEIVED,
+                "New Contract Request",
+                getName(sender) + " sent you a farming request",
+                request.getId()
+        );
+
         rs.setSuccess(true);
         rs.setMessage("Request sent successfully");
         return rs;
     }
-
-
 
 
 
@@ -212,6 +223,27 @@ public class RequestServiceImpl implements RequestService {
         }
 
         requestRepo.save(req);
+
+        if (req.getStatus() == RequestStatus.ACCEPTED) {
+
+            notificationService.notifyUser(
+                    req.getSender().getId(),
+                    NotificationType.REQUEST_ACCEPTED,
+                    "Request Accepted",
+                    getName(req.getReceiver()) + " accepted your request",
+                    req.getId()
+            );
+
+        } else if (req.getStatus() == RequestStatus.REJECTED) {
+
+            notificationService.notifyUser(
+                    req.getSender().getId(),
+                    NotificationType.REQUEST_REJECTED,
+                    "Request Rejected",
+                    getName(req.getReceiver()) + " rejected your request",
+                    req.getId()
+            );
+        }
 
         rs.setSuccess(true);
         rs.setMessage("Request updated successfully.");

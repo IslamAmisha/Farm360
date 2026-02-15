@@ -6,9 +6,11 @@ import com.Farm360.repository.farmer.FarmerRepo;
 import com.Farm360.repository.payment.*;
 import com.Farm360.repository.supplier.SupplierRepo;
 import com.Farm360.service.agreement.AgreementEscrowAllocationService;
+import com.Farm360.service.notification.NotificationService;
 import com.Farm360.utils.AdjustmentType;
 import com.Farm360.utils.EscrowPurpose;
 import com.Farm360.utils.FundingStage;
+import com.Farm360.utils.NotificationType;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class EscrowServiceImpl implements EscrowService {
     @Autowired private FarmerRepo farmerRepo;
     @Autowired
     private AgreementEscrowAllocationService allocationService;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
 
@@ -124,6 +129,7 @@ public class EscrowServiceImpl implements EscrowService {
         );
         allocationService.save(allocation);
         escrowTxnRepo.save(new EscrowTransaction(
+
                 null,
                 amount,
                 purpose,
@@ -134,6 +140,22 @@ public class EscrowServiceImpl implements EscrowService {
                 null,
                 new Date()
         ));
+
+        notificationService.notifyUser(
+                supplierUserId,
+                NotificationType.SUPPLIER_PAYMENT_RELEASED,
+                "Payment Released",
+                "Payment credited to your wallet",
+                agreementId
+        );
+
+        notificationService.notifyUser(
+                buyerWallet.getBuyer().getUser().getId(),
+                NotificationType.ESCROW_DEBITED,
+                "Escrow Payment Released",
+                "Supplier payment released from escrow",
+                agreementId
+        );
     }
 
     /* ---------------- REFUND ---------------- */
@@ -169,6 +191,14 @@ public class EscrowServiceImpl implements EscrowService {
                 null,
                 new Date()
         ));
+
+        notificationService.notifyUser(
+                buyerUserId,
+                NotificationType.ESCROW_REFUNDED,
+                "Escrow Refunded",
+                "Unused escrow returned to your wallet",
+                agreementId
+        );
     }
 
 
@@ -233,6 +263,22 @@ public class EscrowServiceImpl implements EscrowService {
 
         buyerWalletRepo.save(buyerWallet);
         farmerWalletRepo.save(farmerWallet);
+
+        notificationService.notifyUser(
+                farmerUserId,
+                NotificationType.FARMER_PAYMENT_RECEIVED,
+                "Profit Received",
+                "Your farming profit has been credited",
+                null
+        );
+
+        notificationService.notifyUser(
+                buyerUserId,
+                NotificationType.AGREEMENT_COMPLETED,
+                "Agreement Completed",
+                "Contract successfully completed",
+                null
+        );
 
         escrowTxnRepo.save(new EscrowTransaction(
                 null,

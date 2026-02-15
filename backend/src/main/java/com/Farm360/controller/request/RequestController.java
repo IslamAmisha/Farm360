@@ -14,7 +14,7 @@ public class RequestController {
     @Autowired
     private RequestService requestService;
 
-    // API: Send request
+    // Send request
     @PostMapping("/send")
     public ResponseEntity<?> send(
             @RequestParam Long userId,   // logged-in user
@@ -22,19 +22,19 @@ public class RequestController {
         return ResponseEntity.ok(requestService.sendRequest(userId, rq));
     }
 
-    // API: Accept / Reject request
+    // Accept / Reject request
     @PostMapping("/update")
     public ResponseEntity<?> update(@RequestBody UpdateRequestRQ rq) {
         return ResponseEntity.ok(requestService.updateRequest(rq));
     }
 
-    // API: Get incoming requests
+    // Get incoming requests
     @GetMapping("/incoming")
     public ResponseEntity<?> incoming(@RequestParam Long userId) {
         return ResponseEntity.ok(requestService.getIncomingRequests(userId));
     }
 
-    // API: Get outgoing requests
+    // Get outgoing requests
     @GetMapping("/outgoing")
     public ResponseEntity<?> outgoing(@RequestParam Long userId) {
         return ResponseEntity.ok(requestService.getOutgoingRequests(userId));

@@ -3,6 +3,7 @@ package com.Farm360.model.payment;
 import com.Farm360.model.SupplierEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "supplier_wallet")
+@Builder
 public class SupplierWallet {
 
     @Id

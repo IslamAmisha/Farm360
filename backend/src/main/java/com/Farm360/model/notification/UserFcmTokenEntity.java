@@ -1,7 +1,6 @@
-package com.Farm360.model.payment;
+package com.Farm360.model.notification;
 
 import com.Farm360.model.audit.AuditTable;
-import com.Farm360.utils.AdjustmentType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,22 +8,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "agreement_escrow_adjustments")
+@Table(name = "user_fcm_tokens")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AgreementEscrowAdjustment {
+public class UserFcmTokenEntity extends AuditTable<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long agreementId;
-    private Double adjustmentAmount;
+    private Long userId;
 
-    @Enumerated(EnumType.STRING)
-    private AdjustmentType type;
+    @Column(length = 500, unique = true)
+    private String token;
 
-    private String reason;
+    private String deviceInfo;
+
+    private Boolean active;
+
 }

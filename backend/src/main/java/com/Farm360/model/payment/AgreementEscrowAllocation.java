@@ -29,14 +29,19 @@ public class AgreementEscrowAllocation {
     private Double midAllocated;
     private Double finalAllocated;
 
+    @Column(nullable = false)
     private Double advanceReleased = 0.0;
+    @Column(nullable = false)
     private Double midReleased = 0.0;
+    @Column(nullable = false)
     private Double finalReleased = 0.0;
 
-    private Double remainingAgreementEscrow;
+    @Column(nullable = false)
+    private Double remainingAgreementEscrow= 0.0;
 
     private Long farmerUserId;
 
+    @Column(nullable = false)
     private Double farmerProfitLocked = 0.0;
 
     @Enumerated(EnumType.STRING)

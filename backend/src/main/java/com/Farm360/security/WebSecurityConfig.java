@@ -50,7 +50,7 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/auth/logout",
                                 "/master/**",
-                                "/api/cultivation/**"
+                                "/api/notifications/**"
                 ).permitAll()
                         // everything else secured
                         .anyRequest().authenticated()

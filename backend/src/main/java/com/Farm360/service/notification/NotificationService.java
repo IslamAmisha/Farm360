@@ -1,10 +1,9 @@
 package com.Farm360.service.notification;
 
+import com.Farm360.utils.NotificationType;
+
 public interface NotificationService {
 
-    void notifySupplier(Long supplierUserId, String message);
+    void notifyUser(Long userId, NotificationType type, String title, String message, Long refId);
 
-    void notifyBuyer(Long buyerUserId, String message);
-
-    void notifyFarmer(Long farmerUserId, String message);
 }

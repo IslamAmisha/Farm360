@@ -8,10 +8,12 @@ import com.Farm360.model.master.block.BlockEntity;
 import com.Farm360.model.master.city.CityEntity;
 import com.Farm360.model.master.district.DistrictEntity;
 import com.Farm360.model.SupplierEntity;
+import com.Farm360.model.payment.SupplierWallet;
 import com.Farm360.repository.UserRepo;
 import com.Farm360.repository.master.BlockRepo;
 import com.Farm360.repository.master.CityRepo;
 import com.Farm360.repository.master.DistrictRepo;
+import com.Farm360.repository.payment.SupplierWalletRepository;
 import com.Farm360.repository.supplier.SupplierRepo;
 import com.Farm360.service.supplier.SupplierVerificationService;
 import com.Farm360.utils.Role;
@@ -33,6 +35,10 @@ public class SupplierServiceImpl implements SupplierService {
     @Autowired private SupplierMapper mapper;
     @Autowired
     private SupplierVerificationService verificationService;
+
+    @Autowired
+    private SupplierWalletRepository supplierWalletRepo;
+
 
     @Override
     public SupplierRS register(Long userId, SupplierRegisterRQ rq) {
@@ -74,6 +80,12 @@ public class SupplierServiceImpl implements SupplierService {
         user.setSupplier(supplier);
         user.setRole(Role.supplier);
         userRepo.save(user);
+        supplierWalletRepo.save(
+                SupplierWallet.builder()
+                        .supplier(supplier)
+                        .availableBalance(0.0)
+                        .build()
+        );
 
         return mapper.mapEntityToRS(supplier);
     }

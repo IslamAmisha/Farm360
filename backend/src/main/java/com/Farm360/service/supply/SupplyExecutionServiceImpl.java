@@ -17,6 +17,7 @@ import com.Farm360.repository.supply.SupplyExecutionOrderRepository;
 import com.Farm360.service.agreement.AgreementEscrowAllocationService;
 import com.Farm360.service.agreement.AgreementService;
 import com.Farm360.service.escrow.EscrowService;
+import com.Farm360.service.notification.NotificationService;
 import com.Farm360.utils.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,9 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
 
     @Autowired
     private SupplyItemNameRepository itemNameRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public  SupplyExecutionOrderRS createAdvanceSupply(
@@ -88,9 +92,30 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
                         .expectedDeliveryDate(rq.getExpectedDeliveryDate())
                         .build();
 
-        orderRepo.save(order);
+        order = orderRepo.saveAndFlush(order);
+
+        notificationService.notifyUser(
+                supplier.getUser().getId(),
+                NotificationType.SUPPLY_REQUEST,
+                "New Supply Order",
+                "New supply order assigned to you",
+                order.getId()
+        );
+
+        Long buyerId = allocationService
+                .getByAgreementId(order.getAgreementId())
+                .getBuyerUserId();
+
+        notificationService.notifyUser(
+                buyerId,
+                NotificationType.SUPPLY_REQUEST_CREATED,
+                "Supply Requested",
+                "Farmer requested materials for stage " + order.getStage(),
+                order.getId()
+        );
 
         // Items
+        SupplyExecutionOrderEntity finalOrder = order;
         rq.getItems().forEach(i -> {
 
             // If user selected OTHER → auto add to dropdown table
@@ -117,7 +142,7 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
 
             itemRepo.save(
                      SupplyExecutionItemEntity.builder()
-                            .order(order)
+                            .order(finalOrder)
                             .type(i.getType())
                             .brandName(i.getBrandName())
                             .productName(i.getProductName())
@@ -146,6 +171,30 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setPayableAmount(rq.getBillAmount());
         order.setStatus(SupplyStatus.DISPATCHED);
 
+        Long farmerId = allocationService
+                .getByAgreementId(order.getAgreementId())
+                .getFarmerUserId();
+
+        notificationService.notifyUser(
+                farmerId,
+                NotificationType.SUPPLY_DISPATCHED,
+                "Supply Dispatched",
+                "Your farming materials are on the way",
+                order.getId()
+        );
+
+        Long buyerId = allocationService
+                .getByAgreementId(order.getAgreementId())
+                .getBuyerUserId();
+
+        notificationService.notifyUser(
+                buyerId,
+                NotificationType.SUPPLIER_BILL_UPLOADED,
+                "Supplier Bill Uploaded",
+                "Supplier uploaded bill for verification",
+                order.getId()
+        );
+
         return  SupplyExecutionOrderMapper.mapEntityToRS(orderRepo.save(order));
     }
 
@@ -160,13 +209,46 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
         if (!rq.getAccepted()) {
             order.setStatus(SupplyStatus.FAILED);
             order.setSystemRemark(rq.getFarmerRemark());
+            Long supplierId = order.getSupplierUserId();
+
+            notificationService.notifyUser(
+                    supplierId,
+                    NotificationType.SUPPLY_REJECTED,
+                    "Delivery Rejected",
+                    "Farmer rejected the delivery",
+                    order.getId()
+            );
+
+            Long buyerId = allocationService
+                    .getByAgreementId(order.getAgreementId())
+                    .getBuyerUserId();
+
+            notificationService.notifyUser(
+                    buyerId,
+                    NotificationType.SUPPLY_FAILED,
+                    "Supply Failed",
+                    "Farmer rejected supplier delivery",
+                    order.getId()
+            );
             return  SupplyExecutionOrderMapper.mapEntityToRS(orderRepo.save(order));
         }
 
         order.setActualDeliveryDate(rq.getActualDeliveryDate());
         order.setStatus(SupplyStatus.FARMER_CONFIRMED);
 
-        orderRepo.save(order);
+        order = orderRepo.saveAndFlush(order);
+
+        Long buyerId = allocationService
+                .getByAgreementId(order.getAgreementId())
+                .getBuyerUserId();
+
+        notificationService.notifyUser(
+                buyerId,
+                NotificationType.FARMER_CONFIRMED_SUPPLY,
+                "Farmer Confirmed Delivery",
+                "Farmer confirmed delivery. Please verify.",
+                order.getId()
+        );
 
         return  SupplyExecutionOrderMapper.mapEntityToRS(order);
     }
@@ -203,8 +285,22 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
 
             order.setEscrowStatus(EscrowReleaseStatus.RELEASED);
             order.setStatus(SupplyStatus.APPROVED);
+            orderRepo.save(order);
 
+            notificationService.notifyUser(
+                    order.getSupplierUserId(),
+                    NotificationType.SUPPLY_APPROVED,
+                    "Supply Approved",
+                    "Buyer approved delivery and payment released",
+                    order.getId()
+            );
+
+            //approve all other stages
+            orderRepo.markAllStagesApproved(order.getAgreementId());
+
+            //now agreement can close safely
             agreementService.completeAgreement(order.getAgreementId());
+
 
         } else {
             order.setSystemRemark("Bill exceeds allocation. Buyer refill needed.");
@@ -227,6 +323,18 @@ public class  SupplyExecutionServiceImpl implements SupplyExecutionService {
             throw new RuntimeException("Order cannot be accepted in this state");
 
         order.setStatus(SupplyStatus.SUPPLIER_ACCEPTED);
+
+        Long farmerId = allocationService
+                .getByAgreementId(order.getAgreementId())
+                .getFarmerUserId();
+
+        notificationService.notifyUser(
+                farmerId,
+                NotificationType.SUPPLIER_ACCEPTED,
+                "Supplier Accepted Order",
+                "Supplier accepted and will deliver soon",
+                order.getId()
+        );
 
         return  SupplyExecutionOrderMapper.mapEntityToRS(orderRepo.save(order));
     }

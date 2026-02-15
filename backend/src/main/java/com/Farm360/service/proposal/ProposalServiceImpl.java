@@ -16,6 +16,7 @@ import com.Farm360.repository.proposal.ProposalActionHistoryRepo;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.request.RequestRepo;
 import com.Farm360.service.agreement.AgreementService;
+import com.Farm360.service.notification.NotificationService;
 import com.Farm360.utils.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,8 @@ public class ProposalServiceImpl implements ProposalService {
     @Autowired
     private AgreementService agreementService;
 
-
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public ProposalRS createDraftProposal(
@@ -353,6 +355,14 @@ public class ProposalServiceImpl implements ProposalService {
 
         proposalRepository.save(proposal);
 
+        notificationService.notifyUser(
+                proposal.getReceiverUserId(),
+                NotificationType.PROPOSAL_RECEIVED,
+                "New Proposal Received",
+                "You have received a proposal for request #" + proposal.getRequestId(),
+                proposal.getProposalId()
+        );
+
         saveAction(
                 proposal,
                 currentUserRole,
@@ -397,6 +407,22 @@ public class ProposalServiceImpl implements ProposalService {
 
             proposalRepository.save(proposal);
 
+            notificationService.notifyUser(
+                    proposal.getSenderUserId(),
+                    NotificationType.PROPOSAL_FINAL_ACCEPTED,
+                    "Proposal Finalized",
+                    "Contract finalized. Agreement created.",
+                    proposal.getProposalId()
+            );
+
+            notificationService.notifyUser(
+                    proposal.getReceiverUserId(),
+                    NotificationType.PROPOSAL_FINAL_ACCEPTED,
+                    "Proposal Finalized",
+                    "Contract finalized. Agreement created.",
+                    proposal.getProposalId()
+            );
+
             agreementService.createAgreement(
                     AgreementCreateRQ.builder()
                             .proposalId(proposal.getProposalId())
@@ -408,6 +434,16 @@ public class ProposalServiceImpl implements ProposalService {
 
 
         proposalRepository.save(proposal);
+
+        notificationService.notifyUser(
+                proposal.getActionRequiredBy() == Role.farmer
+                        ? proposal.getSenderUserId()
+                        : proposal.getReceiverUserId(),
+                NotificationType.PROPOSAL_ACCEPTED,
+                "Proposal Accepted",
+                "Other party accepted. Your confirmation required.",
+                proposal.getProposalId()
+        );
 
         saveAction(
                 proposal,
@@ -438,6 +474,14 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setValidUntil(null);
 
         proposalRepository.save(proposal);
+
+        notificationService.notifyUser(
+                proposal.getSenderUserId(),
+                NotificationType.PROPOSAL_REJECTED,
+                "Proposal Rejected",
+                "Your proposal was rejected",
+                proposal.getProposalId()
+        );
 
         saveAction(
                 proposal,
@@ -601,6 +645,14 @@ public class ProposalServiceImpl implements ProposalService {
         }
 
         ProposalEntity savedCounter = proposalRepository.save(counter);
+
+        notificationService.notifyUser(
+                savedCounter.getReceiverUserId(),
+                NotificationType.COUNTER_PROPOSAL_RECEIVED,
+                "Counter Proposal",
+                "You received a counter proposal",
+                savedCounter.getProposalId()
+        );
 
         saveAction(
                 savedCounter,
