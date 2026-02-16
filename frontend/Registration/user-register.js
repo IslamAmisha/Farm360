@@ -10,6 +10,7 @@ const text = {
     roleSelect: "Select your role",
     roleFarmer: "Farmer",
     roleBuyer: "Buyer",
+    roleSupplier: "Supplier",
     btnNext: "Next",
     btnVerify: "Verify OTP",
     labelOtp: "OTP",
@@ -25,6 +26,7 @@ const text = {
     roleSelect: "ভূমিকা নির্বাচন করুন",
     roleFarmer: "কৃষক",
     roleBuyer: "ক্রেতা",
+    roleSupplier: "সাপ্লায়ার",
     btnNext: "পরবর্তী",
     btnVerify: "ওটিপি যাচাই",
     labelOtp: "ওটিপি",
@@ -185,9 +187,12 @@ form.addEventListener("submit", async (e) => {
     setTimeout(() => {
       if (roleValue === "farmer") {
         window.location.href = "../Farmer/Farmer-register/farmer-register.html";
-      } else {
-        window.location.href = "../Buyer/Buyer-register/buyer-register.html";
-      }
+      } else if (roleValue === "buyer") {
+    window.location.href = "../Buyer/Buyer-register/buyer-register.html";
+  } else if (roleValue === "supplier") {
+    window.location.href = "../Supplier/Supplier-register/supplier-register.html";
+  }
+      
     }, 900);
 
   } catch (err) {

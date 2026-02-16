@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supplier Registration</title>
+    <link rel="stylesheet" href="supplier-register.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- HEADER -->
+        <header class="top-header">
+            <div class="left">
+                <span class="logo-icon">🌿</span>
+                <span class="logo-text" data-en="Farm360" data-bn="ফার্ম৩৬০">Farm360</span>
+            </div>
+            <div class="controls">
+                <button id="themeToggle" class="icon-btn">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                </button>
+                <button id="langToggle" class="lang-btn" data-en="English" data-bn="বাংলা">বাংলা</button>
+            </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="container">
+            <div class="title-row">
+                <h1 class="page-title" data-en="Supplier Registration" data-bn="সরবরাহকারী নিবন্ধন">Supplier Registration</h1>
+                <a href="../../Registration/user-register.html" class="back-btn-card" data-en="‹ Back" data-bn="‹ ফিরুন">‹ Back</a>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" data-en="Supplier Information" data-bn="সরবরাহকারীর তথ্য">Supplier Information</h2>
+                
+                <form id="supplierRegisterForm">
+                    <!-- Basic Details -->
+                    <div class="form-group">
+                        <label for="supplierName" data-en="Supplier Name:" data-bn="সরবরাহকারীর নাম:">Supplier Name:</label>
+                        <input type="text" id="supplierName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessName" data-en="Business Name:" data-bn="ব্যবসার নাম:">Business Name:</label>
+                        <input type="text" id="businessName" required>
+                    </div>
+
+                    <!-- Location IDs -->
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="districtId" data-en="District:" data-bn="জেলা:">District:</label>
+                            <select id="districtId" required>
+                                <option value="" data-en="Select District" data-bn="জেলা নির্বাচন করুন">Select District</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="blockId" data-en="Block:" data-bn="ব্লক:">Block:</label>
+                            <select id="blockId" required>
+                                <option value="" data-en="Select Block" data-bn="ব্লক নির্বাচন করুন">Select Block</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="cityId" data-en="City:" data-bn="শহর:">City:</label>
+                            <select id="cityId" required>
+                                <option value="" data-en="Select City" data-bn="শহর নির্বাচন করুন">Select City</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="village" data-en="Village:" data-bn="গ্রাম:">Village:</label>
+                            <input type="text" id="village" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="pinCode" data-en="Pin Code:" data-bn="পিন কোড:">Pin Code:</label>
+                            <input type="text" id="pinCode" required>
+                            <div class="hint" data-en="6-digit postal code" data-bn="৬-অঙ্কের পোস্টাল কোড">6-digit postal code</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="supplierType" data-en="Supplier Type:" data-bn="সরবরাহকারীর ধরন:">Supplier Type:</label>
+                            <select id="supplierType" required>
+                                <option value="" data-en="Select Type" data-bn="ধরন নির্বাচন করুন">Select Type</option>
+                                <option value="INPUT_SUPPLIER" data-en="Input Supplier" data-bn="ইনপুট সরবরাহকারী">Input Supplier</option>
+                                <option value="MACHINERY_RENTAL" data-en="Machinery Rental" data-bn="যন্ত্রপাতি ভাড়া">Machinery Rental</option>
+                                <option value="SERVICE_PROVIDER" data-en="Service Provider" data-bn="সেবা প্রদানকারী">Service Provider</option>
+                                <option value="LOGISTICS_PROVIDER" data-en="Logistics Provider" data-bn="লজিস্টিক্স প্রদানকারী">Logistics Provider</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Legal Details -->
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="panNumber" data-en="PAN Number:" data-bn="প্যান নম্বর:">PAN Number:</label>
+                            <input type="text" id="panNumber" required>
+                            <div class="hint" data-en="10-character PAN" data-bn="১০-অক্ষরের প্যান">10-character PAN</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gstNumber" data-en="GST Number:" data-bn="জিএসটি নম্বর:">GST Number:</label>
+                            <input type="text" id="gstNumber">
+                            <div class="hint" data-en="15-character GST (if applicable)" data-bn="১৫-অক্ষরের জিএসটি (প্রযোজ্য হলে)">15-character GST (if applicable)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bankAccountNo" data-en="Bank Account Number:" data-bn="ব্যাংক অ্যাকাউন্ট নম্বর:">Bank Account Number:</label>
+                        <input type="text" id="bankAccountNo" required>
+                    </div>
+
+                    <div class="submit-container">
+                        <button type="submit" class="btn-primary" data-en="Register" data-bn="নিবন্ধন">Register</button>
+                    </div>
+                </form>
+
+                <div id="message" class="hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="popup-overlay hidden" id="popupOverlay">
+        <div class="popup-box">
+            <div class="popup-icon popup-success" id="popupIcon">✅</div>
+            <div class="popup-message" id="popupMessage" data-en="" data-bn=""></div>
+            <button class="popup-btn" id="popupClose" data-en="OK" data-bn="ঠিক আছে">OK</button>
+        </div>
+    </div>
+
+    <script src="supplier-register.js"></script>
+</body>
+</html>
