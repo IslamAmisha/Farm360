@@ -10,5 +10,5 @@ public enum SupplyStatus {
     APPROVED,
     FAILED,
     AUTO_APPROVED,
-    BUYER_CONFIRMED,
+    BUYER_CONFIRMED, DISPUTE, IN_TRANSIT,
 }

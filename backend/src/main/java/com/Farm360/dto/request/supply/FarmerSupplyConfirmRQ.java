@@ -17,4 +17,8 @@ public class FarmerSupplyConfirmRQ {
     private String farmerRemark;
 
     private LocalDate actualDeliveryDate;
+
+    private String deliveryPhotoUrl;
+    private String billPhotoUrl;
+    private Double billAmountEntered;
 }

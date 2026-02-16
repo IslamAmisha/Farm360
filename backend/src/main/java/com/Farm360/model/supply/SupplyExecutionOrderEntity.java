@@ -72,4 +72,16 @@ public class SupplyExecutionOrderEntity {
             fetch = FetchType.LAZY
     )
     private List< SupplyExecutionItemEntity> items;
+
+
+    private String deliveryPhotoUrl;
+    private String farmerBillPhotoUrl;
+    private Double farmerEnteredBillAmount;
+    private String rejectionReason;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private SupplierInvoice invoice;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SupplyProof> proofs;
 }

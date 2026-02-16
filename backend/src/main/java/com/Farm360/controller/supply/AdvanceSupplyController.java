@@ -1,5 +1,6 @@
 package com.Farm360.controller.supply;
 
+import com.Farm360.dto.request.supply.FarmerDispatchRQ;
 import com.Farm360.dto.request.supply.FarmerSupplyConfirmRQ;
 import com.Farm360.dto.request.supply.SupplierBillUploadRQ;
 import com.Farm360.dto.request.supply.SupplyExecutionCreateRQ;
@@ -67,5 +68,14 @@ public class AdvanceSupplyController {
         UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
 
         return advanceSupplyService.buyerConfirm(orderId, user.getId());
+    }
+
+    @PostMapping("/farmer/dispatch")
+    public SupplyExecutionOrderRS farmerDispatch(
+            @RequestBody FarmerDispatchRQ rq,
+            Authentication authentication
+    ) {
+        UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
+        return advanceSupplyService.farmerDispatch(rq, user.getId());
     }
 }
