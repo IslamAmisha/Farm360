@@ -12,6 +12,19 @@ function translatePage(lang) {
 
 // ===== LOAD ALL MASTER DATA FROM BACKEND =====
 document.addEventListener('DOMContentLoaded', function() {
+    // auth guard
+const tokenCheck = localStorage.getItem("token");
+const userId = localStorage.getItem("userId");
+if (!tokenCheck) {
+    window.location.href = "../../Login/login.html";
+    return;
+}
+// prevent reopening register after completion
+const role = localStorage.getItem("role");
+if (role === "supplier") {
+    window.location.href = "../Supplier-Dashboard/supplier-dashboard.html";
+    return;
+}
     loadDistricts();
     setupLocationListeners();
     
@@ -147,22 +160,16 @@ document.getElementById("supplierRegisterForm")
         event.preventDefault();
 
         const userId = localStorage.getItem("userId");
-        if (!userId) {
-            showMessage("User not found. Please login again.", "error");
-            return;
-        }
+if (!userId) {
+    window.location.href = "../../Login/login.html";
+    return;
+}
 
-        // Get token from localStorage (try different common key names)
-        const token = localStorage.getItem("token") || 
-                     localStorage.getItem("jwt") || 
-                     localStorage.getItem("accessToken") ||
-                     localStorage.getItem("authToken");
-        
-        if (!token) {
-            showMessage("No authentication token found. Please login again.", "error");
-            console.error('No token found in localStorage. Available keys:', Object.keys(localStorage));
-            return;
-        }
+  const token = localStorage.getItem("token");
+if (!token) {
+    window.location.href = "../../Login/login.html";
+    return;
+}
 
         // Get and validate form values
         const supplierName = document.getElementById("supplierName").value.trim();
@@ -189,11 +196,8 @@ document.getElementById("supplierRegisterForm")
             return;
         }
 
-        const cityId = parseInt(document.getElementById("cityId").value);
-        if (!cityId) {
-            showMessage("Please select a city", "error");
-            return;
-        }
+        const cityValue = document.getElementById("cityId").value;
+const cityId = cityValue ? parseInt(cityValue) : null;
 
         const village = document.getElementById("village").value.trim();
         if (!village) {
@@ -297,7 +301,10 @@ document.getElementById("supplierRegisterForm")
         .then(data => {
             console.log('Success:', data);
             showMessage("Supplier registered successfully. Awaiting verification.", "success");
-            
+            // go to login after registration
+setTimeout(() => {
+    window.location.href = "../../Login/login.html";
+}, 2000);
             // Show success popup
             const popupOverlay = document.getElementById('popupOverlay');
             if (popupOverlay) {

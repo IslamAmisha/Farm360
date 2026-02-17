@@ -148,6 +148,9 @@ form.addEventListener("submit", async function (e) {
       } else if (role === "buyer") {
         window.location.href = "../Buyer/Buyer-Dashboard/buyer-dashboard.html";
       }
+      else if (role === "supplier") {
+  window.location.href = "../Supplier/Supplier-Dashboard/supplier-dashboard.html";
+}
     }, 1000);
   } catch (err) {
     msg.style.color = "red";
