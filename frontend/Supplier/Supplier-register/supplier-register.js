@@ -20,11 +20,11 @@ if (!tokenCheck) {
     return;
 }
 // prevent reopening register after completion
-// const role = localStorage.getItem("role");
-// if (role === "supplier") {
-//     window.location.href = "../Supplier-Dashboard/supplier-dashboard.html";
-//     return;
-// }
+const role = localStorage.getItem("role");
+if (role === "supplier") {
+    window.location.href = "../Supplier-Dashboard/supplier-dashboard.html";
+    return;
+}
     loadDistricts();
     setupLocationListeners();
     
