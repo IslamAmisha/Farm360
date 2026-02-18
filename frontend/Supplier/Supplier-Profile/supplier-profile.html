@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — Supplier Profile</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared landing-page theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- Reuse farmer profile CSS for same layout & spacing -->
+    <link
+      rel="stylesheet"
+      href="../../Farmer/Farmer-Profile/farmer-profile.css"
+    />
+
+    <!-- Supplier-specific overrides -->
+    <link rel="stylesheet" href="supplier-profile.css" />
+  </head>
+
+  <body class="theme-light lang-en profile-page">
+    <!-- HEADER -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a
+            href="../../Landing-page/landing-page.html"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Modules/modules.html"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Insights/insights.html"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Support/support.html"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a
+          href="../../Modules/modules.html"
+          class="mobile-item"
+          data-text="navModules"
+          >Modules</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+        <a
+          href="../../Insights/insights.html"
+          class="mobile-item"
+          data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="../../Support/support.html"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="container" id="profile">
+      <button id="backToDashboard" class="back-btn-card">‹ Back</button>
+
+      <!-- WALLET SUMMARY (top cards) -->
+      <section class="wallet-summary card">
+        <div class="wallet-grid" style="grid-template-columns: repeat(2, 1fr)">
+          <div class="wallet-item">
+            <div class="wallet-label" data-text="walletAvailable">
+              Available Balance
+            </div>
+            <div class="wallet-value" id="walletAvailable">₹ 0</div>
+          </div>
+
+          <div class="wallet-item">
+            <div class="wallet-label" data-text="completedJobs">
+              Completed Jobs
+            </div>
+            <div class="wallet-value" id="completedJobs">0</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="profile-grid">
+        <!-- LEFT COLUMN -->
+        <div class="profile-col">
+          <!-- BASIC DETAILS -->
+          <section class="card section-basic">
+            <div class="card-header">
+              <h3 data-text="basicDetails">Basic Details</h3>
+              <div class="card-actions">
+                <button
+                  class="btn-outline btn-edit"
+                  data-section="basic"
+                  data-text="btnEdit"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <form class="card-body form-basic" data-editing="false">
+              <div class="form-row">
+                <label data-text="phone">Phone Number</label>
+                <input type="text" id="phone" readonly class="input-locked" />
+              </div>
+
+              <div class="form-row">
+                <label data-text="role">Role</label>
+                <input
+                  type="text"
+                  id="role"
+                  readonly
+                  class="input-locked"
+                  value="Supplier"
+                />
+              </div>
+
+              <div class="form-row">
+                <label data-text="supplierName">Supplier Name</label>
+                <input
+                  type="text"
+                  id="supplierName"
+                  placeholder="Enter supplier name"
+                  disabled
+                />
+                <span id="verificationBadge" style="margin-left: 8px"></span>
+              </div>
+
+              <div class="form-row">
+                <label data-text="businessName">Business Name</label>
+                <input
+                  type="text"
+                  id="businessName"
+                  placeholder="Business name"
+                  disabled
+                />
+              </div>
+
+              <div class="form-row two-cols">
+                <div>
+                  <label data-text="supplierType">Supplier Type</label>
+                  <select id="supplierType" disabled>
+                    <option value="TRANSPORT">Transport</option>
+                    <option value="COLD_STORAGE">Cold Storage</option>
+                    <option value="PACKAGING">Packaging</option>
+                    <option value="OTHERS">Others</option>
+                  </select>
+                </div>
+                <div>
+                  <label data-text="bankAccount">Bank Account Number</label>
+                  <input type="text" id="bankAccount" disabled />
+                </div>
+              </div>
+
+              <div class="form-row two-cols">
+                <div>
+                  <label data-text="district">District</label>
+                  <input
+                    type="text"
+                    id="district"
+                    readonly
+                    class="input-locked"
+                  />
+                </div>
+                <div>
+                  <label data-text="block">Block</label>
+                  <input type="text" id="block" readonly class="input-locked" />
+                </div>
+              </div>
+
+              <div class="form-row two-cols">
+                <div>
+                  <label data-text="city">City</label>
+                  <input type="text" id="city" readonly class="input-locked" />
+                </div>
+                <div>
+                  <label data-text="village">Village / City</label>
+                  <input type="text" id="village" disabled />
+                </div>
+              </div>
+
+              <div class="form-row two-cols">
+                <div>
+                  <label data-text="pincode">PIN Code</label>
+                  <input type="text" id="pinCode" disabled />
+                </div>
+                <div>
+                  <label data-text="pan">PAN Number</label>
+                  <input
+                    type="text"
+                    id="panNumber"
+                    readonly
+                    class="input-locked"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label data-text="gst">GST Number</label>
+                <input
+                  type="text"
+                  id="gstNumber"
+                  readonly
+                  class="input-locked"
+                />
+              </div>
+
+              <div class="form-actions" hidden>
+                <button
+                  type="button"
+                  class="btn-outline btn-cancel"
+                  data-section="basic"
+                  data-text="btnCancel"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn-primary btn-save"
+                  data-section="basic"
+                  data-text="btnSave"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="profile-col sidebar-right">
+          <!-- PHOTO CARD (business/profile photo) -->
+          <section class="card card-photo">
+            <div class="card-header">
+              <h3 data-text="businessPhoto">Business Photo</h3>
+            </div>
+            <div class="card-body photo-body">
+              <div class="photo-preview" id="photoPreview">
+                <img id="photoImg" alt="Business photo" src="" hidden />
+                <div class="photo-empty" id="photoEmpty">No photo</div>
+              </div>
+
+              <div class="photo-actions">
+                <input type="file" id="photoInput" accept="image/*" hidden />
+                <button
+                  class="btn-outline"
+                  id="btnUpload"
+                  data-text="btnUpload"
+                >
+                  Upload
+                </button>
+                <button
+                  class="btn-outline"
+                  id="btnReplace"
+                  hidden
+                  data-text="btnReplace"
+                >
+                  Replace
+                </button>
+                <button
+                  class="btn-outline"
+                  id="btnDelete"
+                  hidden
+                  data-text="btnDelete"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ACCOUNT SUMMARY -->
+          <section class="card card-info">
+            <div class="card-body">
+              <h4 data-text="accountTitle">Account</h4>
+              <p>
+                <strong data-text="supplierNameLabel">Name:</strong>
+                <span id="infoName">—</span>
+              </p>
+              <p>
+                <strong data-text="phoneLabel">Phone:</strong>
+                <span id="infoPhone">—</span>
+              </p>
+              <p>
+                <strong data-text="supplierTypeLabel">Supplier Type:</strong>
+                <span id="infoSupplierType">—</span>
+              </p>
+              <p>
+                <strong data-text="locationLabel">Location:</strong>
+                <span id="infoLocation">—</span>
+              </p>
+            </div>
+          </section>
+
+          <!-- WALLET SMALL CARD -->
+          <section class="card card-info">
+            <div class="card-body">
+              <h4>Wallet</h4>
+              <p style="margin: 6px 0">
+                <strong data-text="walletAvailable">Available Balance</strong>
+              </p>
+              <p class="wallet-value" id="walletAvailableRight">₹ 0</p>
+              <!-- no actions: wallet shows only available balance per spec -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- Shared JS -->
+    <script src="../../Landing-page/landing-page.js"></script>
+    <!-- Page JS -->
+    <script src="supplier-profile.js"></script>
+  </body>
+</html>

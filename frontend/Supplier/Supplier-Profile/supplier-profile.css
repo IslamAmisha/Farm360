@@ -1,0 +1,41 @@
+/* Supplier profile — small overrides & verification badge styles
+	 Layout, spacing and most styles are reused from farmer-profile.css */
+
+.verification-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	border: 1px solid var(--border);
+}
+
+.verification-badge.good {
+	background: #ecfdf5; /* light green */
+	color: #065f46;
+	border-color: #bbf7d0;
+}
+
+.verification-badge.pending {
+	background: #fffbeb; /* light yellow */
+	color: #92400e;
+	border-color: #fde68a;
+}
+
+.verification-badge.rejected {
+	background: #fff1f2; /* light red */
+	color: #7f1d1d;
+	border-color: #fecaca;
+}
+
+/* make wallet-summary look consistent when reduced to 2 items */
+.wallet-summary .wallet-grid {
+	gap: 12px;
+}
+
+/* ensure photo-preview inherits same sizing */
+.card-photo .photo-preview {
+	height: 180px;
+}
