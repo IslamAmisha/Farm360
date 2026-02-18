@@ -48,7 +48,9 @@
       season: null,          // ONLY for ANNUAL
       expectedQuantity: null,
       unit: "QUINTAL",
-      landAreaUsed: null 
+      landAreaUsed: null ,
+      farmerProfitPercent: null,
+escrowApplicable: false,
     };
   }
 
@@ -172,6 +174,10 @@ function renderLand() {
   );
   sel.add(opt);
   sel.disabled = true;
+
+  document.getElementById("farmerProfitPercent").oninput =
+  e => state.proposal.farmerProfitPercent =
+    Number(e.target.value || null);
 
   document.getElementById("totalLand").value =
     state.proposal.landAreaUsed || "";
@@ -375,6 +381,14 @@ syncLandUsedFromUI();
  recalcTotalAmount();
   const p = state.proposal;
 
+  // Farmer Profit %
+if (
+  !p.farmerProfitPercent ||
+  p.farmerProfitPercent <= 0 ||
+  p.farmerProfitPercent > 100
+)
+  return showToast("Invalid farmer profit percentage"), false;
+
   // 1️⃣ Contract
   if (!p.contractModel)
     return showToast("Select contract model"), false;
@@ -400,9 +414,8 @@ syncLandUsedFromUI();
   if (!state.isAnnual && p.proposalCrops.length !== 1)
     return showToast("Seasonal contract allows only one crop"), false;
 
-  if (state.isAnnual && p.proposalCrops.length !== 3)
-    return showToast("Annual contract requires exactly 3 crops"), false;
-
+ if (state.isAnnual && p.proposalCrops.length !== 3)
+  return showToast("Annual contract requires exactly 3 crops"), false;
   // 5️⃣ Season rules
   if (!state.isAnnual && !p.season)
     return showToast("Season is required"), false;
@@ -510,7 +523,7 @@ function recalcTotalAmount() {
     0
   );
 
-  state.proposal.totalAmount = total;
+ state.proposal.totalContractAmount = total;
   document.getElementById("totalAmount").value =
     total > 0 ? total.toFixed(2) : "";
 }
@@ -579,7 +592,8 @@ if (state.proposal.landAreaUsed && landUsedInput) {
 }
 
 
-
+document.getElementById("farmerProfitPercent").value =
+  state.proposal.farmerProfitPercent || "";
 
 document.getElementById("contractModel").value =
   state.proposal.contractModel || "";

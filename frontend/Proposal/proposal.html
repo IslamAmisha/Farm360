@@ -177,6 +177,12 @@
       <label>Total Amount</label>
       <input id="totalAmount" disabled />
     </div>
+
+    <div>
+  <label>Farmer Profit %</label>
+  <input id="farmerProfitPercent" type="number" min="1" max="100" />
+</div>
+
   </div>
 
   <div class="form-grid three">
@@ -220,7 +226,7 @@
         <!-- REMARKS -->
         <section class="card">
           <h3>Remarks</h3>
-          <textarea rows="3"></textarea>
+          <textarea id="remarks" rows="3"></textarea>
         </section>
 
       </div>
@@ -228,10 +234,9 @@
       <!-- RIGHT COLUMN -->
       <aside class="proposal-side card">
         <h4>Proposal Info</h4>
-        <p><strong>Sender:</strong> —</p>
-        <p><strong>Receiver:</strong> —</p>
-        <p><strong>Expires On:</strong> —</p>
-      </aside>
+       <p><strong>Sender:</strong> <span id="senderInfo">—</span></p>
+        <p><strong>Receiver:</strong> <span id="receiverInfo">—</span></p>
+<p><strong>Expires On:</strong> <span id="expiryInfo">—</span></p>
 
     </div>
 
