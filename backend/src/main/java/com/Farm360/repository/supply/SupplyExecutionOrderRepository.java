@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +30,37 @@ WHERE o.agreementId = :agreementId
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<SupplyExecutionOrderEntity> findById(Long id);
+
+    @Query("""
+       SELECT COUNT(o)
+       FROM SupplyExecutionOrderEntity o
+       WHERE o.supplierUserId = :supplierUserId
+       AND o.status IN (
+            com.Farm360.utils.SupplyStatus.SUPPLIER_ACCEPTED,
+            com.Farm360.utils.SupplyStatus.DISPATCHED,
+            com.Farm360.utils.SupplyStatus.FARMER_CONFIRMED,
+            com.Farm360.utils.SupplyStatus.IN_TRANSIT,
+            com.Farm360.utils.SupplyStatus.BUYER_CONFIRMED
+       )
+       """)
+    Long countActiveOrders(@Param("supplierUserId") Long supplierUserId);
+
+
+    @Query("""
+       SELECT COUNT(o)
+       FROM SupplyExecutionOrderEntity o
+       WHERE o.supplierUserId = :supplierUserId
+       AND o.invoice IS NOT NULL
+       AND o.escrowStatus = com.Farm360.utils.EscrowReleaseStatus.HELD
+       """)
+    Long countBillsPendingApproval(@Param("supplierUserId") Long supplierUserId);
+
+
+    @Query("""
+       SELECT COUNT(o)
+       FROM SupplyExecutionOrderEntity o
+       WHERE o.supplierUserId = :supplierUserId
+       AND o.status = com.Farm360.utils.SupplyStatus.APPROVED
+       """)
+    Long countCompletedOrders(@Param("supplierUserId") Long supplierUserId);
 }
