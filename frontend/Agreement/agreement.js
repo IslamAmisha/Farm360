@@ -1,226 +1,161 @@
-/* Agreement page JS: auto-id, mutual-field matching, problem detection, basic sign flow */
-
+/* Agreement page script — read-only binding + print/download */
 (function () {
-	function el(id) { return document.getElementById(id); }
+  // SAMPLE data (replace with backend fetch if available)
+  const sampleAgreement = {
+    agreementId: "AGR-2026-00071",
+    proposalId: "PROP-2026-110",
+    proposalVersion: 2,
+    signedAt: "2026-02-10T11:30:00Z",
+    status: "SIGNED",
+    farmer: {
+      name: "Ramesh Kumar",
+      userId: "F-10023",
+      location: "Village: Rampur, Block: A, District: X",
+    },
+    buyer: {
+      name: "Green Agri Traders",
+      userId: "B-9087",
+      businessName: "Green Agri Traders Pvt Ltd",
+      location: "Market Road, Town Y",
+    },
+    landId: "LND-5532",
+    landAreaUsed: "3.5 acres",
+    contractModel: "Fixed Price",
+    season: "Kharif",
+    startYear: 2026,
+    endYear: 2026,
+    crops: [
+      { crop: "Rice", variety: "IR64", season: "Kharif", areaUsed: "2.0", expectedQty: "4,000", unit: "kg", pricePerUnit: 25, total: 100000 },
+      { crop: "Maize", variety: "HQ MZ", season: "Kharif", areaUsed: "1.5", expectedQty: "2,000", unit: "kg", pricePerUnit: 20, total: 40000 },
+    ],
+    totalContractAmount: 140000,
+    advancePercent: 30,
+    midCyclePercent: 30,
+    finalPercent: 40,
+    farmerProfitPercent: 18,
+    deliveryLocation: "Warehouse — Market Y",
+    deliveryWindow: "Oct 2026 - Nov 2026",
+    logisticsHandledBy: "Buyer",
+    inputProvided: "Fertilizer & Seed (buyer-provided)",
+    allowCropChangeBetweenSeasons: false,
+    escrow: { totalLocked: 140000, remaining: 0, status: "LOCKED" },
+    signatures: {
+      farmerName: "Ramesh Kumar",
+      farmerDate: "2026-02-10",
+      buyerName: "Green Agri Traders",
+      buyerDate: "2026-02-10",
+    },
+  };
 
-	function genAgreementId() {
-		const d = new Date();
-		const y = d.getFullYear();
-		const t = String(d.getTime()).slice(-6);
-		return `AGMT-${y}-${t}`;
-	}
+  // Helpers
+  function qs(sel) { return document.querySelector(sel); }
+  function qsid(id) { return document.getElementById(id); }
+  function fmtCurrency(v) { return "₹ " + (Number(v) || 0).toLocaleString(); }
+  function fmtDate(iso) { try { return new Date(iso).toLocaleDateString(); } catch(e) { return iso || "—"; } }
 
-	function setMeta() {
-		el('agreementId').textContent = genAgreementId();
-		el('agreementDate').textContent = new Date().toLocaleString();
-	}
+  function renderCropTable(crops) {
+    const tbody = qsid("cropTableBody");
+    tbody.innerHTML = "";
+    (crops || []).forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.crop || "-"}</td>
+        <td>${r.variety || "-"}</td>
+        <td>${r.season || "-"}</td>
+        <td>${r.areaUsed || "-"}</td>
+        <td>${r.expectedQty || "-"}</td>
+        <td>${r.unit || "-"}</td>
+        <td>${fmtCurrency(r.pricePerUnit)}</td>
+        <td>${fmtCurrency(r.total)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-	function getVal(id) { const i = el(id); if (!i) return ''; if (i.type === 'checkbox') return i.checked ? (i.value || 'on') : ''; return (i.value || '').toString().trim(); }
+  function populateAgreement(a) {
+    if (!a) a = sampleAgreement;
 
-	// Generalized problem checker: any farmerX <-> buyerX pair will be compared.
-	function checkProblems() {
-		const problems = [];
+    qsid("agreementId").textContent = a.agreementId || "—";
+    qsid("proposalRef").textContent = `${a.proposalId || "—"} v${a.proposalVersion || 1}`;
+    qsid("signedAt").textContent = fmtDate(a.signedAt || a.signDate || new Date());
+    qsid("displayStatus").textContent = (a.status || "LOCKED").toUpperCase();
+    qsid("displayEscrow").textContent = (a.escrow && a.escrow.status) || "LOCKED";
 
-		// Find all farmer-prefixed fields
-		const farmerNodes = Array.from(document.querySelectorAll('[id^="farmer"]'));
-		const handled = new Set();
+    // Parties
+    qsid("farmerName").textContent = a.farmer?.name || "—";
+    qsid("farmerUserId").textContent = a.farmer?.userId || "—";
+    qsid("farmerLocation").textContent = a.farmer?.location || "—";
 
-		farmerNodes.forEach(fn => {
-			const suffix = fn.id.slice('farmer'.length); // e.g. "Crop", "Escrow1"
-			const buyerId = 'buyer' + suffix;
-			const buyerNode = el(buyerId);
-			if (!buyerNode) return; // not a mutual field
+    qsid("buyerName").textContent = a.buyer?.name || "—";
+    qsid("buyerUserId").textContent = a.buyer?.userId || "—";
+    qsid("buyerBusiness").textContent = a.buyer?.businessName || "—";
+    qsid("buyerLocation").textContent = a.buyer?.location || "—";
 
-			handled.add(fn.id); handled.add(buyerId);
+    qsid("landId").textContent = a.landId || "—";
+    qsid("landAreaUsed").textContent = a.landAreaUsed || "—";
 
-			const fv = getVal(fn.id);
-			const bv = getVal(buyerId);
+    qsid("contractModel").textContent = a.contractModel || "—";
+    qsid("season").textContent = a.season || "—";
+    qsid("startYear").textContent = a.startYear || "—";
+    qsid("endYear").textContent = a.endYear || "—";
 
-			// if both empty, skip
-			if ((fv === '' || fv === null) && (bv === '' || bv === null)) return;
+    renderCropTable(a.crops || []);
 
-			// numeric compare when both are numbers
-			const fNum = Number(fv);
-			const bNum = Number(bv);
-			const isNumeric = !isNaN(fNum) && !isNaN(bNum) && fv !== '' && bv !== '';
+    qsid("totalContractValue").textContent = fmtCurrency(a.totalContractAmount || 0);
+    qsid("advancePercent").textContent = (a.advancePercent || 0) + "%";
+    qsid("midPercent").textContent = (a.midCyclePercent || a.midPercent || 0) + "%";
+    qsid("finalPercent").textContent = (a.finalPercent || 0) + "%";
+    qsid("farmerProfitPercent").textContent = (a.farmerProfitPercent || 0) + "%";
 
-			if (isNumeric) {
-				if (fNum !== bNum) problems.push({field: suffix, farmer: fv, buyer: bv, fId: fn.id, bId: buyerId});
-			} else {
-				if (String(fv) !== String(bv)) problems.push({field: suffix, farmer: fv, buyer: bv, fId: fn.id, bId: buyerId});
-			}
+    qsid("deliveryLocation").textContent = a.deliveryLocation || "—";
+    qsid("deliveryWindow").textContent = a.deliveryWindow || "—";
+    qsid("logisticsHandledBy").textContent = a.logisticsHandledBy || "—";
+    qsid("inputProvided").textContent = a.inputProvided || "—";
+    qsid("allowCropChange").textContent = a.allowCropChangeBetweenSeasons ? "Yes" : "No";
 
-			// visual locking for matched fields
-			if (String(fv) !== '' && String(fv) === String(bv)) {
-				fn.classList.add('locked'); buyerNode.classList.add('locked');
-			} else {
-				fn.classList.remove('locked'); buyerNode.classList.remove('locked');
-			}
-		});
+    qsid("totalEscrow").textContent = fmtCurrency(a.escrow?.totalLocked || 0);
+    qsid("remainingEscrow").textContent = fmtCurrency(a.escrow?.remaining || 0);
+    qsid("escrowStatus").textContent = a.escrow?.status || "LOCKED";
 
-		// Additional rule: escrow percentages must sum to 100 for each party
-		function sumEscrow(prefix) {
-			const a = Number(getVal(prefix + 'Escrow1') || 0);
-			const b = Number(getVal(prefix + 'Escrow2') || 0);
-			const c = Number(getVal(prefix + 'Escrow3') || 0);
-			return a + b + c;
-		}
+    qsid("farmerSignatureName").textContent = a.signatures?.farmerName || a.farmer?.name || "—";
+    qsid("farmerSignatureDate").textContent = a.signatures?.farmerDate || fmtDate(a.signedAt) || "—";
+    qsid("buyerSignatureName").textContent = a.signatures?.buyerName || a.buyer?.name || "—";
+    qsid("buyerSignatureDate").textContent = a.signatures?.buyerDate || fmtDate(a.signedAt) || "—";
 
-		const farmerEscrowSum = sumEscrow('farmer');
-		const buyerEscrowSum = sumEscrow('buyer');
-		if (farmerEscrowSum !== 0 && farmerEscrowSum !== 100) {
-			problems.push({field: 'Escrow (Farmer total)', farmer: farmerEscrowSum + '%', buyer: '—', fId: 'farmerEscrow1', bId: null});
-		}
-		if (buyerEscrowSum !== 0 && buyerEscrowSum !== 100) {
-			problems.push({field: 'Escrow (Buyer total)', farmer: '—', buyer: buyerEscrowSum + '%', fId: null, bId: 'buyerEscrow1'});
-		}
+    // Status badge
+    const sb = qsid("statusBadge");
+    sb.textContent = (a.status || "SIGNED").toUpperCase();
+    if ((a.status || "").toUpperCase() === "SIGNED") {
+      sb.classList.add("badge-signed");
+    }
+  }
 
-		// Render problems
-		const list = el('problemsList');
-		if (!list) return problems;
+  // Attempt to load a real agreement (optional): if querystring contains id, fetch from API
+  async function loadAgreement() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get("agreementId");
+    if (!id) {
+      populateAgreement(sampleAgreement);
+      return;
+    }
 
-		if (problems.length === 0) {
-			list.innerHTML = 'No problems detected. All mutual fields match.';
-			list.classList.remove('has-problems');
-		} else {
-			const html = problems.map(p => `
-				<div class="problem-item">
-					<strong>${p.field}:</strong>
-					<div class="problem-values">Farmer: <em>${p.farmer || '—'}</em> — Buyer: <em>${p.buyer || '—'}</em></div>
-				</div>
-			`).join('');
-			list.innerHTML = html;
-			list.classList.add('has-problems');
-		}
+    // If your backend exposes an endpoint, uncomment and update the URL below.
+    // try {
+    //   const res = await fetch(`/api/agreements/${id}`, { headers: { Authorization: 'Bearer '+localStorage.getItem('token') }});
+    //   if (res.ok) { const data = await res.json(); populateAgreement(data); return; }
+    // } catch(e) { console.warn('Agreement fetch failed', e); }
 
-		// toggle sign buttons based on their local confirmations (they still can sign even if there are problems, but finalization requires no problems)
-		const farmerConfirm = el('farmerConfirmRequired')?.checked;
-		const buyerConfirm = el('buyerConfirmRequired')?.checked;
+    // fallback to sample
+    populateAgreement(sampleAgreement);
+  }
 
-		const farmerSign = el('farmerSign');
-		const buyerSign = el('buyerSign');
-		if (farmerSign) farmerSign.disabled = !farmerConfirm;
-		if (buyerSign) buyerSign.disabled = !buyerConfirm;
+  // Print / download
+  qsid("downloadBtn").addEventListener("click", () => {
+    // print stylesheet will hide site header and controls
+    window.print();
+  });
 
-		return problems;
-	}
-
-	function copyBuyerToFarmer() {
-		const buyerNodes = Array.from(document.querySelectorAll('[id^="buyer"]'));
-		buyerNodes.forEach(bn => {
-			const suffix = bn.id.slice('buyer'.length);
-			const farmerId = 'farmer' + suffix;
-			const farmerNode = el(farmerId);
-			if (!farmerNode) return;
-			const bv = getVal(bn.id);
-			if (bv !== '') {
-				if (farmerNode.type === 'checkbox') farmerNode.checked = bn.checked;
-				else farmerNode.value = bn.value;
-			}
-		});
-		checkProblems();
-	}
-
-	function copyFarmerToBuyer() {
-		const farmerNodes = Array.from(document.querySelectorAll('[id^="farmer"]'));
-		farmerNodes.forEach(fn => {
-			const suffix = fn.id.slice('farmer'.length);
-			const buyerId = 'buyer' + suffix;
-			const buyerNode = el(buyerId);
-			if (!buyerNode) return;
-			const fv = getVal(fn.id);
-			if (fv !== '') {
-				if (buyerNode.type === 'checkbox') buyerNode.checked = fn.checked;
-				else buyerNode.value = fn.value;
-			}
-		});
-		checkProblems();
-	}
-
-	function buildAuditTrail(signers) {
-		const when = new Date().toLocaleString();
-		return `Signed by: ${signers.join(' & ')} on ${when} (System-generated signature hash)`;
-	}
-
-	function finalizeIfReady() {
-		const problems = checkProblems();
-		const hasProblems = problems.length > 0;
-		const farmerSigned = el('farmerSign')?.dataset.signed === 'true';
-		const buyerSigned = el('buyerSign')?.dataset.signed === 'true';
-
-		if (farmerSigned && buyerSigned && !hasProblems) {
-			// lock UI
-			document.querySelectorAll('input, select, button').forEach(node => {
-				if (!node.classList.contains('mobile-theme-btn')) node.disabled = true;
-			});
-			el('finalizeArea').style.display = 'block';
-			el('auditTrail').textContent = buildAuditTrail(['Farmer','Buyer']);
-		}
-	}
-
-	function attachListeners() {
-
-		// On input/change, re-evaluate
-		function attachAll() {
-			const all = document.querySelectorAll('input, select, textarea');
-			all.forEach(n => {
-				const ev = (n.tagName === 'SELECT' || n.type === 'checkbox' || n.type === 'radio') ? 'change' : 'input';
-				n.removeEventListener(ev, checkProblems);
-				n.addEventListener(ev, checkProblems);
-			});
-		}
-		attachAll();
-
-		document.getElementById('resolveToFarmer')?.addEventListener('click', () => { copyBuyerToFarmer(); });
-		document.getElementById('resolveToBuyer')?.addEventListener('click', () => { copyFarmerToBuyer(); });
-
-		// Toggle crop-specific modules (e.g., potato)
-		function toggleModules() {
-			const farmerCrop = getVal('farmerCrop') || getVal('farmercrop') || '';
-			const buyerCrop = getVal('buyerCrop') || getVal('buyercrop') || '';
-			const potatoModule = el('potatoModule');
-			if (!potatoModule) return;
-			if (farmerCrop.toLowerCase() === 'potato' || buyerCrop.toLowerCase() === 'potato') potatoModule.style.display = 'block';
-			else potatoModule.style.display = 'none';
-		}
-		// Initial
-		toggleModules();
-		// Re-evaluate modules on crop change
-		['farmerCrop','buyerCrop'].forEach(id => el(id)?.addEventListener('change', () => { toggleModules(); checkProblems(); }));
-
-		// confirmations toggle sign button availability
-		el('farmerConfirmRequired')?.addEventListener('change', () => checkProblems());
-		el('buyerConfirmRequired')?.addEventListener('change', () => checkProblems());
-
-		// Sign handlers: mark dataset.signed and then attempt finalize
-		el('farmerSign')?.addEventListener('click', function () {
-			if (this.disabled) return;
-			this.dataset.signed = 'true';
-			this.textContent = 'Farmer: Signed ✓';
-			checkProblems(); finalizeIfReady();
-		});
-
-		el('buyerSign')?.addEventListener('click', function () {
-			if (this.disabled) return;
-			this.dataset.signed = 'true';
-			this.textContent = 'Buyer: Signed ✓';
-			checkProblems(); finalizeIfReady();
-		});
-
-		// Keep date/agreement id fresh when opening
-		setMeta();
-
-		// If landing-page provides translations helper, call it
-		if (typeof updateTranslatedText === 'function') updateTranslatedText();
-		// Ensure farmer dashboard language sync if present
-		if (typeof syncDashboardLanguage === 'function') syncDashboardLanguage();
-	}
-
-	// Init on DOMContentLoaded
-	document.addEventListener('DOMContentLoaded', () => {
-		attachListeners();
-		checkProblems();
-	});
-
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAgreement();
+  });
 })();
-
