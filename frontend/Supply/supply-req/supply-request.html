@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — Supply Execution Request</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared landing-page theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="supply-request.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER (same as profile/dashboard) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a
+            href="../../Landing-page/landing-page.html"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Modules/modules.html"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Insights/insights.html"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Support/support.html"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a
+          href="../../Modules/modules.html"
+          class="mobile-item"
+          data-text="navModules"
+          >Modules</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+        <a
+          href="../../Insights/insights.html"
+          class="mobile-item"
+          data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="../../Support/support.html"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="container supply-page" id="supply-page">
+      <h1 class="page-title">Supply Execution Request</h1>
+
+      <div class="page-grid">
+        <!-- LEFT: content (main card) -->
+        <section class="card card-request">
+          <form id="supplyForm" class="form-grid">
+            <!-- SECTION 1: Create Supply Request Card -->
+            <div class="section">
+              <h3 class="section-title">Create Supply Request</h3>
+
+              <div class="form-row">
+                <label for="agreementId">Agreement ID</label>
+                <select id="agreementId" required>
+                  <option value="">-- Select agreement --</option>
+                </select>
+              </div>
+
+              <div class="form-row hidden">
+                <label for="proposalVersion">Proposal Version</label>
+                <input id="proposalVersion" type="text" readonly />
+              </div>
+
+              <div class="two-col-grid">
+                <div class="form-row">
+                  <label for="stage">Farming Stage</label>
+                  <select id="stage" required>
+                    <option value="">-- Select stage --</option>
+                    <option value="ADVANCE">ADVANCE</option>
+                    <option value="MID">MID</option>
+                    <option value="FINAL">FINAL</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <label for="supplierType">Supplier Type</label>
+                  <select id="supplierType" required>
+                    <option value="">-- Select supplier type --</option>
+                    <option value="INPUT_SUPPLIER">INPUT_SUPPLIER</option>
+                    <option value="MACHINERY_RENTAL">MACHINERY_RENTAL</option>
+                    <option value="SERVICE_PROVIDER">SERVICE_PROVIDER</option>
+                    <option value="LOGISTICS_PROVIDER">
+                      LOGISTICS_PROVIDER
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <label for="expectedDeliveryDate"
+                    >Expected Delivery Date</label
+                  >
+                  <input id="expectedDeliveryDate" type="date" required />
+                </div>
+
+                <div class="form-row">
+                  <label for="demandAmount">Demand Amount (₹)</label>
+                  <input
+                    id="demandAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: Items Table (Dynamic) -->
+            <div class="section">
+              <h3 class="section-title">Items</h3>
+
+              <div class="table-wrap">
+                <table id="itemsTable">
+                  <thead>
+                    <tr>
+                      <th>Item Type</th>
+                      <th>Product Name</th>
+                      <th>Brand Name</th>
+                      <th style="width: 90px">Quantity</th>
+                      <th>Unit</th>
+                      <th>Expected Price</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+
+              <div class="table-actions">
+                <button type="button" id="addItemBtn" class="btn-outline">
+                  Add Item
+                </button>
+              </div>
+            </div>
+
+            <!-- BOTTOM ACTIONS -->
+            <div class="form-actions">
+              <button type="submit" id="submitBtn" class="btn-primary">
+                Broadcast Supply Request
+              </button>
+              <a href="../supply-order/supply-orders.html" class="link-muted"
+                >View My Supply Orders</a
+              >
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <!-- Shared JS -->
+    <script src="../../Landing-page/landing-page.js"></script>
+    <!-- Page JS -->
+    <script src="supply-request.js"></script>
+  </body>
+</html>

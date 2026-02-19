@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — My Supply Orders</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared landing-page theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+    <link rel="stylesheet" href="../supply-req/supply-request.html" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER (same as other pages) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a
+            href="../../Landing-page/landing-page.html"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Modules/modules.html"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Insights/insights.html"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Support/support.html"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a
+          href="../../Modules/modules.html"
+          class="mobile-item"
+          data-text="navModules"
+          >Modules</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+        <a
+          href="../../Insights/insights.html"
+          class="mobile-item"
+          data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="../../Support/support.html"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container supply-page">
+      <h1 class="page-title">My Supply Orders</h1>
+
+      <div id="ordersList" class="orders-list">
+        <!-- cards rendered here -->
+      </div>
+
+      <!-- DETAILS MODAL -->
+      <div id="orderModal" class="modal hidden">
+        <div class="modal-content">
+          <button class="modal-close">✕</button>
+          <div id="modalBody"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="../../Landing-page/landing-page.js"></script>
+    <script src="supply-orders.js"></script>
+  </body>
+</html>
