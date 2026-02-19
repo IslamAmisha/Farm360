@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — Confirm Supply</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared landing-page theme (do NOT change header design) -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+    <!-- Page styles -->
+    <link rel="stylesheet" href="farmer-confirm-supply.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <div id="toast-container"></div>
+
+    <!-- HEADER (same as profile/dashboard) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../../Landing-page/landing-page.html" class="nav-item"
+            >Home</a
+          >
+          <a href="../../Modules/modules.html" class="nav-item">Modules</a>
+          <a href="../../Landing-page/landing-page.html#about" class="nav-item"
+            >About</a
+          >
+          <a href="../../Insights/insights.html" class="nav-item">Insights</a>
+          <a href="../../Support/support.html" class="nav-item">Support</a>
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">☀️</button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="container farmer-confirm-page">
+      <button id="backBtn" class="back-link">‹ Back</button>
+
+      <!-- TOP: Status Card -->
+      <section class="card status-card">
+        <div class="status-left">
+          <div class="status-title">
+            <h3>Supply Order</h3>
+            <div class="status-meta">
+              <div>
+                <strong>Agreement ID:</strong> <span id="agreementId">—</span>
+              </div>
+              <div>
+                <strong>Stage:</strong>
+                <span id="stageBadge" class="badge-stage">—</span>
+              </div>
+              <div>
+                <strong>Supplier:</strong> <span id="supplierName">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-right">
+          <div class="summary-grid">
+            <div>
+              <div class="meta-label">Allocated Amount</div>
+              <div class="meta-value" id="allocatedAmount">₹ —</div>
+            </div>
+            <div>
+              <div class="meta-label">Invoice Total</div>
+              <div class="meta-value" id="invoiceTotal">₹ —</div>
+            </div>
+            <div>
+              <div class="meta-label">Status</div>
+              <div><span id="statusBadge" class="status-badge">—</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="confirm-grid">
+        <!-- LEFT: Supplier Invoice (READ ONLY) -->
+        <div class="confirm-main">
+          <section class="card card-content invoice-card">
+            <h3>Supplier Invoice (Read only)</h3>
+
+            <div class="invoice-top">
+              <div>
+                <strong>Invoice Number</strong>
+                <div id="invoiceNumber">—</div>
+              </div>
+              <div>
+                <strong>Invoice Date</strong>
+                <div id="invoiceDate">—</div>
+              </div>
+              <div>
+                <strong>Delivery Charge</strong>
+                <div id="deliveryCharge">₹ 0</div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table id="itemsTable">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+              </table>
+            </div>
+
+            <div class="total-panel">
+              <div class="totals">
+                <div>
+                  <span>Total Items</span><span id="totalItems">₹ 0</span>
+                </div>
+                <div>
+                  <span>Delivery Charge</span
+                  ><span id="totalDelivery">₹ 0</span>
+                </div>
+                <div class="grand">
+                  <span>Grand Total</span><span id="grandTotal">₹ 0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="proofs">
+              <h4>Invoice Photo</h4>
+              <div id="invoicePreview" class="file-preview">No file</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- RIGHT: Farmer Verification Card -->
+        <aside class="confirm-side">
+          <section class="card verification-card">
+            <h3>Farmer Verification</h3>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label>Actual Delivery Date</label>
+                <input type="date" id="actualDeliveryDate" />
+              </div>
+
+              <div class="form-row">
+                <label>Upload Delivery Photo <span class="req">*</span></label>
+                <input type="file" id="deliveryPhoto" accept="image/*" />
+                <div id="deliveryPreview" class="file-preview">
+                  No file chosen
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label>Upload Bill Photo <span class="req">*</span></label>
+                <input type="file" id="billPhoto" accept="image/*" />
+                <div id="billPhotoPreview" class="file-preview">
+                  No file chosen
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label
+                  >Farmer Entered Bill Amount (₹)
+                  <span class="req">*</span></label
+                >
+                <input type="number" id="billAmountEntered" min="0" />
+              </div>
+
+              <div class="form-row">
+                <label
+                  >Remark <small>(required only if rejecting)</small></label
+                >
+                <textarea
+                  id="farmerRemark"
+                  rows="3"
+                  placeholder="Add remark when rejecting"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <div id="validationMsg" class="validation-msg"></div>
+
+              <div class="actions">
+                <button id="rejectBtn" class="btn danger">
+                  Reject Delivery
+                </button>
+                <button id="acceptBtn" class="btn primary">
+                  Accept Delivery
+                </button>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Shared JS (header/theme) -->
+    <script src="../../Landing-page/landing-page.js"></script>
+    <!-- Page JS -->
+    <script src="farmer-confirm-supply.js"></script>
+  </body>
+</html>

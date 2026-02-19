@@ -1,0 +1,48 @@
+/* Page-specific styles — follow Agreement/Proposal card & spacing rules */
+
+.buyer-confirm-harvest-page.container {
+  max-width: 1120px; /* same as agreement page */
+  margin: 32px auto;
+  padding: 0 20px 110px;
+}
+
+.status-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px;
+  border-radius: 10px;
+}
+
+.status-meta { color: var(--muted-foreground); margin-top: 8px; font-size: 14px; display: grid; gap:6px; }
+.card-title { margin: 0; font-size: 18px; font-weight: 700; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items:center; }
+.meta-label { color: var(--muted-foreground); font-size: 13px; }
+.meta-value { font-weight: 700; font-size: 16px; }
+
+.confirm-grid { display: grid; grid-template-columns: 1fr 360px; gap: 18px; margin-top: 18px; }
+.confirm-main { display: flex; flex-direction: column; }
+.confirm-side { align-self: start; }
+
+.proofs-card .proof-row { display:flex; gap:12px; align-items:center; margin-bottom: 12px; }
+.proof-text { font-weight: 600; color: var(--foreground); }
+.proof-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
+.proof-block { padding: 12px; text-align: center; }
+.proof-label { font-size: 13px; color: var(--muted-foreground); margin-bottom: 8px; }
+.file-preview { min-height: 160px; display:flex; align-items:center; justify-content:center; background: var(--input-background); border-radius: 8px; border: 1px dashed var(--border); overflow: hidden; }
+.file-preview img { max-width: 100%; max-height: 100%; object-fit: cover; display:block; }
+
+.final-card .final-note { margin: 8px 0 14px; color: var(--muted-foreground); }
+.actions { display:flex; gap: 10px; justify-content: flex-end; }
+.warning-msg { color: #b91c1c; font-size: 13px; margin-bottom: 8px; }
+
+/* Disabled primary button visual (matches other pages) */
+.btn.primary[disabled] { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .confirm-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(1, 1fr); }
+}

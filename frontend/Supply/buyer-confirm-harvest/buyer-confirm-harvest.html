@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — Buyer Final Confirmation</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared theme (do NOT change) -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+    <!-- Page styles -->
+    <link rel="stylesheet" href="buyer-confirm-harvest.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Farm360 — Buyer Final Confirmation</title>
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+        <!-- Shared theme (do NOT change) -->
+        <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+        <!-- Page styles -->
+        <link rel="stylesheet" href="buyer-confirm-harvest.css" />
+      </head>
+
+      <body class="theme-light lang-en">
+        <div id="toast-container"></div>
+
+        <!-- SITE HEADER (unchanged) -->
+        <header id="site-header">
+          <div class="header-container">
+            <div class="header-left">
+              <a href="../../Landing-page/landing-page.html" class="logo">
+                <span class="logo-icon">🌿</span>
+                <span data-text="brandName">Farm360</span>
+              </a>
+            </div>
+
+            <nav class="nav-links">
+              <a href="../../Landing-page/landing-page.html" class="nav-item">Home</a>
+              <a href="../../Modules/modules.html" class="nav-item">Modules</a>
+              <a href="../../Landing-page/landing-page.html#about" class="nav-item">About</a>
+              <a href="../../Insights/insights.html" class="nav-item">Insights</a>
+              <a href="../../Support/support.html" class="nav-item">Support</a>
+            </nav>
+
+            <div class="header-right">
+              <button id="themeToggle" class="icon-btn">☀️</button>
+              <button id="langToggle" class="lang-btn">বাংলা</button>
+              <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="container buyer-confirm-harvest-page">
+          <button id="backBtn" class="back-link">‹ Back</button>
+
+          <!-- TOP STATUS CARD -->
+          <section class="card status-card">
+            <div class="status-left">
+              <h3 class="card-title">Final Harvest — Confirmation</h3>
+              <div class="status-meta">
+                <div><strong>Agreement ID:</strong> <span id="agreementId">—</span></div>
+                <div><strong>Stage:</strong> <span id="stageBadge" class="badge-stage">—</span></div>
+                <div><strong>Farmer:</strong> <span id="farmerName">—</span></div>
+                <div><strong>Supplier:</strong> <span id="supplierName">—</span></div>
+              </div>
+            </div>
+
+            <div class="status-right">
+              <div class="summary-grid">
+                <div>
+                  <div class="meta-label">Allocated Amount</div>
+                  <div class="meta-value" id="allocatedAmount">₹ —</div>
+                </div>
+                <div>
+                  <div class="meta-label">Invoice Total</div>
+                  <div class="meta-value" id="invoiceTotal">₹ —</div>
+                </div>
+                <div>
+                  <div class="meta-label">Status</div>
+                  <div><span id="statusBadge" class="status-badge">—</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="confirm-grid">
+            <!-- LEFT: Delivery Proofs (read-only) -->
+            <div class="confirm-main">
+              <section class="card proofs-card">
+                <h3>Delivery Proofs (read‑only)</h3>
+
+                <div class="proof-row">
+                  <div class="label">Vehicle Number at Source</div>
+                  <div id="vehicleNumber" class="proof-text">—</div>
+                </div>
+
+                <div class="proof-grid">
+                  <div class="proof-block card">
+                    <div class="proof-label">Farm Loading Photo</div>
+                    <div id="farmLoadingPreview" class="file-preview">No image</div>
+                  </div>
+
+                  <div class="proof-block card">
+                    <div class="proof-label">Warehouse Unloading Photo</div>
+                    <div id="warehouseUnloadingPreview" class="file-preview">No image</div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <!-- RIGHT: Final confirmation -->
+            <aside class="confirm-side">
+              <section class="card final-card">
+                <h3>Final Confirmation</h3>
+
+                <p class="final-note">By confirming, you approve release of escrow to supplier.</p>
+
+                <div id="proofWarning" class="warning-msg"></div>
+
+                <div class="actions">
+                  <button id="raiseDisputeBtn" class="btn danger">Raise Dispute</button>
+                  <button id="confirmBtn" class="btn primary" disabled>Confirm Delivery</button>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </main>
+
+        <!-- Shared JS (header/theme) -->
+        <script src="../../Landing-page/landing-page.js"></script>
+        <!-- Page JS -->
+        <script src="buyer-confirm-harvest.js"></script>
+      </body>
+    </html>
