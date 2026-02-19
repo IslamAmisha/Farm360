@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Supply Requests</title>
+
+    <!-- Shared fonts & icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Shared theme & dashboard styles (do not modify header/sidebar) -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+    <link
+      rel="stylesheet"
+      href="../../Farmer/Farmer-Dashboard/farmer-dashboard.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../Supplier/Supplier-Dashboard/supplier-dashboard.css"
+    />
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="supplier-supply-orders.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- copy of supplier header + sidebar (kept identical to dashboard) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+
+        <nav class="nav-links">
+          <a
+            href="../../Landing-page/landing-page.html"
+            class="nav-item"
+            data-text="navHome"
+            >Home</a
+          >
+          <a
+            href="../../Modules/modules.html"
+            class="nav-item"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            class="nav-item"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Insights/insights.html"
+            class="nav-item"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Support/support.html"
+            class="nav-item"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a
+          href="../../Modules/modules.html"
+          class="mobile-item"
+          data-text="navModules"
+          >Modules</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+        <a
+          href="../../Insights/insights.html"
+          class="mobile-item"
+          data-text="navInsights"
+          >Insights</a
+        >
+        <a
+          href="../../Support/support.html"
+          class="mobile-item"
+          data-text="navSupport"
+          >Support</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-shell" id="dashboard">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title" data-text="dashboard">Dashboard</div>
+          <button id="sidebarToggle" class="sidebar-toggle">
+            <span class="material-icons">menu_open</span>
+          </button>
+        </div>
+
+        <nav class="sidebar-menu">
+          <a class="menu-item"
+            ><span class="material-icons">dashboard</span
+            ><span data-text="sidebarDashboard">Dashboard</span></a
+          >
+          <a class="menu-item" id="supplierProfileMenu"
+            ><span class="material-icons">account_circle</span
+            ><span data-text="sidebarMyProfile">My Profile</span></a
+          >
+          <a class="menu-item"
+            ><span class="material-icons">inventory_2</span
+            ><span data-text="sidebarInputSupply">Input Supply</span></a
+          >
+          <a class="menu-item active"
+            ><span class="material-icons">local_shipping</span
+            ><span>Supply Requests</span></a
+          >
+          <a class="menu-item"
+            ><span class="material-icons">account_balance_wallet</span
+            ><span data-text="sidebarWallet">Wallet</span></a
+          >
+          <a class="menu-item logout"
+            ><span class="material-icons">logout</span
+            ><span data-text="sidebarLogout">Logout</span></a
+          >
+        </nav>
+      </aside>
+
+      <main class="dashboard-content">
+        <div class="page-header">
+          <h1>Supply Requests</h1>
+          <p class="page-subtitle">
+            View broadcast requests, accept orders, upload bills and track
+            payments.
+          </p>
+        </div>
+
+        <section class="card card-content">
+          <!-- Tabs -->
+          <div class="tabs">
+            <button id="tabAvailableBtn" class="tab active">
+              Available Requests
+            </button>
+            <button id="tabMyOrdersBtn" class="tab">My Accepted Orders</button>
+          </div>
+
+          <div class="tab-panels">
+            <!-- TAB 1 -->
+            <div id="tabAvailable" class="tab-panel active">
+              <div class="section-subtitle">Requests you can accept</div>
+              <div id="availableList" class="orders-list">
+                <!-- cards injected here -->
+              </div>
+            </div>
+
+            <!-- TAB 2 -->
+            <div id="tabMyOrders" class="tab-panel">
+              <div class="section-subtitle">Orders you've accepted</div>
+              <div id="acceptedList" class="orders-list">
+                <!-- cards injected here -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- DETAILS MODAL (reuse style from dashboard) -->
+    <div id="orderDetailsModal" class="modal-overlay" hidden>
+      <div class="modal-box wide-modal">
+        <button id="orderModalCloseBtn" class="modal-close">×</button>
+        <h3 class="modal-title">Order Details</h3>
+        <div id="orderDetailsBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="../../Landing-page/landing-page.js"></script>
+    <script src="supplier-supply-orders.js"></script>
+  </body>
+</html>

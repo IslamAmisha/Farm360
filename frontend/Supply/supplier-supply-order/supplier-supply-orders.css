@@ -1,0 +1,57 @@
+/* Content-area styles for Supplier — Supply Requests (do not change header/sidebar) */
+.card-content { padding: 18px; border-radius: 12px; box-shadow: 0 8px 28px rgba(2,6,23,0.06); }
+
+/* Tabs */
+.tabs { display:flex; gap:12px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+.tab { background:transparent; border:none; padding:10px 14px; cursor:pointer; color:var(--muted-foreground); font-weight:600; position:relative; }
+.tab.active { color:var(--foreground); }
+.tab.active::after { content:''; position:absolute; left:12px; right:12px; bottom:-1px; height:3px; background:var(--primary); border-radius:3px; transition:all .18s ease; }
+.tab:hover { color:var(--foreground); }
+
+.tab-panels { margin-top:8px; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Orders list / cards */
+.orders-list { display:grid; grid-template-columns: 1fr; gap:14px; }
+@media(min-width:1000px) { .orders-list { grid-template-columns: repeat(2, 1fr); } }
+.order-card { padding:20px; border-radius:12px; background:var(--card); border:1px solid var(--border); box-shadow:0 10px 30px rgba(2,6,23,0.04); display:flex; justify-content:space-between; gap:16px; align-items:center; transition:transform .14s ease, box-shadow .14s ease; }
+.order-card:hover { transform:translateY(-6px); box-shadow:0 18px 40px rgba(2,6,23,0.08); }
+.order-left { display:flex; gap:14px; align-items:center; }
+.badge-stage { padding:6px 10px; border-radius:999px; color:#fff; font-weight:700; font-size:13px; }
+.badge-ADVANCE { background:#2563eb; }
+.badge-MID { background:#fb923c; }
+.badge-FINAL { background:#7c3aed; }
+.order-meta { color:var(--muted-foreground); font-size:13px; }
+.order-meta div { margin-bottom:6px; }
+.order-right { text-align:right; display:flex; flex-direction:column; gap:8px; min-width:160px; align-items:flex-end; }
+.order-amount { font-weight:800; color:var(--foreground); font-size:16px; }
+.order-actions { display:flex; gap:8px; align-items:center; }
+
+/* status badges */
+.status-badge { padding:6px 10px; border-radius:999px; font-weight:700; color:#fff; font-size:12px; }
+.status-Held, .status-HELD { background:#6b7280; } /* grey */
+.status-RELEASED { background:#10b981; }
+.status-DISPUTE { background:#ef4444; }
+.status-SUPPLIER_NOTIFIED { background:#3b82f6; }
+.status-SUPPLIER_ACCEPTED { background:#f59e0b; }
+
+/* Buttons — reuse green primary and outline styles */
+.btn-primary { background:var(--primary); color:var(--primary-foreground); border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; }
+.btn-outline { background:transparent; color:var(--foreground); border:1px solid var(--border); padding:8px 12px; border-radius:8px; cursor:pointer; }
+.btn-danger-outline { background:transparent; color:#b91c1c; border:1px solid rgba(185,28,28,0.12); padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+/* Details modal (lightweight) */
+.modal-overlay { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(2,6,23,0.45); z-index:60; }
+.modal-box { background:var(--card); border-radius:12px; padding:18px; border:1px solid var(--border); max-width:980px; width:94%; box-shadow:0 12px 40px rgba(2,6,23,0.18); }
+.modal-box.wide-modal { max-width:1100px; }
+.modal-close { float:right; background:transparent; border:none; font-size:20px; cursor:pointer; }
+.modal-body { margin-top:8px; }
+.modal-section { margin-bottom:12px; }
+.proof-thumb { max-width:120px; margin-right:8px; border-radius:8px; border:1px solid var(--border); }
+
+/* Empty state */
+.empty-text { color:var(--muted-foreground); padding:18px; background:transparent; border-radius:8px; }
+
+/* small spacing fixes */
+.section-subtitle { color:var(--muted-foreground); margin-bottom:8px; }

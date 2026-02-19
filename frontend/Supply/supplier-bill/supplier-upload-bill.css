@@ -1,0 +1,28 @@
+/* Supplier — Upload Invoice (content only) */
+.upload-invoice-card { padding:18px; border-radius:12px; }
+.summary-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:12px; }
+.summary-grid div { background:var(--card); padding:10px; border-radius:8px; border:1px solid var(--border); }
+.summary-grid div > div { margin-top:6px; color:var(--foreground); font-weight:700; }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row { display:flex; flex-direction:column; gap:6px; }
+.form-row input[type="text"], .form-row input[type="number"] { height:40px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--input-background); color:var(--foreground); }
+.file-preview { margin-top:8px; color:var(--muted-foreground); border:1px dashed var(--border); padding:8px; border-radius:8px; }
+
+.table-wrap { margin-top:12px; border:1px solid var(--border); border-radius:8px; overflow:auto; }
+#itemsTable { width:100%; border-collapse:collapse; }
+#itemsTable thead th { padding:10px; text-align:left; background:rgba(34,197,94,0.04); color:var(--muted-foreground); }
+#itemsTable tbody td { padding:10px; border-top:1px solid var(--border); }
+#itemsTable input { height:36px; padding:6px 8px; border-radius:6px; border:1px solid var(--border); }
+.btn-outline { background:transparent; color:var(--foreground); border:1px solid var(--border); padding:8px 12px; border-radius:8px; cursor:pointer; }
+.btn-primary { background:var(--primary); color:var(--primary-foreground); border:none; padding:10px 14px; border-radius:8px; cursor:pointer; }
+.btn-danger-outline { background:transparent; border:1px solid rgba(185,28,28,0.12); color:#b91c1c; padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+.table-actions { margin-top:10px; display:flex; gap:10px; }
+.total-panel { margin-top:12px; display:flex; justify-content:flex-end; }
+.totals { width:360px; background:var(--muted); padding:12px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+.totals div { display:flex; justify-content:space-between; color:var(--muted-foreground); }
+.totals .grand { font-weight:800; color:var(--foreground); background:transparent; }
+.validation-msg { color:#b91c1c; margin-right:12px; }
+
+@media(max-width:900px) { .form-grid { grid-template-columns:1fr; } .summary-grid { grid-template-columns:1fr; } .totals { width:100%; } }

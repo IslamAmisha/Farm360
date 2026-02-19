@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Upload Invoice</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+    <link rel="stylesheet" href="../../Farmer/Farmer-Dashboard/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../Supplier/Supplier-Dashboard/supplier-dashboard.css" />
+
+    <link rel="stylesheet" href="supplier-upload-bill.css" />
+  </head>
+  <body class="theme-light lang-en">
+    <!-- header + sidebar (same as dashboard) -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../../Landing-page/landing-page.html" class="logo"><span class="logo-icon">🌿</span><span data-text="brandName">Farm360</span></a>
+        </div>
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn"><span class="icon-sun">☀️</span><span class="icon-moon">🌙</span></button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-shell">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">Dashboard</div>
+        </div>
+        <nav class="sidebar-menu">
+          <a class="menu-item"><span class="material-icons">dashboard</span><span>Dashboard</span></a>
+          <a class="menu-item"><span class="material-icons">local_shipping</span><span>Supply Requests</span></a>
+        </nav>
+      </aside>
+
+      <main class="dashboard-content">
+        <div class="page-header">
+          <h1>Upload Invoice</h1>
+          <p class="page-subtitle">Submit invoice for an accepted order.</p>
+        </div>
+
+        <section class="card card-content upload-invoice-card">
+          <!-- Order Summary -->
+          <div class="section">
+            <h3>Order Summary</h3>
+            <div class="summary-grid">
+              <div><strong>Agreement ID</strong><div id="sumAgreement">—</div></div>
+              <div><strong>Stage</strong><div id="sumStage">—</div></div>
+              <div><strong>Allocated Amount</strong><div id="sumAllocated">—</div></div>
+              <div><strong>Expected Delivery</strong><div id="sumExpected">—</div></div>
+            </div>
+          </div>
+
+          <!-- Invoice Details -->
+          <div class="section">
+            <h3>Invoice Details</h3>
+            <div class="form-grid">
+              <div class="form-row"><label>Invoice Number</label><input id="invoiceNumber" type="text" placeholder="Enter invoice number" /></div>
+              <div class="form-row"><label>Delivery Charge (₹)</label><input id="deliveryCharge" type="number" min="0" value="0" /></div>
+              <div class="form-row"><label>Invoice Photo</label>
+                <input id="invoicePhoto" type="file" accept="image/*" />
+                <div id="invoicePreview" class="file-preview">No file chosen</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Items -->
+          <div class="section">
+            <h3>Invoice Items</h3>
+            <div class="table-wrap">
+              <table id="itemsTable">
+                <thead>
+                  <tr><th>Description</th><th>Quantity</th><th>Rate</th><th>Unit</th><th>Amount</th><th></th></tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+              </table>
+            </div>
+            <div class="table-actions">
+              <button id="addItemBtn" class="btn-outline">Add Item</button>
+            </div>
+
+            <div class="total-panel">
+              <div class="totals">
+                <div><span>Total Items</span><span id="totalItems">₹ 0</span></div>
+                <div><span>Delivery Charge</span><span id="totalDelivery">₹ 0</span></div>
+                <div class="grand"><span>Grand Total</span><span id="grandTotal">₹ 0</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <div class="validation-msg" id="validationMsg"></div>
+            <div>
+              <button id="cancelBtn" class="btn-outline">Cancel</button>
+              <button id="submitInvoiceBtn" class="btn-primary">Submit Invoice</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../../Landing-page/landing-page.js"></script>
+    <script src="supplier-upload-bill.js"></script>
+  </body>
+</html>
