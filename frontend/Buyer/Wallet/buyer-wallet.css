@@ -1,0 +1,139 @@
+/* buyer-wallet.css */
+/* Reuse landing-page variables and cards */
+
+/* container width similar to other buyer pages */
+.wallet-page.container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 20px 80px;
+}
+
+/* Page top bar */
+.page-top-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.8rem;
+}
+
+/* Back button refined */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--muted-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.back-btn .arrow {
+  font-size: 1rem;
+}
+
+/* Wallet summary styling copied from buyer-profile but three columns */
+.wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.08),
+    rgba(34, 197, 94, 0.02)
+  );
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+  margin: 0 auto 1.5rem auto;
+  max-width: 920px;
+}
+
+body.theme-dark .wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.22),
+    rgba(15, 23, 42, 0.9)
+  );
+}
+
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.wallet-item {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 0.7rem;
+  padding: 0.75rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--border);
+}
+
+.wallet-label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.wallet-value {
+  margin-top: 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* deposit card layout */
+.deposit-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.deposit-card .form-row label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  margin-bottom: 0.3rem;
+}
+
+.deposit-card .form-row input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--border);
+  background: var(--input-background, var(--muted-bg));
+  color: var(--foreground);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.deposit-card .form-row input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+/* message areas */
+.error-msg {
+  color: #dc2626; /* red-600 */
+  font-size: 0.85rem;
+  min-height: 1.2rem;
+}
+
+.success-msg {
+  color: #16a34a; /* green-600 */
+  font-size: 0.85rem;
+  min-height: 1.2rem;
+}
+
+/* back button spacing */
+.back-btn-card {
+  margin-bottom: 1.5rem;
+}

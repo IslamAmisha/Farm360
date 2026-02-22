@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Farm360 — Buyer Wallet</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Landing Page Theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- Page specific -->
+    <link rel="stylesheet" href="buyer-wallet.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <span class="logo-icon">🌿</span>
+            <span data-text="brandName">Farm360</span>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../../Landing-page/landing-page.html" data-text="navHome">
+            Home</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#modules"
+            data-text="navModules"
+            >Modules</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#about"
+            data-text="navAbout"
+            >About</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#data-insights"
+            data-text="navInsights"
+            >Insights</a
+          >
+          <a
+            href="../../Landing-page/landing-page.html#footer"
+            data-text="navSupport"
+            >Support</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="mobile-menu">
+        <a
+          href="../../Landing-page/landing-page.html#hero"
+          class="mobile-item"
+          data-text="navHome"
+          >Home</a
+        >
+        <a href="#wallet" class="mobile-item" data-text="sidebarWallet"
+          >Wallet</a
+        >
+        <a
+          href="../../Landing-page/landing-page.html#about"
+          class="mobile-item"
+          data-text="navAbout"
+          >About</a
+        >
+
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="wallet-page container" id="walletPage">
+      <div class="page-top-bar">
+        <button id="backToDashboard" class="back-btn">
+          <span class="arrow">‹</span>
+          <span>Back</span>
+        </button>
+      </div>
+
+      <!-- Wallet Summary -->
+      <section class="wallet-summary card">
+        <div class="wallet-grid" style="grid-template-columns: repeat(3, 1fr)">
+          <div class="wallet-item">
+            <div class="wallet-label" data-text="walletBalance">
+              Wallet Balance
+            </div>
+            <div class="wallet-value" id="walletBalance">₹ 0</div>
+          </div>
+
+          <div class="wallet-item">
+            <div class="wallet-label" data-text="supplierLocked">
+              Supplier Locked
+            </div>
+            <div class="wallet-value" id="supplierLocked">₹ 0</div>
+          </div>
+
+          <div class="wallet-item">
+            <div class="wallet-label" data-text="farmerProfitLocked">
+              Farmer Profit Locked
+            </div>
+            <div class="wallet-value" id="farmerProfitLocked">₹ 0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Deposit section -->
+      <section class="card deposit-card">
+        <div class="card-header">
+          <h3 data-text="depositTitle">Add Money to Wallet</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <label data-text="amountLabel">Amount</label>
+            <input type="number" id="amountInput" min="0" />
+          </div>
+          <div id="amountError" class="error-msg"></div>
+          <div id="amountSuccess" class="success-msg"></div>
+          <button id="addMoneyBtn" class="btn btn-primary" data-text="btnAdd">
+            Add Money to Wallet
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <script src="buyer-wallet.js"></script>
+  </body>
+</html>

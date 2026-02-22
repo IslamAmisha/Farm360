@@ -154,6 +154,11 @@ document.getElementById("buyerProfileMenu")?.addEventListener("click", () => {
   window.location.href = "../Buyer-Profile/buyer-profile.html";
 });
 
+// OPEN WALLET PAGE
+document.getElementById("buyerWalletMenu")?.addEventListener("click", () => {
+  window.location.href = "../Wallet/buyer-wallet.html";
+});
+
 // OPEN REQUEST PAGE
 document.getElementById("buyerRequestsMenu")?.addEventListener("click", () => {
   window.location.href = "../Buyer-Request/buyer-request.html";
