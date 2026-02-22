@@ -63,4 +63,17 @@ WHERE o.agreementId = :agreementId
        AND o.status = com.Farm360.utils.SupplyStatus.APPROVED
        """)
     Long countCompletedOrders(@Param("supplierUserId") Long supplierUserId);
+
+
+    @Query("""
+    SELECT o FROM SupplyExecutionOrderEntity o
+    WHERE o.supplierUserId IS NULL
+    AND o.supplierType = :type
+    AND o.status = 'SUPPLIER_NOTIFIED'
+""")
+    List<SupplyExecutionOrderEntity> findBroadcastRequestsForSupplierType(
+            @Param("type") SupplierType type
+    );
+
+    List<SupplyExecutionOrderEntity> findBySupplierUserId(Long supplierUserId);
 }
