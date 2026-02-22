@@ -292,4 +292,32 @@ public class EscrowServiceImpl implements EscrowService {
                 new Date()
         ));
     }
+
+    @Override
+    @Transactional
+    public void depositToBuyerWallet(Long buyerUserId, Double amount) {
+
+        if (amount == null || amount <= 0)
+            throw new RuntimeException("Invalid deposit amount");
+
+        BuyerWallet wallet =
+                buyerWalletRepo.findByBuyerUserIdForUpdate(buyerUserId)
+                        .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        wallet.setBalance(wallet.getBalance() + amount);
+
+        buyerWalletRepo.save(wallet);
+
+        escrowTxnRepo.save(new EscrowTransaction(
+                null,
+                amount,
+                EscrowPurpose.DEPOSIT,
+                "DEPOSIT",
+                "WALLET_TOPUP",
+                wallet.getBuyer(),
+                null,
+                null,
+                new Date()
+        ));
+    }
 }

@@ -9,6 +9,7 @@ import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.payment.EscrowTransactionRepository;
 import com.Farm360.repository.payment.FarmerWalletRepository;
 import com.Farm360.security.UserDetailsImpl;
+import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.utils.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,9 @@ public class EscrowController {
 
     @Autowired
     private EscrowTransactionRepository escrowTxnRepo;
+
+    @Autowired
+    private EscrowService escrowService;
 
     @GetMapping("/wallet")
     public WalletBalanceRS getWalletBalance(Authentication authentication) {
@@ -92,5 +96,20 @@ public class EscrowController {
                         .build()
                 )
                 .toList();
+    }
+
+    @PostMapping("/deposit")
+    public void deposit(
+            @RequestParam Double amount,
+            Authentication authentication
+    ) {
+
+        UserDetailsImpl user =
+                (UserDetailsImpl) authentication.getPrincipal();
+
+        if (user.getRole() != Role.buyer)
+            throw new RuntimeException("Only buyer can deposit");
+
+        escrowService.depositToBuyerWallet(user.getId(), amount);
     }
 }

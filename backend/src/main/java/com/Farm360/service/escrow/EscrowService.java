@@ -45,4 +45,6 @@ public interface EscrowService {
             Double amount,
             String reference
     );
+
+    void depositToBuyerWallet(Long buyerUserId, Double amount);
 }

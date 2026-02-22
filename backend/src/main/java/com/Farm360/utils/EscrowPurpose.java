@@ -7,5 +7,5 @@ public enum EscrowPurpose {
     SUPPLIER_MID,
     SUPPLIER_FINAL,
     FARMER_PROFIT,
-    REFUND
+    DEPOSIT, REFUND
 }
