@@ -422,9 +422,15 @@ async function loadSupplierData() {
 
 	try {
 		const [ovrResp, reqResp, delResp] = await Promise.all([
-			fetch(`${API_BASE_URL}/dashboard/supplier/overview?userId=${encodeURIComponent(userId)}`, { headers: { Authorization: 'Bearer ' + token } }),
-			fetch(`${API_BASE_URL}/dashboard/supplier/requests?userId=${encodeURIComponent(userId)}`, { headers: { Authorization: 'Bearer ' + token } }),
-			fetch(`${API_BASE_URL}/dashboard/supplier/deliveries?userId=${encodeURIComponent(userId)}`, { headers: { Authorization: 'Bearer ' + token } })
+		fetch(`${API_BASE_URL}/dashboard/supplier/overview`, {
+    headers: { Authorization: 'Bearer ' + token }
+}),
+			fetch(`${API_BASE_URL}/dashboard/supplier/requests`,{
+    headers: { Authorization: 'Bearer ' + token }
+}),
+			fetch(`${API_BASE_URL}/dashboard/supplier/deliveries`,{
+    headers: { Authorization: 'Bearer ' + token }
+})
 		]);
 
 		const overview = ovrResp.ok ? await ovrResp.json() : {};

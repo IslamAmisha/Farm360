@@ -218,81 +218,85 @@
 	}
 
 	async function saveBasicProfile() {
-		const token = localStorage.getItem("token");
-		const userId = localStorage.getItem("userId");
-		if (!token || !userId) return alert(t().msgLoginRequired);
+    const token = localStorage.getItem("token");
 
-		const payload = {
-			supplierName: supplierNameInput.value.trim(),
-			businessName: businessNameInput.value.trim(),
-			village: villageInput.value.trim(),
-			pinCode: pinInput.value.trim(),
-			bankAccountNumber: bankAccountInput.value.trim(),
-			// do not send immutable/readonly fields
-		};
+    const payload = {
+        supplierName: supplierNameInput.value.trim(),
+        businessName: businessNameInput.value.trim(),
+        village: villageInput.value.trim(),
+        pinCode: pinInput.value.trim(),
+        bankAccountNo: bankAccountInput.value.trim(), // IMPORTANT FIX
+    };
 
-		try {
-			const res = await fetch(`http://localhost:8080/supplier/profile/${encodeURIComponent(userId)}`, {
-				method: "PUT",
-				headers: {
-					Authorization: "Bearer " + token,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(payload),
-			});
+    try {
+        const res = await fetch("http://localhost:8080/api/supplier/update", {
+            method: "PUT",
+            headers: {
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
 
-			if (!res.ok) throw new Error("update-failed");
-			alert(t().msgProfileSaved);
-			await loadSupplierProfile();
-			toggleEditBasic(false);
-		} catch (err) {
-			console.error(err);
-			alert(t().msgProfileSaveFailed);
-		}
-	}
+        if (!res.ok) throw new Error("update-failed");
+
+        alert(t().msgProfileSaved);
+        await loadSupplierProfile();
+        toggleEditBasic(false);
+    } catch (err) {
+        console.error(err);
+        alert(t().msgProfileSaveFailed);
+    }
+}
 
 	// Load profile + dashboard (wallet)
 	async function loadSupplierProfile() {
-		try {
-			const token = localStorage.getItem("token");
-			const userId = localStorage.getItem("userId");
+    try {
+        const token = localStorage.getItem("token");
 
-			const [profileResp, dashResp] = await Promise.all([
-				fetch(`http://localhost:8080/supplier/profile?userId=${encodeURIComponent(userId)}`, {
-					headers: { Authorization: "Bearer " + token },
-				}),
-				fetch(`http://localhost:8080/dashboard/supplier?userId=${encodeURIComponent(userId)}`, {
-					headers: { Authorization: "Bearer " + token },
-				}),
-			]);
+        const [profileResp, dashResp] = await Promise.all([
+            fetch("http://localhost:8080/api/supplier/getProfile", {
+                method: "GET",
+                headers: {
+                    Authorization: "Bearer " + token,
+                },
+            }),
+            fetch("http://localhost:8080/dashboard/supplier/overview", {
+                method: "GET",
+                headers: {
+                    Authorization: "Bearer " + token,
+                },
+            }),
+        ]);
 
-			if (!profileResp.ok) throw new Error("profile-load-failed");
-			const profile = await profileResp.json();
-			profileData = profile;
-			populateProfile(profile);
+        if (!profileResp.ok) throw new Error("profile-load-failed");
 
-			if (dashResp.ok) {
-				const dash = await dashResp.json();
-				walletAvailableEl.textContent = "₹ " + (dash.availableBalance ?? 0);
-				walletAvailableRightEl.textContent = "₹ " + (dash.availableBalance ?? 0);
-				completedJobsEl.textContent = dash.completedJobs ?? 0;
-			}
-		} catch (err) {
-			console.error(err);
-			alert(t().msgProfileLoadFailed);
-		}
-	}
+        const profile = await profileResp.json();
+        profileData = profile;
+        populateProfile(profile);
+
+        if (dashResp.ok) {
+            const dash = await dashResp.json();
+            walletAvailableEl.textContent = "₹ " + (dash.walletBalance ?? 0);
+            walletAvailableRightEl.textContent = "₹ " + (dash.walletBalance ?? 0);
+            completedJobsEl.textContent = dash.completedJobs ?? 0;
+        }
+    } catch (err) {
+        console.error(err);
+        alert(t().msgProfileLoadFailed);
+    }
+}
 
 	function populateProfile(data) {
-		phoneInput.value = data.phone || "";
+		phoneInput.value = data.phoneNumber || "";
 		roleInput.value = data.role || "Supplier";
 		supplierNameInput.value = data.supplierName || data.name || "";
 		businessNameInput.value = data.businessName || "";
 		supplierTypeSelect.value = data.supplierType || "OTHERS";
-		bankAccountInput.value = data.bankAccountNumber || "";
+		bankAccountInput.value = data.bankAccountNo || "";
 		districtInput.value = data.districtName || "";
 		blockInput.value = data.blockName || "";
-		cityInput.value = data.city || data.village || "";
+		cityInput.value = data.cityName || "";
 		villageInput.value = data.village || "";
 		pinInput.value = data.pinCode || "";
 		panInput.value = data.panNumber || "";

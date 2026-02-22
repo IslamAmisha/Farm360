@@ -1,16 +1,16 @@
 (function () {
   // protect supplier
-  // (function protect() {
-  //   const token = localStorage.getItem('token');
-  //   const userId = localStorage.getItem('userId');
-  //   const role = (localStorage.getItem('role') || '').toLowerCase();
-  //   if (!token || !userId || role !== 'supplier') {
-  //     alert('User not found or unauthorized access!');
-  //     localStorage.clear();
-  //     window.location.href = '../../Login/login.html';
-  //     return;
-  //   }
-  // })();
+  (function protect() {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const role = (localStorage.getItem('role') || '').toLowerCase();
+    if (!token || !userId || role !== 'supplier') {
+      alert('User not found or unauthorized access!');
+      localStorage.clear();
+      window.location.href = '../../Login/login.html';
+      return;
+    }
+  })();
 
   const qs = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');

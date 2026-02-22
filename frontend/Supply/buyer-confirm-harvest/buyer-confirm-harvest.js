@@ -1,9 +1,9 @@
 (function () {
-//   const qs = new URLSearchParams(window.location.search);
-//   const orderId = qs.get('orderId');
-//   const API = '/api/advance-supply';
-//   const token = localStorage.getItem('token');
-//   const role = (localStorage.getItem('role') || '').toLowerCase();
+  const qs = new URLSearchParams(window.location.search);
+  const orderId = qs.get('orderId');
+  const API = '/api/advance-supply';
+  const token = localStorage.getItem('token');
+  const role = (localStorage.getItem('role') || '').toLowerCase();
 
   // DOM refs
   const backBtn = document.getElementById('backBtn');

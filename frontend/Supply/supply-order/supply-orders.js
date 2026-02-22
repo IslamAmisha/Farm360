@@ -1,12 +1,12 @@
 (function () {
-  // const token = localStorage.getItem('token');
-  // const role = (localStorage.getItem('role') || '').toLowerCase();
-  // if (!token || !['farmer','buyer'].includes(role)) {
-  //   alert('User not found or unauthorized access!');
-  //   localStorage.clear();
-  //   window.location.href = '../Login/login.html';
-  //   return;
-  // }
+  const token = localStorage.getItem('token');
+  const role = (localStorage.getItem('role') || '').toLowerCase();
+  if (!token || !['farmer','buyer'].includes(role)) {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = '../Login/login.html';
+    return;
+  }
 
   const ordersListEl = document.getElementById('ordersList');
   const modal = document.getElementById('orderModal');

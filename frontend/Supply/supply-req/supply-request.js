@@ -1,13 +1,13 @@
 (function () {
-  // // page protection: allow farmer or buyer
-  // const token = localStorage.getItem("token");
-  // const role = (localStorage.getItem("role") || "").toLowerCase();
-  // if (!token || !['farmer','buyer'].includes(role)) {
-  //   alert('User not found or unauthorized access!');
-  //   localStorage.clear();
-  //   window.location.href = "../Login/login.html";
-  //   return;
- // }
+  // page protection: allow farmer or buyer
+  const token = localStorage.getItem("token");
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+  if (!token || !['farmer','buyer'].includes(role)) {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = "../../Login/login.html";
+    return;
+  }
 
   // DOM refs
   const agreementIdEl = document.getElementById('agreementId');
