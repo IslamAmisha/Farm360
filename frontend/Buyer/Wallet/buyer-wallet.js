@@ -119,7 +119,7 @@
   const backBtn = document.getElementById("backToDashboard");
 
   backBtn?.addEventListener("click", () => {
-    window.location.href = "../../Buyer-Dashboard/buyer-dashboard.html";
+    window.location.href = "../Buyer-Dashboard/buyer-dashboard.html";
   });
 
   addMoneyBtn?.addEventListener("click", deposit);
