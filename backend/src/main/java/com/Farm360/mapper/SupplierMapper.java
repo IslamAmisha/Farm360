@@ -28,6 +28,16 @@ public interface SupplierMapper {
     @Mapping(source = "district.name", target = "districtName")
     @Mapping(source = "block.name", target = "blockName")
     @Mapping(source = "city.name", target = "cityName")
+    @Mapping(source = "village", target = "village")
+    @Mapping(source = "pinCode", target = "pinCode")
+    @Mapping(source = "supplierName", target = "supplierName")
+    @Mapping(source = "businessName", target = "businessName")
+    @Mapping(source = "user.phoneNumber", target = "phoneNumber")
+    @Mapping(source = "panNumber", target = "panNumber")
+    @Mapping(source = "gstNumber", target = "gstNumber")
+    @Mapping(source = "bankAccountNo", target = "bankAccountNo")
+    @Mapping(source = "supplierType", target = "supplierType")
+    @Mapping(source = "verificationStatus", target = "verificationStatus")
 
     SupplierRS mapEntityToRS(SupplierEntity entity);
 }

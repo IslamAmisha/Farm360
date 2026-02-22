@@ -47,8 +47,9 @@ public class SupplierProfileServiceImpl implements SupplierProfileService {
         if (rq.getPinCode() != null)
             supplier.setPinCode(rq.getPinCode());
 
-        if (rq.getBankAccountNo() != null)
+        if (rq.getBankAccountNo() != null && !rq.getBankAccountNo().isBlank()) {
             supplier.setBankAccountNo(rq.getBankAccountNo());
+        }
 
         supplierRepo.save(supplier);
 

@@ -24,6 +24,10 @@ public class SupplierRS {
     private String cityName;
     private String village;
     private String pinCode;
+    private String phoneNumber;
+    private String panNumber;
+    private String gstNumber;
+    private String bankAccountNo;
 
     private SupplierType supplierType;
     private VerificationStatus verificationStatus;
