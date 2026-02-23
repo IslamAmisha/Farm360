@@ -1,337 +1,235 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" class="theme-light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title data-text="dashboardTitle">Supplier Dashboard</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-text="dashboardTitle">Supplier Dashboard</title>
 
-    <!-- Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- Material Icons -->
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-    <!-- Shared Landing Page Theme -->
-    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+  <!-- Shared Landing Page Theme -->
+  <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
 
-    <!-- Re-use Farmer dashboard styles for identical look/spacing -->
-    <link
-      rel="stylesheet"
-      href="../../Farmer/Farmer-Dashboard/farmer-dashboard.css"
-    />
+  <!-- Re-use Farmer dashboard styles for identical look/spacing -->
+  <link rel="stylesheet" href="../../Farmer/Farmer-Dashboard/farmer-dashboard.css" />
 
-    <!-- Supplier specific (keeps minimal overrides) -->
-    <link rel="stylesheet" href="supplier-dashboard.css" />
-  </head>
+  <!-- Supplier specific (keeps minimal overrides) -->
+  <link rel="stylesheet" href="supplier-dashboard.css" />
+</head>
 
-  <body class="theme-light lang-en">
-    <!-- HEADER (unchanged) -->
-    <header id="site-header">
-      <div class="header-container">
-        <div class="header-left">
-          <a href="../../Landing-page/landing-page.html" class="logo">
-            <span class="logo-icon">🌿</span>
-            <span data-text="">Farm360</span>
-          </a>
-        </div>
-
-        <nav class="nav-links">
-          <a
-            href="../../Landing-page/landing-page.html#hero"
-            class="nav-item"
-            data-text="navHome"
-            >Home</a
-          >
-          <a
-            href="../../Landing-page/landing-page.html#modules"
-            class="nav-item"
-            data-text="navModules"
-            >Modules</a
-          >
-          <a
-            href="../../Landing-page/landing-page.html#about"
-            class="nav-item"
-            data-text="navAbout"
-            >About</a
-          >
-          <a
-            href="../../Landing-page/landing-page.html#data-insights"
-            class="nav-item"
-            data-text="navInsights"
-            >Insights</a
-          >
-          <a
-            href="../../Landing-page/landing-page.html#multilingual-support"
-            class="nav-item"
-            data-text="navSupport"
-            >Support</a
-          >
-        </nav>
-
-        <div class="header-right">
-          <button id="themeToggle" class="icon-btn">
-            <span class="icon-sun">☀️</span>
-            <span class="icon-moon">🌙</span>
-          </button>
-
-          <button id="langToggle" class="lang-btn">বাংলা</button>
-
-          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
-        </div>
+<body class="theme-light lang-en">
+  <!-- HEADER (unchanged) -->
+  <header id="site-header">
+    <div class="header-container">
+      <div class="header-left">
+        <a href="../../Landing-page/landing-page.html" class="logo">
+          <span class="logo-icon">🌿</span>
+          <span data-text="">Farm360</span>
+        </a>
       </div>
 
-      <div id="mobileMenu" class="mobile-menu">
-        <a
-          href="../../Landing-page/landing-page.html#hero"
-          class="mobile-item"
-          data-text="navHome"
-          >Home</a
-        >
-        <a href="#dashboard" class="mobile-item" data-text="sidebarDashboard"
-          >Dashboard</a
-        >
-        <a
-          href="../../Landing-page/landing-page.html#about"
-          class="mobile-item"
-          data-text="navAbout"
-          >About</a
-        >
+      <nav class="nav-links">
+        <a href="../../Landing-page/landing-page.html#hero" class="nav-item" data-text="navHome">Home</a>
+        <a href="../../Landing-page/landing-page.html#modules" class="nav-item" data-text="navModules">Modules</a>
+        <a href="../../Landing-page/landing-page.html#about" class="nav-item" data-text="navAbout">About</a>
+        <a href="../../Landing-page/landing-page.html#data-insights" class="nav-item" data-text="navInsights">Insights</a>
+        <a href="../../Landing-page/landing-page.html#multilingual-support" class="nav-item" data-text="navSupport">Support</a>
+      </nav>
 
-        <div class="mobile-controls">
-          <button id="mobileThemeToggle" class="mobile-theme-btn">
-            Toggle Theme
-          </button>
-          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
-        </div>
+      <div class="header-right">
+        <button id="themeToggle" class="icon-btn">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </button>
+
+        <button id="langToggle" class="lang-btn">বাংলা</button>
+
+        <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
       </div>
-    </header>
+    </div>
 
-    <!-- DASHBOARD (sidebar unchanged) -->
-    <div class="dashboard-shell" id="dashboard">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-title" data-text="dashboard">Dashboard</div>
-          <button id="sidebarToggle" class="sidebar-toggle">
-            <span class="material-icons">menu_open</span>
-          </button>
+    <div id="mobileMenu" class="mobile-menu">
+      <a href="../../Landing-page/landing-page.html#hero" class="mobile-item" data-text="navHome">Home</a>
+      <a href="#dashboard" class="mobile-item" data-text="sidebarDashboard">Dashboard</a>
+      <a href="../../Landing-page/landing-page.html#about" class="mobile-item" data-text="navAbout">About</a>
+
+      <div class="mobile-controls">
+        <button id="mobileThemeToggle" class="mobile-theme-btn">Toggle Theme</button>
+        <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD (sidebar) - updated with supplier items -->
+  <div class="dashboard-shell" id="dashboard">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title" data-text="dashboard">Dashboard</div>
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <span class="material-icons">menu_open</span>
+        </button>
+      </div>
+
+      <nav class="sidebar-menu">
+        <!-- Updated menu items: exactly as specified -->
+        <a class="menu-item active">
+          <span class="material-icons">dashboard</span>
+          <span data-text="sidebarDashboard">Dashboard</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">account_circle</span>
+          <span data-text="sidebarProfile">Profile</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">assignment</span>
+          <span data-text="sidebarSupplyRequests">Supply Requests</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">local_shipping</span>
+          <span data-text="sidebarActiveDeliveries">Active Deliveries</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">check_circle</span>
+          <span data-text="sidebarCompletedOrders">Completed Orders</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">account_balance_wallet</span>
+          <span data-text="sidebarWallet">Wallet</span>
+        </a>
+
+        <a class="menu-item">
+          <span class="material-icons">settings</span>
+          <span data-text="sidebarSettings">Settings</span>
+        </a>
+
+        <a class="menu-item logout">
+          <span class="material-icons">logout</span>
+          <span data-text="sidebarLogout">Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-content">
+      <div class="page-header">
+        <h1 data-text="dashboardTitle">Supplier Dashboard</h1>
+        <p class="page-subtitle" data-text="dashboardSubtitle">
+          Manage incoming supply requests, deliveries and bills.
+        </p>
+      </div>
+
+      <!-- SUMMARY CARDS -->
+      <section class="summary-cards">
+        <div class="summary-card">
+          <div class="summary-icon summary-icon-green">🚚</div>
+          <div class="summary-content">
+            <div class="summary-label" data-text="summaryActiveDeliveries">Active Deliveries</div>
+            <div id="summaryActiveDeliveriesValue" class="summary-value">0</div>
+          </div>
         </div>
 
-        <nav class="sidebar-menu">
-          <a class="menu-item active">
-            <span class="material-icons">dashboard</span>
-            <span data-text="sidebarDashboard">Dashboard</span>
-          </a>
+        <div class="summary-card">
+          <div class="summary-icon summary-icon-blue">🧾</div>
+          <div class="summary-content">
+            <div class="summary-label" data-text="summaryBillsSubmitted">Bills Submitted</div>
+            <div id="summaryBillsSubmittedValue" class="summary-value">0</div>
+          </div>
+        </div>
 
-          <a class="menu-item" id="farmerProfileMenu">
-            <span class="material-icons">account_circle</span>
-            <span data-text="sidebarMyProfile">My Profile</span>
-          </a>
+        <div class="summary-card">
+          <div class="summary-icon summary-icon-orange">✅</div>
+          <div class="summary-content">
+            <div class="summary-label" data-text="summaryCompletedJobs">Completed Jobs</div>
+            <div id="summaryCompletedJobsValue" class="summary-value">0</div>
+          </div>
+        </div>
 
-          <a class="menu-item">
-            <span class="material-icons">agriculture</span>
-            <span data-text="sidebarLandsBuyers">My Lands & Buyers</span>
-          </a>
+        <div class="summary-card">
+          <div class="summary-icon summary-icon-purple">💰</div>
+          <div class="summary-content">
+            <div class="summary-label" data-text="summaryTotalEarnings">Total Earnings</div>
+            <div id="summaryTotalEarningsValue" class="summary-value">₹0</div>
+          </div>
+        </div>
+      </section>
 
-          <a class="menu-item" id="farmerRequestsMenu">
-            <span class="material-icons">mail</span>
-            <span data-text="sidebarRequests">Requests</span>
-          </a>
-
-          <a class="menu-item" id="farmerProposalsMenu">
-            <span class="material-icons">description</span>
-            <span data-text="sidebarProposals">Proposals</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">forum</span>
-            <span data-text="sidebarNegotiation">Negotiation / Messages</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">handshake</span>
-            <span data-text="sidebarAgreements">Agreements</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">account_balance_wallet</span>
-            <span data-text="sidebarWallet">Wallet</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">inventory_2</span>
-            <span data-text="sidebarInputSupply">Input Supply</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">yard</span>
-            <span data-text="sidebarCultivationHarvest"
-              >Cultivation / Harvest</span
-            >
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">local_shipping</span>
-            <span data-text="sidebarDelivery">Delivery / Logistics</span>
-          </a>
-
-          <a class="menu-item">
-            <span class="material-icons">settings</span>
-            <span data-text="sidebarSettings">Settings</span>
-          </a>
-
-          <a class="menu-item logout">
-            <span class="material-icons">logout</span>
-            <span data-text="sidebarLogout">Logout</span>
-          </a>
-        </nav>
-      </aside>
-
-      <main class="dashboard-content">
-        <div class="page-header">
-          <h1 data-text="dashboardTitle">Supplier Dashboard</h1>
-          <p class="page-subtitle" data-text="dashboardSubtitle">
-            Manage incoming supply requests, deliveries and bills.
+      <!-- INCOMING SUPPLY REQUESTS -->
+      <section class="buyers-section">
+        <div class="section-header">
+          <h2 data-text="incomingRequestsTitle">Incoming Supply Requests</h2>
+          <p class="section-subtitle" data-text="incomingRequestsSubtitle">
+            Requests broadcast to your supplier type.
           </p>
         </div>
 
-        <!-- SUMMARY CARDS -->
-        <section class="summary-cards">
-          <div class="summary-card">
-            <div class="summary-icon summary-icon-green">🚚</div>
-            <div class="summary-content">
-              <div class="summary-label" data-text="summaryActiveDeliveries">
-                Active Deliveries
-              </div>
-              <div id="summaryActiveDeliveriesValue" class="summary-value">
-                0
-              </div>
-            </div>
+        <div class="buyers-grid" id="requestsGrid">
+          <div class="buyer-card loading-card">
+            <div class="loader"></div>
           </div>
+        </div>
+      </section>
 
-          <div class="summary-card">
-            <div class="summary-icon summary-icon-blue">🧾</div>
-            <div class="summary-content">
-              <div class="summary-label" data-text="summaryBillsSubmitted">
-                Bills Submitted
-              </div>
-              <div id="summaryBillsSubmittedValue" class="summary-value">0</div>
-            </div>
-          </div>
+      <!-- MY ACTIVE DELIVERIES -->
+      <section class="buyers-section">
+        <div class="section-header">
+          <h2 data-text="activeDeliveriesTitle">My Active Deliveries</h2>
+          <p class="section-subtitle" data-text="activeDeliveriesSubtitle">
+            Track delivery, billing and payment status.
+          </p>
+        </div>
 
-          <div class="summary-card">
-            <div class="summary-icon summary-icon-orange">✅</div>
-            <div class="summary-content">
-              <div class="summary-label" data-text="summaryCompletedJobs">
-                Completed Jobs
-              </div>
-              <div id="summaryCompletedJobsValue" class="summary-value">0</div>
-            </div>
+        <div class="buyers-grid" id="activeDeliveriesGrid">
+          <div class="buyer-card loading-card">
+            <div class="loader"></div>
           </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-          <div class="summary-card">
-            <div class="summary-icon summary-icon-purple">💰</div>
-            <div class="summary-content">
-              <div class="summary-label" data-text="summaryTotalEarnings">
-                Total Earnings
-              </div>
-              <div id="summaryTotalEarningsValue" class="summary-value">₹0</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- INCOMING SUPPLY REQUESTS -->
-        <section class="buyers-section">
-          <div class="section-header">
-            <h2 data-text="incomingRequestsTitle">Incoming Supply Requests</h2>
-            <p class="section-subtitle" data-text="incomingRequestsSubtitle">
-              Requests broadcast to your supplier type.
-            </p>
-          </div>
-
-          <div class="buyers-grid" id="requestsGrid">
-            <div class="buyer-card loading-card">
-              <div class="loader"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- MY ACTIVE DELIVERIES -->
-        <section class="buyers-section">
-          <div class="section-header">
-            <h2 data-text="activeDeliveriesTitle">My Active Deliveries</h2>
-            <p class="section-subtitle" data-text="activeDeliveriesSubtitle">
-              Track delivery, billing and payment status.
-            </p>
-          </div>
-
-          <div class="buyers-grid" id="activeDeliveriesGrid">
-            <div class="buyer-card loading-card">
-              <div class="loader"></div>
-            </div>
-          </div>
-        </section>
-      </main>
+  <!-- REQUEST DETAILS MODAL -->
+  <div id="requestDetailsModal" class="modal-overlay" hidden>
+    <div class="modal-box wide-modal">
+      <button id="requestModalCloseBtn" class="modal-close">×</button>
+      <h3 class="modal-title" data-text="requestDetailsTitle">Request Details</h3>
+      <div id="requestDetailsBody" class="modal-body"></div>
     </div>
+  </div>
 
-    <!-- REQUEST DETAILS MODAL -->
-    <div id="requestDetailsModal" class="modal-overlay" hidden>
-      <div class="modal-box wide-modal">
-        <button id="requestModalCloseBtn" class="modal-close">×</button>
-        <h3 class="modal-title" data-text="requestDetailsTitle">
-          Request Details
-        </h3>
-        <div id="requestDetailsBody" class="modal-body"></div>
-      </div>
-    </div>
+  <!-- BILL / UPLOAD MODAL -->
+  <div id="billModal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <button id="billModalCloseBtn" class="modal-close">×</button>
+      <h3 class="modal-title" data-text="billModalTitle">Submit Bill</h3>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="field-label" data-text="labelAmount">Amount (₹)</label>
+          <input id="billAmountInput" type="number" class="search-input" />
+        </div>
 
-    <!-- BILL / UPLOAD MODAL -->
-    <div id="billModal" class="modal-overlay" hidden>
-      <div class="modal-box">
-        <button id="billModalCloseBtn" class="modal-close">×</button>
-        <h3 class="modal-title" data-text="billModalTitle">Submit Bill</h3>
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="field-label" data-text="labelAmount"
-              >Amount (₹)</label
-            >
-            <input id="billAmountInput" type="number" class="search-input" />
-          </div>
+        <div class="form-group">
+          <label class="field-label" data-text="labelInvoice">Upload Invoice / Bill</label>
+          <input id="billFileInput" type="file" class="search-input" />
+        </div>
 
-          <div class="form-group">
-            <label class="field-label" data-text="labelInvoice"
-              >Upload Invoice / Bill</label
-            >
-            <input id="billFileInput" type="file" class="search-input" />
-          </div>
-
-          <div class="modal-actions">
-            <button
-              class="btn-details"
-              id="cancelBillBtn"
-              data-text="btnCancel"
-            >
-              Cancel
-            </button>
-            <button
-              class="btn-request"
-              id="submitBillBtn"
-              data-text="btnSubmitBill"
-            >
-              Submit Bill
-            </button>
-          </div>
+        <div class="modal-actions">
+          <button class="btn-details" id="cancelBillBtn" data-text="btnCancel">Cancel</button>
+          <button class="btn-request" id="submitBillBtn" data-text="btnSubmitBill">Submit Bill</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="../../Landing-page/landing-page.js"></script>
-    <script src="supplier-dashboard.js"></script>
-  </body>
+  <!-- Scripts -->
+  <script src="../../Landing-page/landing-page.js"></script>
+  <script src="supplier-dashboard.js"></script>
+</body>
 </html>
