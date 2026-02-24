@@ -272,7 +272,7 @@
   }
 
   // wire navigation items back to supplier profile / dashboard
-  document.getElementById('supplierProfileMenu')?.addEventListener('click', () => { window.location.href = '../Supplier-Profile/supplier-profile.html'; });
+  // document.getElementById('supplierProfileMenu')?.addEventListener('click', () => { window.location.href = '../Supplier-Profile/supplier-profile.html'; });
 
   document.addEventListener('DOMContentLoaded', async () => {
     await loadAll();

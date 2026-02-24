@@ -1,0 +1,228 @@
+/* supply-orders.css */
+/* Minimal additions for Supply Orders page - relies on farmer-dashboard.css for base styles */
+
+/* Page layout */
+.supply-page {
+    max-width: 1400px;
+    margin: 100px auto 40px;
+    padding: 0 24px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--foreground);
+}
+
+/* Orders grid - using same grid as buyer-cards from farmer-dashboard */
+.orders-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 1000px) {
+    .orders-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Order cards - reuse buyer-card styles from farmer-dashboard */
+.order-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.04);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    transition: transform 0.14s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.08);
+}
+
+.order-left {
+    display: flex;
+    gap: 14px;
+    flex: 1;
+}
+
+/* Stage badges - colored versions */
+.badge-stage {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    height: fit-content;
+}
+
+.badge-ADVANCE { background: #2563eb; }
+.badge-MID { background: #fb923c; }
+.badge-FINAL { background: #7c3aed; }
+.badge-OTHER { background: #6b7280; }
+
+/* Status badges - colored versions */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+}
+
+.status-PENDING,
+.status-HELD { background: #6b7280; }
+
+.status-RELEASED { background: #10b981; }
+.status-DISPUTE { background: #ef4444; }
+.status-SUPPLIER_NOTIFIED { background: #3b82f6; }
+.status-SUPPLIER_ACCEPTED { background: #f59e0b; }
+.status-DISPATCHED { background: #8b5cf6; }
+.status-FARMER_CONFIRMED { background: #06b6d4; }
+.status-CONFIRMED { background: #059669; }
+.status-COMPLETED { background: #047857; }
+
+/* Order metadata - reuse detail-label from your supplier CSS */
+.order-meta {
+    color: var(--muted-foreground);
+    font-size: 13px;
+}
+
+.order-meta div {
+    margin-bottom: 6px;
+}
+
+.order-meta strong {
+    color: var(--foreground);
+}
+
+/* Right section */
+.order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 160px;
+    align-items: flex-end;
+}
+
+.order-amount {
+    font-weight: 800;
+    color: var(--foreground);
+    font-size: 16px;
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, 0.45);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--muted-foreground);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.modal-close:hover {
+    background: var(--accent);
+}
+
+/* Modal sections */
+.modal-body-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-body-section:last-child {
+    border-bottom: none;
+}
+
+.modal-body-section strong {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--foreground);
+}
+
+/* Proof images */
+.proof-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.proof-images img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* Empty state */
+.empty-text {
+    color: var(--muted-foreground);
+    padding: 48px 24px;
+    text-align: center;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+    grid-column: 1 / -1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .order-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+}

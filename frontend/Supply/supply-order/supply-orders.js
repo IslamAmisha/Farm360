@@ -1,10 +1,10 @@
 (function () {
   const token = localStorage.getItem('token');
   const role = (localStorage.getItem('role') || '').toLowerCase();
-  if (!token || !['farmer','buyer'].includes(role)) {
+  if (!token || !['farmer','buyer','supplier'].includes(role)) {
     alert('User not found or unauthorized access!');
     localStorage.clear();
-    window.location.href = '../Login/login.html';
+    window.location.href = '/Login/login.html';
     return;
   }
 

@@ -454,14 +454,56 @@ function syncDashboardLanguage() {
 	loadSupplierData();
 }
 
-// Navigation: keep sidebar design unchanged but wire profile/menu links for supplier
-document.getElementById('farmerProfileMenu')?.addEventListener('click', () => {
-	window.location.href = "../Supplier-Profile/supplier-profile.html";
+// Navigation: wire sidebar menu links
+document.getElementById('sidebarDashboard')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = "../Supplier/supplier-dashboard.html";
 });
 
-document.getElementById('farmerRequestsMenu')?.addEventListener('click', () => {
-	window.location.href = "../Supplier-Request/supplier-request.html";
+document.getElementById('sidebarProfile')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = "../Supplier-Profile/supplier-profile.html";
 });
+
+document.getElementById('sidebarSupplyRequests')?.addEventListener('click', (e) => {
+    e.preventDefault();
+   window.location.href = "/Supply/supplier-supply-order/supplier-supply-orders.html";
+});
+
+document.getElementById('sidebarActiveDeliveries')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    // You might want to scroll to the active deliveries section
+    window.location.href = "/Supply/supply-order/supply-orders.html";
+});
+
+document.getElementById('sidebarCompletedOrders')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Navigate to completed orders page if exists, or stay on dashboard
+    window.location.href = "../Supplier-Completed/supplier-completed.html";
+});
+
+document.getElementById('sidebarWallet')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = "../Supplier-Wallet/supplier-wallet.html";
+});
+
+document.getElementById('sidebarSettings')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = "../Supplier-Settings/supplier-settings.html";
+});
+
+document.getElementById('sidebarLogout')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    logoutUser();
+});
+
+// Remove or comment out the old navigation code
+// document.getElementById('farmerProfileMenu')?.addEventListener('click', () => {
+//     window.location.href = "../Supplier-Profile/supplier-profile.html";
+// });
+// document.getElementById('farmerRequestsMenu')?.addEventListener('click', () => {
+//     window.location.href = "../Supplier-Request/supplier-request.html";
+// });
 
 document.getElementById('langToggle')?.addEventListener('click', () => setTimeout(syncDashboardLanguage, 0));
 document.getElementById('mobileLangToggle')?.addEventListener('click', () => setTimeout(syncDashboardLanguage, 0));

@@ -125,80 +125,46 @@
     </header>
 
     <div class="dashboard-shell" id="dashboard">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-title" data-text="dashboard">Dashboard</div>
-          <button id="sidebarToggle" class="sidebar-toggle">
-            <span class="material-icons">menu_open</span>
-          </button>
-        </div>
-
-        <nav class="sidebar-menu">
-          <a class="menu-item"
-            ><span class="material-icons">dashboard</span
-            ><span data-text="sidebarDashboard">Dashboard</span></a
-          >
-          <a class="menu-item" id="supplierProfileMenu"
-            ><span class="material-icons">account_circle</span
-            ><span data-text="sidebarMyProfile">My Profile</span></a
-          >
-          <a class="menu-item"
-            ><span class="material-icons">inventory_2</span
-            ><span data-text="sidebarInputSupply">Input Supply</span></a
-          >
-          <a class="menu-item active"
-            ><span class="material-icons">local_shipping</span
-            ><span>Supply Requests</span></a
-          >
-          <a class="menu-item"
-            ><span class="material-icons">account_balance_wallet</span
-            ><span data-text="sidebarWallet">Wallet</span></a
-          >
-          <a class="menu-item logout"
-            ><span class="material-icons">logout</span
-            ><span data-text="sidebarLogout">Logout</span></a
-          >
-        </nav>
-      </aside>
-
-      <main class="dashboard-content">
-        <div class="page-header">
-          <h1>Supply Requests</h1>
-          <p class="page-subtitle">
-            View broadcast requests, accept orders, upload bills and track
-            payments.
-          </p>
-        </div>
-
-        <section class="card card-content">
-          <!-- Tabs -->
-          <div class="tabs">
-            <button id="tabAvailableBtn" class="tab active">
-              Available Requests
-            </button>
-            <button id="tabMyOrdersBtn" class="tab">My Accepted Orders</button>
-          </div>
-
-          <div class="tab-panels">
-            <!-- TAB 1 -->
-            <div id="tabAvailable" class="tab-panel active">
-              <div class="section-subtitle">Requests you can accept</div>
-              <div id="availableList" class="orders-list">
-                <!-- cards injected here -->
-              </div>
-            </div>
-
-            <!-- TAB 2 -->
-            <div id="tabMyOrders" class="tab-panel">
-              <div class="section-subtitle">Orders you've accepted</div>
-              <div id="acceptedList" class="orders-list">
-                <!-- cards injected here -->
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
+  <main class="dashboard-content" style="margin-left: 0; width: 100%;">
+  <div class="supply-requests-page">  <!-- ADD THIS -->
+    <div class="page-header">
+      <h1>Supply Requests</h1>
+      <p class="page-subtitle">
+        View broadcast requests, accept orders, upload bills and track
+        payments.
+      </p>
     </div>
+
+    <section class="card card-content">
+      <!-- Tabs -->
+      <div class="tabs">
+        <button id="tabAvailableBtn" class="tab active">
+          Available Requests
+        </button>
+        <button id="tabMyOrdersBtn" class="tab">My Accepted Orders</button>
+      </div>
+
+      <div class="tab-panels">
+        <!-- TAB 1 -->
+        <div id="tabAvailable" class="tab-panel active">
+          <div class="section-subtitle">Requests you can accept</div>
+          <div id="availableList" class="orders-list">
+            <!-- cards injected here -->
+          </div>
+        </div>
+
+        <!-- TAB 2 -->
+        <div id="tabMyOrders" class="tab-panel">
+          <div class="section-subtitle">Orders you've accepted</div>
+          <div id="acceptedList" class="orders-list">
+            <!-- cards injected here -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>  <!-- CLOSE THE NEW CONTAINER -->
+</main>
+</div>
 
     <!-- DETAILS MODAL (reuse style from dashboard) -->
     <div id="orderDetailsModal" class="modal-overlay" hidden>
