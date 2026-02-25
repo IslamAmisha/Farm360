@@ -1,0 +1,276 @@
+/* farmer-wallet.css */
+/* Reuse landing-page variables and cards */
+
+/* container width similar to other farmer pages */
+.wallet-page.container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 20px 80px;
+}
+
+/* Page top bar */
+.page-top-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.8rem;
+}
+
+/* Back button refined */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--muted-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.back-btn .arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Wallet summary styling - single column for farmer */
+.wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.08),
+    rgba(34, 197, 94, 0.02)
+  );
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+  margin: 0 auto 1.5rem auto;
+  max-width: 920px;
+}
+
+body.theme-dark .wallet-summary {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 197, 94, 0.22),
+    rgba(15, 23, 42, 0.9)
+  );
+}
+
+.wallet-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.wallet-item {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 0.7rem;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet-label {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.wallet-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Transaction card */
+.transaction-card {
+  margin-top: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Table styles */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 0.7rem;
+  border: 1px solid var(--border);
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 600px;
+}
+
+.transaction-table th {
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background: var(--muted-bg);
+  color: var(--muted-foreground);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.transaction-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.transaction-table tr:last-child td {
+  border-bottom: none;
+}
+
+.transaction-table tbody tr:hover {
+  background: var(--muted-bg);
+}
+
+/* Amount styling */
+.transaction-table td:first-child {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+  background: var(--muted-bg);
+  border-radius: 0.7rem;
+  margin-top: 1rem;
+}
+
+/* Hide empty state when table has content */
+.transaction-table:not(:empty) + .empty-state {
+  display: none;
+}
+
+/* Theme toggle buttons */
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--muted-bg);
+  color: var(--foreground);
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.theme-light .icon-moon,
+.theme-dark .icon-sun {
+  display: none;
+}
+
+/* Mobile menu */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--foreground);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wallet-page.container {
+    padding: 0 16px 60px;
+  }
+
+  .wallet-item {
+    padding: 1rem;
+  }
+
+  .wallet-value {
+    font-size: 1.2rem;
+  }
+
+  .card-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .wallet-summary {
+    padding: 0.7rem;
+  }
+
+  .wallet-item {
+    padding: 0.9rem;
+  }
+
+  .wallet-label {
+    font-size: 0.8rem;
+  }
+
+  .wallet-value {
+    font-size: 1.1rem;
+  }
+
+  .card-header h3 {
+    font-size: 1rem;
+  }
+
+  .transaction-table th,
+  .transaction-table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}

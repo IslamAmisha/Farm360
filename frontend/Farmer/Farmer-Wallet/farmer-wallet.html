@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Farm360 — Farmer Wallet</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Landing Page Theme -->
+    <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
+
+    <!-- Page specific -->
+    <link rel="stylesheet" href="farmer-wallet.css" />
+  </head>
+
+  <body class="theme-light lang-en">
+    <!-- HEADER -->
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <span class="logo-icon">🌿</span>
+            <span>Farm360</span>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="../../Landing-page/landing-page.html">Home</a>
+          <a href="../../Landing-page/landing-page.html#modules">Modules</a>
+          <a href="../../Landing-page/landing-page.html#about">About</a>
+          <a href="../../Landing-page/landing-page.html#data-insights">Insights</a>
+          <a href="../../Landing-page/landing-page.html#footer">Support</a>
+        </nav>
+
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="wallet-page container" id="walletPage">
+
+      <div class="page-top-bar">
+        <button id="backToDashboard" class="back-btn">
+          <span class="arrow">‹</span>
+          <span>Back</span>
+        </button>
+      </div>
+
+      <!-- Wallet Summary -->
+      <section class="wallet-summary card">
+        <div class="wallet-grid" style="grid-template-columns: 1fr;">
+          <div class="wallet-item">
+            <div class="wallet-label">
+              Available Balance
+            </div>
+            <div class="wallet-value" id="walletBalance">₹ 0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transactions -->
+      <section class="card transaction-card">
+        <div class="card-header">
+          <h3>Transaction History</h3>
+        </div>
+
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table class="transaction-table">
+              <thead>
+                <tr>
+                  <th>Amount</th>
+                  <th>Purpose</th>
+                  <th>Action</th>
+                  <th>Reference</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="transactionTableBody">
+                <!-- JS will populate -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="noTransactions" class="empty-state">
+            No transactions yet.
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="farmer-wallet.js"></script>
+  </body>
+</html>
