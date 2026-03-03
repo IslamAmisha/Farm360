@@ -32,4 +32,6 @@ public interface ProposalService {
             Long senderUserId,
             ProposalCreateRQ rq,
             Role role);
+
+    public ProposalRS getLatestProposalByRequest(Long userId, Long requestId);
 }

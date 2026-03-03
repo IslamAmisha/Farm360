@@ -30,15 +30,10 @@ public class ProposalCreateRQ {
     private Integer advancePercent;
     private Integer midCyclePercent;
     private Integer finalPercent;
-
-    private Boolean inputProvided;
-
     private String deliveryLocation;
     private String deliveryWindow;
 
     private String logisticsHandledBy;
-
-    private Boolean allowCropChangeBetweenSeasons;
 
     private Integer startYear;
     private Integer endYear;

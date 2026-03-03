@@ -71,7 +71,9 @@ public class ProposalServiceImpl implements ProposalService {
         /* ---------- LOAD OR CREATE ---------- */
         if (!isNewProposal) {
 
-            proposal = proposalRepository.findById(rq.getProposalId())
+            // FIX: use findByIdWithCrops so Hibernate initialises the crops
+            // collection before we call clear() — avoids stale lazy-load issues
+            proposal = proposalRepository.findByIdWithCrops(rq.getProposalId())
                     .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
             if (proposal.getProposalStatus() != ProposalStatus.DRAFT) {
@@ -82,6 +84,9 @@ public class ProposalServiceImpl implements ProposalService {
                 throw new RuntimeException("Locked proposal cannot be edited");
             }
 
+            // FIX: initialise list defensively, then clear.
+            // This works correctly only when @OneToMany has orphanRemoval = true
+            // (see ProposalEntity — that annotation is required for this to delete DB rows)
             if (proposal.getProposalCrops() == null) {
                 proposal.setProposalCrops(new ArrayList<>());
             }
@@ -150,8 +155,6 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setAdvancePercent(rq.getAdvancePercent());
         proposal.setMidCyclePercent(rq.getMidCyclePercent());
         proposal.setFinalPercent(rq.getFinalPercent());
-        proposal.setInputProvided(rq.getInputProvided());
-        proposal.setAllowCropChangeBetweenSeasons(rq.getAllowCropChangeBetweenSeasons());
         proposal.setStartYear(rq.getStartYear());
         proposal.setEndYear(rq.getEndYear());
         proposal.setFarmerProfitPercent(rq.getFarmerProfitPercent());
@@ -174,17 +177,9 @@ public class ProposalServiceImpl implements ProposalService {
             throw new RuntimeException("Delivery window is required");
         }
 
-        if (rq.getInputProvided() == null) {
-            throw new RuntimeException("Input provided flag is required");
-        }
-
-        if (rq.getAllowCropChangeBetweenSeasons() == null) {
-            throw new RuntimeException("Crop change permission is required");
-        }
-        if (!isNewProposal && proposal.getProposalStatus() != ProposalStatus.DRAFT) {
-            throw new RuntimeException("Only DRAFT proposals can be modified");
-        }
-
+        // FIX: removed the dead unreachable check that was here:
+        // "if (!isNewProposal && proposal.getProposalStatus() != DRAFT)" —
+        // status was already validated at the top of the !isNewProposal branch.
 
         /* ---------- REMARKS ---------- */
         if (rq.getRemarks() != null && !rq.getRemarks().isBlank()) {
@@ -260,8 +255,6 @@ public class ProposalServiceImpl implements ProposalService {
     @Override
     public void sendProposal(Long senderUserId, Long proposalId, Role currentUserRole) {
 
-
-
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
@@ -291,14 +284,6 @@ public class ProposalServiceImpl implements ProposalService {
 
         if (proposal.getDeliveryWindow() == null || proposal.getDeliveryWindow().isBlank()) {
             throw new RuntimeException("Delivery window is required before sending proposal");
-        }
-
-        if (proposal.getInputProvided() == null) {
-            throw new RuntimeException("Input provided flag is required before sending proposal");
-        }
-
-        if (proposal.getAllowCropChangeBetweenSeasons() == null) {
-            throw new RuntimeException("Crop change permission is required before sending proposal");
         }
 
         if (proposal.getLogisticsHandledBy() == null) {
@@ -334,6 +319,7 @@ public class ProposalServiceImpl implements ProposalService {
         if (Boolean.TRUE.equals(proposal.getLocked())) {
             throw new RuntimeException("Locked proposal cannot be sent");
         }
+
         LocalDateTime expiry = LocalDateTime.now().plusDays(7);
 
         proposal.setProposalStatus(ProposalStatus.SENT);
@@ -352,7 +338,6 @@ public class ProposalServiceImpl implements ProposalService {
         request.setStatus(RequestStatus.PROPOSAL_SENT);
 
         requestRepository.save(request);
-
         proposalRepository.save(proposal);
 
         notificationService.notifyUser(
@@ -383,24 +368,43 @@ public class ProposalServiceImpl implements ProposalService {
             throw new RuntimeException("Not your turn");
         }
 
-        // clear expiry
         proposal.setActionDueAt(null);
         proposal.setValidUntil(null);
         proposal.setLocked(true);
 
-        // 🔁 FIRST ACCEPT → send back to creator
+        // FIX: cleaner two-step accept logic.
+        // First accept  → flip action back to the original creator and wait for their confirm.
+        // Second accept → finalize.
         if (proposal.getActionRequiredBy() != proposal.getCreatedByRole()) {
 
+            // Receiver accepted first → now creator must confirm
             proposal.setActionRequiredBy(proposal.getCreatedByRole());
             proposal.setProposalStatus(ProposalStatus.SENT);
 
-            // new 7-day window
             LocalDateTime expiry = LocalDateTime.now().plusDays(7);
             proposal.setActionDueAt(expiry);
             proposal.setValidUntil(expiry);
-        }
-        // SECOND ACCEPT → FINAL
-        else {
+
+            proposalRepository.save(proposal);
+
+            // Notify the creator (sender) that they need to confirm
+            notificationService.notifyUser(
+                    proposal.getSenderUserId(),
+                    NotificationType.PROPOSAL_ACCEPTED,
+                    "Proposal Accepted",
+                    "Other party accepted. Your confirmation required.",
+                    proposal.getProposalId()
+            );
+
+            saveAction(
+                    proposal,
+                    role,
+                    ProposalActionType.ACCEPT,
+                    "Accepted — waiting for creator confirmation"
+            );
+
+        } else {
+            // Creator confirmed → FINAL
             proposal.setProposalStatus(ProposalStatus.FINAL_ACCEPTED);
             proposal.setLocked(true);
             proposal.setActionRequiredBy(Role.none);
@@ -423,37 +427,20 @@ public class ProposalServiceImpl implements ProposalService {
                     proposal.getProposalId()
             );
 
+            saveAction(
+                    proposal,
+                    role,
+                    ProposalActionType.ACCEPT,
+                    "Final acceptance"
+            );
+
             agreementService.createAgreement(
                     AgreementCreateRQ.builder()
                             .proposalId(proposal.getProposalId())
                             .userId(userId)
                             .build()
             );
-            return;
         }
-
-
-        proposalRepository.save(proposal);
-
-        notificationService.notifyUser(
-                proposal.getActionRequiredBy() == Role.farmer
-                        ? proposal.getSenderUserId()
-                        : proposal.getReceiverUserId(),
-                NotificationType.PROPOSAL_ACCEPTED,
-                "Proposal Accepted",
-                "Other party accepted. Your confirmation required.",
-                proposal.getProposalId()
-        );
-
-        saveAction(
-                proposal,
-                role,
-                ProposalActionType.ACCEPT,
-                proposal.getProposalStatus() == ProposalStatus.FINAL_ACCEPTED
-                        ? "Final acceptance"
-                        : "Accepted, waiting for other party"
-        );
-
     }
 
 
@@ -467,6 +454,7 @@ public class ProposalServiceImpl implements ProposalService {
                 proposal.getActionRequiredBy() != role) {
             throw new RuntimeException("Not your turn");
         }
+
         proposal.setProposalStatus(ProposalStatus.REJECTED);
         proposal.setRejectedAt(LocalDateTime.now());
         proposal.setLocked(true);
@@ -489,7 +477,6 @@ public class ProposalServiceImpl implements ProposalService {
                 ProposalActionType.REJECT,
                 "Proposal rejected"
         );
-
     }
 
     @Override
@@ -498,12 +485,10 @@ public class ProposalServiceImpl implements ProposalService {
         ProposalEntity proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        // 🔐 Only creator can cancel
         if (!proposal.getSenderUserId().equals(senderUserId)) {
             throw new RuntimeException("Unauthorized");
         }
 
-        // 🔒 Only DRAFT proposals can be cancelled
         if (proposal.getProposalStatus() != ProposalStatus.DRAFT) {
             throw new RuntimeException("Only DRAFT proposals can be cancelled");
         }
@@ -515,7 +500,6 @@ public class ProposalServiceImpl implements ProposalService {
 
         proposalRepository.save(proposal);
     }
-
 
 
     /* =========================================================
@@ -569,14 +553,15 @@ public class ProposalServiceImpl implements ProposalService {
     /* =========================================================
        COUNTER PROPOSAL
     ========================================================= */
-
     @Override
     public ProposalRS createCounterProposal(Long userId, Long proposalId, Role role) {
 
-        ProposalEntity old = proposalRepository.findById(proposalId)
+        // FIX: use findByIdWithCrops — guarantees the crops collection is fully
+        // loaded from DB (not a stale Hibernate proxy) before we copy it.
+        // This is the PRIMARY fix for counter proposals copying Proposal 1 crops.
+        ProposalEntity old = proposalRepository.findByIdWithCrops(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        // 🔐 TURN-BASED AUTH (FINAL)
         if (old.getActionRequiredBy() == null ||
                 old.getActionRequiredBy() != role) {
             throw new RuntimeException("Not your turn");
@@ -586,14 +571,14 @@ public class ProposalServiceImpl implements ProposalService {
             throw new RuntimeException("Only SENT proposals can be countered");
         }
 
-        // 1️⃣ Close old proposal
+        // Close old proposal
         old.setProposalStatus(ProposalStatus.COUNTERED);
         old.setLocked(true);
         old.setActionDueAt(null);
         old.setValidUntil(null);
         proposalRepository.save(old);
 
-        // 2️⃣ Create counter proposal
+        // Build counter with fresh copies of the LATEST crops from `old`
         ProposalEntity counter = ProposalEntity.builder()
                 .requestId(old.getRequestId())
                 .senderUserId(userId)
@@ -607,21 +592,23 @@ public class ProposalServiceImpl implements ProposalService {
                 .contractModel(old.getContractModel())
                 .season(old.getSeason())
                 .pricePerUnit(old.getPricePerUnit())
+                .escrowApplicable(old.getEscrowApplicable())
                 .advancePercent(old.getAdvancePercent())
                 .midCyclePercent(old.getMidCyclePercent())
                 .finalPercent(old.getFinalPercent())
                 .deliveryLocation(old.getDeliveryLocation())
                 .deliveryWindow(old.getDeliveryWindow())
                 .logisticsHandledBy(old.getLogisticsHandledBy())
-                .allowCropChangeBetweenSeasons(old.getAllowCropChangeBetweenSeasons())
                 .startYear(old.getStartYear())
                 .endYear(old.getEndYear())
                 .remarks(old.getRemarks())
                 .farmerProfitPercent(old.getFarmerProfitPercent())
+                .totalContractAmount(old.getTotalContractAmount())
                 .proposalStatus(ProposalStatus.DRAFT)
                 .proposalVersion(old.getProposalVersion() + 1)
                 .parentProposalId(old.getProposalId())
                 .createdByRole(role)
+                // FIX: counter sender must wait for receiver to act next
                 .actionRequiredBy(
                         role == Role.farmer ? Role.buyer : Role.farmer
                 )
@@ -630,6 +617,8 @@ public class ProposalServiceImpl implements ProposalService {
 
         counter.setProposalCrops(new ArrayList<>());
 
+        // FIX: copy from the freshly-loaded old.getProposalCrops() —
+        // guaranteed to be the latest edited crops, not Proposal 1's crops
         for (ProposalCropEntity c : old.getProposalCrops()) {
             counter.getProposalCrops().add(
                     ProposalCropEntity.builder()
@@ -646,6 +635,14 @@ public class ProposalServiceImpl implements ProposalService {
 
         ProposalEntity savedCounter = proposalRepository.save(counter);
 
+        RequestEntity request = requestRepository
+                .findById(old.getRequestId())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setProposalId(savedCounter.getProposalId());
+        request.setStatus(RequestStatus.PROPOSAL_SENT);
+        requestRepository.save(request);
+
         notificationService.notifyUser(
                 savedCounter.getReceiverUserId(),
                 NotificationType.COUNTER_PROPOSAL_RECEIVED,
@@ -658,7 +655,7 @@ public class ProposalServiceImpl implements ProposalService {
                 savedCounter,
                 role,
                 ProposalActionType.CREATE,
-                "Counter proposal created"
+                "Counter proposal created from v" + old.getProposalVersion()
         );
 
         saveAction(
@@ -669,16 +666,13 @@ public class ProposalServiceImpl implements ProposalService {
         );
 
         return mapEntityToRS(savedCounter);
-
     }
-
 
 
     /* =========================================================
        MAPPER
     ========================================================= */
     private ProposalRS mapEntityToRS(ProposalEntity p) {
-
 
         LandEntity land = null;
         if (p.getLandId() != null) {
@@ -688,7 +682,6 @@ public class ProposalServiceImpl implements ProposalService {
         String senderRole = p.getCreatedByRole() != null
                 ? p.getCreatedByRole().name()
                 : "—";
-
 
         String senderName =
                 p.getSenderUserId() != null
@@ -700,8 +693,6 @@ public class ProposalServiceImpl implements ProposalService {
                         ? "User-" + p.getReceiverUserId()
                         : "—";
 
-
-
         return ProposalRS.builder()
                 .proposalId(p.getProposalId())
                 .requestId(p.getRequestId())
@@ -712,7 +703,6 @@ public class ProposalServiceImpl implements ProposalService {
                 .senderName(senderName)
                 .receiverName(receiverName)
                 .senderRole(senderRole)
-
 
                 .landId(p.getLandId())
                 .landAreaUsed(p.getLandAreaUsed())
@@ -735,10 +725,8 @@ public class ProposalServiceImpl implements ProposalService {
                                             return ProposalCropRS.builder()
                                                     .cropId(c.getCropId())
                                                     .cropName(crop != null ? crop.getName() : "—")
-
                                                     .cropSubCategoryId(c.getCropSubCategoryId())
                                                     .cropSubCategoryName(sub != null ? sub.getName() : "—")
-
                                                     .season(c.getSeason() != null ? c.getSeason().name() : null)
                                                     .expectedQuantity(c.getExpectedQuantity())
                                                     .unit(c.getUnit() != null ? c.getUnit().name() : null)
@@ -760,17 +748,13 @@ public class ProposalServiceImpl implements ProposalService {
                 .startYear(p.getStartYear())
                 .endYear(p.getEndYear())
                 .deliveryWindow(p.getDeliveryWindow())
-                .inputProvided(p.getInputProvided())
-                .allowCropChangeBetweenSeasons(p.getAllowCropChangeBetweenSeasons())
 
                 .advancePercent(p.getAdvancePercent())
                 .midCyclePercent(p.getMidCyclePercent())
                 .finalPercent(p.getFinalPercent())
 
-                .escrowApplicable(p.getEscrowApplicable())
                 .remarks(p.getRemarks())
                 .farmerProfitPercent(p.getFarmerProfitPercent())
-
 
                 .proposalStatus(p.getProposalStatus().name())
 
@@ -800,10 +784,7 @@ public class ProposalServiceImpl implements ProposalService {
             ProposalCreateRQ rq,
             Role role
     ) {
-        // 1. Save latest values
         ProposalRS rs = createDraftProposal(senderUserId, rq, role);
-
-        // 2. Send immediately
         sendProposal(senderUserId, rs.getProposalId(), role);
     }
 
@@ -820,5 +801,18 @@ public class ProposalServiceImpl implements ProposalService {
         );
     }
 
+    @Override
+    public ProposalRS getLatestProposalByRequest(Long userId, Long requestId) {
 
+        ProposalEntity proposal = proposalRepository
+                .findTopByRequestIdOrderByProposalVersionDesc(requestId)
+                .orElseThrow(() -> new RuntimeException("Proposal not found"));
+
+        if (!proposal.getSenderUserId().equals(userId) &&
+                !proposal.getReceiverUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return mapEntityToRS(proposal);
+    }
 }

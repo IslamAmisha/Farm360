@@ -15,4 +15,6 @@ public interface AgreementService {
     List<AgreementListRS> getMyAgreements(Long userId);
 
     void completeAgreement(Long agreementId);
+
+   AgreementRS getAgreementByProposalId(Long proposalId, Long userId);
 }

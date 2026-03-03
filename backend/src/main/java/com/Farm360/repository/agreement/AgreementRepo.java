@@ -5,10 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AgreementRepo extends JpaRepository<AgreementEntity,Long> {
     boolean existsByProposalId(Long proposalId);
 
     List<AgreementEntity> findByFarmerUserIdOrBuyerUserId(Long userId, Long userId1);
+
+    Optional<AgreementEntity> findByProposalId(Long proposalId);
 }

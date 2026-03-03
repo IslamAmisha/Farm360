@@ -32,7 +32,6 @@ public class AgreementController {
         );
     }
 
-
     @GetMapping("/{agreementId}")
     public ResponseEntity<AgreementRS> getAgreement(
             @PathVariable Long agreementId,
@@ -42,6 +41,18 @@ public class AgreementController {
 
         return ResponseEntity.ok(
                 agreementService.getAgreement(agreementId, user.getId())
+        );
+    }
+
+    @GetMapping("/by-proposal/{proposalId}")
+    public ResponseEntity<AgreementRS> getByProposal(
+            @PathVariable Long proposalId,
+            Authentication authentication
+    ) {
+        UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
+
+        return ResponseEntity.ok(
+                agreementService.getAgreementByProposalId(proposalId, user.getId())
         );
     }
 

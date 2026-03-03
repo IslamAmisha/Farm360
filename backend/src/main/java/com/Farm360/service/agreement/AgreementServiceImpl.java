@@ -11,6 +11,10 @@ import com.Farm360.model.payment.AgreementEscrowAllocation;
 import com.Farm360.model.proposal.ProposalEntity;
 import com.Farm360.model.supply.SupplyExecutionOrderEntity;
 import com.Farm360.repository.agreement.AgreementRepo;
+import com.Farm360.repository.buyer.BuyerRepo;
+import com.Farm360.repository.farmer.FarmerRepo;
+import com.Farm360.repository.master.CropRepo;
+import com.Farm360.repository.master.CropSubCategoriesRepo;
 import com.Farm360.repository.payment.BuyerWalletRepository;
 import com.Farm360.repository.proposal.ProposalRepo;
 import com.Farm360.repository.supply.SupplyExecutionOrderRepository;
@@ -25,35 +29,30 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional
 public class AgreementServiceImpl implements AgreementService {
 
-    @Autowired
-    private ProposalRepo proposalRepo;
-    @Autowired
-    private AgreementRepo agreementRepo;
-    @Autowired
-    private AgreementMapper agreementMapper;
+    @Autowired private ProposalRepo proposalRepo;
+    @Autowired private AgreementRepo agreementRepo;
+    @Autowired private AgreementMapper agreementMapper;
+    @Autowired private EscrowService escrowService;
+    @Autowired private AgreementEscrowAllocationService allocationService;
+    @Autowired private BuyerWalletRepository buyerWalletRepo;
+    @Autowired private SupplyExecutionOrderRepository orderRepo;
+    @Autowired private NotificationService notificationService;
 
-    @Autowired
-    private EscrowService escrowService;
+    // Already used in ProposalServiceImpl — safe to reuse here for snapshot
+    @Autowired private CropRepo cropRepo;
+    @Autowired private CropSubCategoriesRepo cropSubCategoryRepo;
 
-    @Autowired
-    private AgreementEscrowAllocationService allocationService;
+    // Inject profile repos to resolve real names at signing time
+    @Autowired private FarmerRepo farmerProfileRepo;
+    @Autowired private BuyerRepo buyerProfileRepo;
 
-    @Autowired
-    private BuyerWalletRepository buyerWalletRepo;
-
-    @Autowired
-    private SupplyExecutionOrderRepository orderRepo;
-
-    @Autowired
-    private NotificationService notificationService;
-
-
-    //create agreement from proposal
     @Override
     public AgreementRS createAgreement(AgreementCreateRQ rq) {
 
@@ -61,38 +60,24 @@ public class AgreementServiceImpl implements AgreementService {
                 proposalRepo.findById(rq.getProposalId())
                         .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-
-        if (proposal.getProposalStatus() != ProposalStatus.FINAL_ACCEPTED) {
+        if (proposal.getProposalStatus() != ProposalStatus.FINAL_ACCEPTED)
             throw new RuntimeException("Agreement can be created only from FINAL_ACCEPTED proposal");
-        }
 
         if (!proposal.getSenderUserId().equals(rq.getUserId()) &&
-                !proposal.getReceiverUserId().equals(rq.getUserId())) {
+                !proposal.getReceiverUserId().equals(rq.getUserId()))
             throw new RuntimeException("Unauthorized");
-        }
 
         if (proposal.getPricePerUnit() == null)
             throw new RuntimeException("Price missing");
-
         if (proposal.getTotalContractAmount() == null)
             throw new RuntimeException("Total amount missing");
-
         if (proposal.getDeliveryWindow() == null)
             throw new RuntimeException("Delivery window missing");
-
-        if (proposal.getInputProvided() == null)
-            throw new RuntimeException("Input responsibility missing");
-
-        if (proposal.getAllowCropChangeBetweenSeasons() == null)
-            throw new RuntimeException("Crop change permission missing");
-
         if (proposal.getProposalCrops().isEmpty())
             throw new RuntimeException("Crops missing");
 
-
-        if (agreementRepo.existsByProposalId(proposal.getProposalId())) {
+        if (agreementRepo.existsByProposalId(proposal.getProposalId()))
             throw new RuntimeException("Agreement already exists for this proposal");
-        }
 
         Long farmerId =
                 proposal.getCreatedByRole().name().equalsIgnoreCase("farmer")
@@ -104,13 +89,11 @@ public class AgreementServiceImpl implements AgreementService {
                         ? proposal.getReceiverUserId()
                         : proposal.getSenderUserId();
 
-        //BUILD SNAPSHOT
+        // Build snapshot — includes resolved names, crop names
+        AgreementSnapshotRS snapshotObj = buildSnapshotObject(proposal, farmerId, buyerId);
+
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-
-        AgreementSnapshotRS snapshotObj =
-                buildSnapshotObject(proposal, farmerId, buyerId);
-
         String snapshotJson;
         try {
             snapshotJson = mapper.writeValueAsString(snapshotObj);
@@ -118,17 +101,12 @@ public class AgreementServiceImpl implements AgreementService {
             throw new RuntimeException("Failed to create agreement snapshot", e);
         }
 
-
-
         double total = snapshotObj.getTotalContractAmount();
         buyerWalletRepo.findByBuyerUserIdForUpdate(buyerId)
                 .filter(w -> w.getBalance() >= total)
                 .orElseThrow(() -> new RuntimeException(
-                        "Insufficient wallet balance to create agreement"
-                ));
+                        "Insufficient wallet balance to create agreement"));
 
-
-        //create agreement entity
         AgreementEntity agreement = AgreementEntity.builder()
                 .proposalId(proposal.getProposalId())
                 .proposalVersion(proposal.getProposalVersion())
@@ -143,59 +121,50 @@ public class AgreementServiceImpl implements AgreementService {
 
         agreementRepo.save(agreement);
 
-        double advance = total * snapshotObj.getAdvancePercent() / 100;
-        double mid = total * snapshotObj.getMidCyclePercent() / 100;
-        double fin = total * snapshotObj.getFinalPercent() / 100;
+        double advance = total * snapshotObj.getAdvancePercent() / 100.0;
+        double mid     = total * snapshotObj.getMidCyclePercent() / 100.0;
+        double fin     = total * snapshotObj.getFinalPercent() / 100.0;
 
         AgreementEscrowAllocation allocation =
                 AgreementEscrowAllocation.builder()
                         .agreementId(agreement.getAgreementId())
                         .buyerUserId(buyerId)
+                        .farmerUserId(farmerId)
                         .totalAllocated(total)
                         .advanceAllocated(advance)
+                        .advanceReleased(0.0)
                         .midAllocated(mid)
+                        .midReleased(0.0)
                         .finalAllocated(fin)
-                        .farmerUserId(farmerId)
-                        .farmerProfitLocked(total * snapshotObj.getFarmerProfitPercent() / 100)
+                        .finalReleased(0.0)
+                        .farmerProfitLocked(total * snapshotObj.getFarmerProfitPercent() / 100.0)
                         .remainingAgreementEscrow(total)
                         .status(EscrowStatus.LOCKED)
                         .build();
 
         allocationService.save(allocation);
 
-// FULL CONTRACT LOCK
         escrowService.lockSupplierEscrow(
-                agreement.getAgreementId(),
-                buyerId,
-                total,
-                "AGREEMENT_" + agreement.getAgreementId()
-        );
+                agreement.getAgreementId(), buyerId, total,
+                "AGREEMENT_" + agreement.getAgreementId());
 
         escrowService.lockFarmerProfit(
-                buyerId,
-                allocation.getFarmerProfitLocked(),
-                "AGREEMENT_" + agreement.getAgreementId() + "_FARMER_PROFIT"
-        );
+                buyerId, allocation.getFarmerProfitLocked(),
+                "AGREEMENT_" + agreement.getAgreementId() + "_FARMER_PROFIT");
 
-        notificationService.notifyUser(
-                farmerId,
-                NotificationType.AGREEMENT_CREATED,
-                "Contract Activated",
-                "Your farming agreement is now active",
-                agreement.getAgreementId()
-        );
+        notificationService.notifyUser(farmerId, NotificationType.AGREEMENT_CREATED,
+                "Contract Activated", "Your farming agreement is now active",
+                agreement.getAgreementId());
 
-        notificationService.notifyUser(
-                buyerId,
-                NotificationType.AGREEMENT_CREATED,
-                "Contract Activated",
-                "Agreement created and escrow locked",
-                agreement.getAgreementId()
-        );
+        notificationService.notifyUser(buyerId, NotificationType.AGREEMENT_CREATED,
+                "Contract Activated", "Agreement created and escrow locked",
+                agreement.getAgreementId());
+
         return agreementMapper.toRS(agreement);
     }
 
-    //get agreement by id
+
+
     @Override
     public AgreementRS getAgreement(Long agreementId, Long userId) {
 
@@ -204,88 +173,150 @@ public class AgreementServiceImpl implements AgreementService {
                         .orElseThrow(() -> new RuntimeException("Agreement not found"));
 
         if (!agreement.getFarmerUserId().equals(userId) &&
-                !agreement.getBuyerUserId().equals(userId)) {
+                !agreement.getBuyerUserId().equals(userId))
             throw new RuntimeException("Unauthorized");
-        }
 
         return agreementMapper.toRS(agreement);
     }
 
-  //list agreements for a user
+    @Override
+    public AgreementRS getAgreementByProposalId(Long proposalId, Long userId) {
+
+        AgreementEntity agreement =
+                agreementRepo.findByProposalId(proposalId)
+                        .orElseThrow(() -> new RuntimeException("Agreement not found for proposal"));
+
+        if (!agreement.getFarmerUserId().equals(userId) &&
+                !agreement.getBuyerUserId().equals(userId))
+            throw new RuntimeException("Unauthorized");
+
+        return agreementMapper.toRS(agreement);
+    }
+
     @Override
     public List<AgreementListRS> getMyAgreements(Long userId) {
 
-        List<AgreementEntity> agreements =
-                agreementRepo.findByFarmerUserIdOrBuyerUserId(userId, userId);
-
-        return agreements.stream().map(a -> {
-
-            AgreementListRS rs = agreementMapper.toListRS(a);
-
-            if (a.getFarmerUserId().equals(userId)) {
-                rs.setCounterPartyRole("buyer");
-                rs.setCounterPartyName("User-" + a.getBuyerUserId());
-            } else {
-                rs.setCounterPartyRole("farmer");
-                rs.setCounterPartyName("User-" + a.getFarmerUserId());
-            }
-
-            return rs;
-        }).toList();
+        return agreementRepo.findByFarmerUserIdOrBuyerUserId(userId, userId)
+                .stream()
+                .map(a -> {
+                    AgreementListRS rs = agreementMapper.toListRS(a);
+                    if (a.getFarmerUserId().equals(userId)) {
+                        rs.setCounterPartyRole("buyer");
+                        rs.setCounterPartyName("User-" + a.getBuyerUserId());
+                    } else {
+                        rs.setCounterPartyRole("farmer");
+                        rs.setCounterPartyName("User-" + a.getFarmerUserId());
+                    }
+                    return rs;
+                })
+                .toList();
     }
 
-  //build agreement snapshot from proposal
-  private AgreementSnapshotRS buildSnapshotObject(
-          ProposalEntity p,
-          Long farmerId,
-          Long buyerId
-  ) {
-      return AgreementSnapshotRS.builder()
-              .proposalId(p.getProposalId())
-              .proposalVersion(p.getProposalVersion())
-              .requestId(p.getRequestId())
-              .farmerUserId(farmerId)
-              .buyerUserId(buyerId)
+    private AgreementSnapshotRS buildSnapshotObject(
+            ProposalEntity p,
+            Long farmerId,
+            Long buyerId
+    ) {
+        /* ── Farmer ── */
+        // FarmerEntity: farmerName (single field), district→getName(), block→getName(), village
+        String farmerName     = "—";
+        String farmerLocation = "—";
+        try {
+            var fp = farmerProfileRepo.findByUserId(farmerId).orElse(null);
+            if (fp != null) {
+                farmerName     = firstNonBlank(fp.getFarmerName());
+                farmerLocation = joinParts(
+                        fp.getVillage(),
+                        fp.getBlock()    != null ? fp.getBlock().getName()    : null,
+                        fp.getDistrict() != null ? fp.getDistrict().getName() : null
+                );
+            }
+        } catch (Exception ignored) {}
 
-              .landId(p.getLandId())
-              .landAreaUsed(p.getLandAreaUsed())
+        /* ── Buyer ── */
+        // BuyerEntity: fullName (single field), businessName, city→getName(), district→getName()
+        String buyerName         = "—";
+        String buyerBusinessName = "—";
+        String buyerLocation     = "—";
+        try {
+            var bp = buyerProfileRepo.findByUserId(buyerId).orElse(null);
+            if (bp != null) {
+                buyerName         = firstNonBlank(bp.getFullName());
+                buyerBusinessName = firstNonBlank(bp.getBusinessName());
+                buyerLocation     = joinParts(
+                        bp.getCity()     != null ? bp.getCity().getName()     : null,
+                        bp.getDistrict() != null ? bp.getDistrict().getName() : null,
+                        bp.getBlock()    != null ? bp.getBlock().getName()    : null
+                );
+            }
+        } catch (Exception ignored) {}
 
-              .contractModel(p.getContractModel())
-              .season(p.getSeason())
-              .startYear(p.getStartYear())
-              .endYear(p.getEndYear())
+        /* ── Crops with resolved names ── */
+        var crops = p.getProposalCrops().stream()
+                .map(c -> {
+                    String cropName   = "—";
+                    String subCatName = "—";
+                    try {
+                        var crop = cropRepo.findById(c.getCropId()).orElse(null);
+                        if (crop != null) cropName = crop.getName();
+                    } catch (Exception ignored) {}
+                    try {
+                        if (c.getCropSubCategoryId() != null) {
+                            var sub = cropSubCategoryRepo.findById(c.getCropSubCategoryId()).orElse(null);
+                            if (sub != null) subCatName = sub.getName();
+                        }
+                    } catch (Exception ignored) {}
 
-              .pricePerUnit(p.getPricePerUnit())
-              .totalContractAmount(p.getTotalContractAmount())
-              .escrowApplicable(p.getEscrowApplicable())
-              .advancePercent(p.getAdvancePercent())
-              .midCyclePercent(p.getMidCyclePercent())
-              .finalPercent(p.getFinalPercent())
-              .farmerProfitPercent(p.getFarmerProfitPercent())
+                    return AgreementCropSnapshotRS.builder()
+                            .cropId(c.getCropId())
+                            .cropName(cropName)
+                            .cropSubCategoryId(c.getCropSubCategoryId())
+                            .cropSubCategoryName(subCatName)
+                            .season(c.getSeason())
+                            .expectedQuantity(c.getExpectedQuantity())
+                            .unit(c.getUnit())
+                            .landAreaUsed(c.getLandAreaUsed())
+                            .build();
+                })
+                .toList();
 
-              .deliveryLocation(p.getDeliveryLocation())
-              .deliveryWindow(p.getDeliveryWindow())
-              .logisticsHandledBy(p.getLogisticsHandledBy())
+        return AgreementSnapshotRS.builder()
+                .proposalId(p.getProposalId())
+                .proposalVersion(p.getProposalVersion())
+                .requestId(p.getRequestId())
 
-              .inputProvided(p.getInputProvided())
-              .allowCropChangeBetweenSeasons(p.getAllowCropChangeBetweenSeasons())
+                .farmerUserId(farmerId)
+                .farmerName(farmerName)
+                .farmerLocation(farmerLocation)
 
-              .remarks(p.getRemarks())
+                .buyerUserId(buyerId)
+                .buyerName(buyerName)
+                .buyerBusinessName(buyerBusinessName)
+                .buyerLocation(buyerLocation)
 
-              .crops(
-                      p.getProposalCrops().stream()
-                              .map(c -> AgreementCropSnapshotRS.builder()
-                                      .cropId(c.getCropId())
-                                      .cropSubCategoryId(c.getCropSubCategoryId())
-                                      .season(c.getSeason())
-                                      .expectedQuantity(c.getExpectedQuantity())
-                                      .unit(c.getUnit())
-                                      .landAreaUsed(c.getLandAreaUsed())
-                                      .build())
-                              .toList()
-              )
-              .build();
-  }
+                .landId(p.getLandId())
+                .landAreaUsed(p.getLandAreaUsed())
+
+                .contractModel(p.getContractModel())
+                .season(p.getSeason())
+                .startYear(p.getStartYear())
+                .endYear(p.getEndYear())
+
+                .pricePerUnit(p.getPricePerUnit())
+                .totalContractAmount(p.getTotalContractAmount())
+                .advancePercent(p.getAdvancePercent())
+                .midCyclePercent(p.getMidCyclePercent())
+                .finalPercent(p.getFinalPercent())
+                .farmerProfitPercent(p.getFarmerProfitPercent())
+
+                .deliveryLocation(p.getDeliveryLocation())
+                .deliveryWindow(p.getDeliveryWindow())
+                .logisticsHandledBy(p.getLogisticsHandledBy())
+
+                .remarks(p.getRemarks())
+                .crops(crops)
+                .build();
+    }
 
     public void completeAgreement(Long agreementId) {
 
@@ -307,11 +338,9 @@ public class AgreementServiceImpl implements AgreementService {
                 allocationService.getByAgreementId(agreementId);
 
         escrowService.releaseFarmerProfit(
-                alloc.getBuyerUserId(),
-                alloc.getFarmerUserId(),
+                alloc.getBuyerUserId(), alloc.getFarmerUserId(),
                 alloc.getFarmerProfitLocked(),
-                "AGREEMENT_COMPLETE_" + agreementId
-        );
+                "AGREEMENT_COMPLETE_" + agreementId);
 
         alloc.setFarmerProfitLocked(0.0);
         alloc.setStatus(EscrowStatus.CLOSED);
@@ -322,24 +351,26 @@ public class AgreementServiceImpl implements AgreementService {
 
         agreement.setStatus(AgreementStatus.COMPLETED);
         agreement.setCompletedAt(LocalDateTime.now());
-
         agreementRepo.save(agreement);
 
-        notificationService.notifyUser(
-                agreement.getFarmerUserId(),
+        notificationService.notifyUser(agreement.getFarmerUserId(),
                 NotificationType.AGREEMENT_COMPLETED,
-                "Farming Completed",
-                "All stages finished successfully",
-                agreementId
-        );
+                "Farming Completed", "All stages finished successfully", agreementId);
 
-        notificationService.notifyUser(
-                agreement.getBuyerUserId(),
+        notificationService.notifyUser(agreement.getBuyerUserId(),
                 NotificationType.AGREEMENT_COMPLETED,
-                "Farming Completed",
-                "All stages finished successfully",
-                agreementId
-        );
+                "Farming Completed", "All stages finished successfully", agreementId);
     }
 
+    private String joinParts(String... parts) {
+        String r = Stream.of(parts)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(", "));
+        return r.isBlank() ? "—" : r;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String v : values) if (v != null && !v.isBlank()) return v;
+        return "—";
+    }
 }

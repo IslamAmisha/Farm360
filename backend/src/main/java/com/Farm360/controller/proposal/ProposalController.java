@@ -132,4 +132,12 @@ public class ProposalController {
         return ResponseEntity.ok("Proposal sent successfully");
     }
 
+    @GetMapping("/latest-by-request/{requestId}")
+    public ProposalRS getLatestByRequest(
+            @RequestParam Long userId,
+            @PathVariable Long requestId
+    ) {
+        return proposalService.getLatestProposalByRequest(userId, requestId);
+    }
+
 }

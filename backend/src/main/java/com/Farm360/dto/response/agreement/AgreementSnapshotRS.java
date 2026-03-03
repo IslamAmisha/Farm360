@@ -7,23 +7,31 @@ import com.Farm360.utils.SeasonType;
 import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
 public class AgreementSnapshotRS {
 
     private Long proposalId;
     private Integer proposalVersion;
-
     private Long requestId;
+
     private Long farmerUserId;
+    private String farmerName;
+    private String farmerLocation;
+
+
     private Long buyerUserId;
+    private String buyerName;
+    private String buyerBusinessName;
+    private String buyerLocation;
 
     private Long landId;
     private Double landAreaUsed;
+
 
     private ContractModel contractModel;
     private SeasonType season;
@@ -32,7 +40,6 @@ public class AgreementSnapshotRS {
 
     private Double pricePerUnit;
     private Double totalContractAmount;
-    private Boolean escrowApplicable;
     private Integer advancePercent;
     private Integer midCyclePercent;
     private Integer finalPercent;
@@ -42,12 +49,7 @@ public class AgreementSnapshotRS {
     private String deliveryWindow;
     private LogisticsHandledBy logisticsHandledBy;
 
-    private Boolean inputProvided;
-    private Boolean allowCropChangeBetweenSeasons;
+    private String remarks;
 
     private List<AgreementCropSnapshotRS> crops;
-
-    private String remarks;
 }
-
-

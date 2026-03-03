@@ -32,7 +32,6 @@ public class ProposalRS {
     private Double pricePerUnit;
     private Double totalContractAmount;
 
-    private Boolean escrowApplicable;
     private Integer advancePercent;
     private Integer midCyclePercent;
     private Integer finalPercent;
@@ -40,14 +39,12 @@ public class ProposalRS {
     private LocalDateTime validUntil;
     private LocalDateTime actionDueAt;
 
-    private Boolean inputProvided;
 
     private String deliveryLocation;
     private String deliveryWindow;
 
     private String logisticsHandledBy;
 
-    private Boolean allowCropChangeBetweenSeasons;
 
     private Integer startYear;
     private Integer endYear;

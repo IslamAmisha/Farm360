@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProposalRepo extends JpaRepository<ProposalEntity, Long> {
@@ -51,4 +52,10 @@ public interface ProposalRepo extends JpaRepository<ProposalEntity, Long> {
         ORDER BY p.proposalVersion DESC
     """)
     List<ProposalEntity> findLatestByRequestId(@Param("requestId") Long requestId);
+
+
+    Optional<ProposalEntity> findTopByRequestIdOrderByProposalVersionDesc(Long requestId);
+
+    @Query("SELECT p FROM ProposalEntity p LEFT JOIN FETCH p.proposalCrops WHERE p.proposalId = :id")
+    Optional<ProposalEntity> findByIdWithCrops(@Param("id") Long id);
 }

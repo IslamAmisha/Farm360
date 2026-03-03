@@ -58,7 +58,6 @@ public class ProposalEntity extends AuditTable<String> {
     private Integer midCyclePercent;
     private Integer finalPercent;
 
-    private Boolean inputProvided;
 
     @Enumerated(EnumType.STRING)
     private DeliveryLocation deliveryLocation;
@@ -74,8 +73,6 @@ public class ProposalEntity extends AuditTable<String> {
 
     @Enumerated(EnumType.STRING)
     private LogisticsHandledBy logisticsHandledBy;
-
-    private Boolean allowCropChangeBetweenSeasons;
 
     private Integer startYear;
     private Integer endYear;
