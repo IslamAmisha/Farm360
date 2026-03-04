@@ -16,7 +16,6 @@ public class BuyerProfileController {
     @Autowired
     private BuyerProfileService buyerProfileService;
 
-    /** Own profile — identified by JWT token */
     @GetMapping
     public ResponseEntity<BuyerProfileRS> getProfile(Authentication authentication) {
         UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
