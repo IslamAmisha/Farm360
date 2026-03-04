@@ -1,284 +1,248 @@
+/* ============================================================
+   Farm360 — My Supply Orders  (farmer / buyer)
+
+   Endpoints:
+     GET  /api/advance-supply/my-orders          → list
+     POST /api/advance-supply/farmer/dispatch    → dispatch harvest (FINAL)
+   Action buttons navigate to dedicated confirm pages.
+   ============================================================ */
 (function () {
   const token = localStorage.getItem('token');
-  const role = (localStorage.getItem('role') || '').toLowerCase();
-  if (!token || !['farmer','buyer','supplier'].includes(role)) {
+  const role  = (localStorage.getItem('role') || '').toLowerCase();
+
+  if (!token || !['farmer', 'buyer'].includes(role)) {
     alert('User not found or unauthorized access!');
     localStorage.clear();
-    window.location.href = '/Login/login.html';
+    window.location.href = '../../Login/login.html';
     return;
   }
 
+  const API = '/api/advance-supply';
   const ordersListEl = document.getElementById('ordersList');
-  const modal = document.getElementById('orderModal');
-  const modalBody = document.getElementById('modalBody');
+  const modal        = document.getElementById('orderModal');
+  const modalBody    = document.getElementById('modalBody');
 
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    try {
+      return Array.isArray(d)
+        ? new Date(d[0], d[1]-1, d[2]).toLocaleDateString('en-IN')
+        : new Date(d).toLocaleDateString('en-IN');
+    } catch { return String(d); }
+  }
+
+  function fmtCurrency(n) {
+    if (n == null) return '—';
+    return '₹ ' + Number(n).toLocaleString('en-IN');
+  }
+
+  function orderId(o) { return o.id || o.orderId; }
+
+  /* ── Fetch ── */
   async function fetchOrders() {
     try {
-      const res = await fetch('/api/advance-supply/my-orders', {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      if (!res.ok) throw new Error('Failed to fetch orders');
-      const data = await res.json();
-      return data;
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
+      const res = await fetch(`${API}/my-orders`, { headers: authHeaders() });
+      return res.ok ? await res.json() : [];
+    } catch { return []; }
   }
 
-  function statusClass(status) {
-    return 'status-' + (status || '').toUpperCase();
-  }
-
-  function formatDate(d) {
-    if (!d) return '-';
-    const dt = new Date(d);
-    return dt.toLocaleDateString();
-  }
-
+  /* ── Render ── */
   function renderOrders(list) {
     ordersListEl.innerHTML = '';
-    if (!list || list.length === 0) {
+    if (!list?.length) {
       ordersListEl.innerHTML = '<p class="empty-text">No supply orders found.</p>';
       return;
     }
 
-    list.forEach(order => {
-      const card = document.createElement('div');
+    list.forEach(o => {
+      const card  = document.createElement('div');
       card.className = 'order-card';
 
       const left = document.createElement('div');
       left.className = 'order-left';
 
+      const badge = document.createElement('div');
+      badge.className = `badge-stage badge-${o.stage || 'ADVANCE'}`;
+      badge.textContent = o.stage || '—';
+
       const meta = document.createElement('div');
       meta.className = 'order-meta';
       meta.innerHTML = `
-        <div><strong>Agreement:</strong> ${order.agreementId || order.agreement || '-'}</div>
-        <div><strong>Supplier:</strong> ${order.supplierType || '-'}</div>
-        <div><strong>Expected:</strong> ${formatDate(order.expectedDeliveryDate)}</div>
+        <div><strong>Agreement:</strong> #${o.agreementId || '—'}</div>
+        <div><strong>Type:</strong> ${o.supplierType || '—'}</div>
+        <div><strong>Expected:</strong> ${fmtDate(o.expectedDeliveryDate)}</div>
+        <div><strong>Amount:</strong> ${fmtCurrency(o.allocatedAmount)}</div>
       `;
 
-      const stageBadge = document.createElement('div');
-      stageBadge.className = `badge-stage badge-${order.stage || 'ADVANCE'}`;
-      stageBadge.textContent = order.stage || '-';
-
-      left.appendChild(stageBadge);
-      left.appendChild(meta);
+      left.append(badge, meta);
 
       const right = document.createElement('div');
       right.className = 'order-actions';
 
-      const amount = document.createElement('div');
-      amount.className = 'order-amount';
-      amount.textContent = '₹ ' + (order.allocatedAmount ?? order.demandAmount ?? 0);
-
-      const status = document.createElement('div');
-      status.className = `status-badge ${statusClass(order.status)}`;
-      status.textContent = order.status || '-';
+      const statusBadge = document.createElement('div');
+      statusBadge.className = `status-badge status-${(o.status || '').toUpperCase()}`;
+      statusBadge.textContent = o.status || '—';
 
       const viewBtn = document.createElement('button');
       viewBtn.className = 'btn-outline';
       viewBtn.textContent = 'View Details';
-      viewBtn.addEventListener('click', () => openModal(order));
+      viewBtn.addEventListener('click', () => openModal(o));
 
-      right.appendChild(amount);
-      right.appendChild(status);
-      right.appendChild(viewBtn);
+      right.append(statusBadge, viewBtn);
 
-      // Confirm Delivery button
-      if ((order.status || '').toUpperCase() === 'DISPATCHED') {
-        const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'btn-primary';
-        confirmBtn.textContent = 'Confirm Delivery';
-        confirmBtn.addEventListener('click', () => confirmDelivery(order));
-        right.appendChild(confirmBtn);
+      const status = (o.status || '').toUpperCase();
+      const stage  = (o.stage  || '').toUpperCase();
+
+      /* FARMER: confirm/reject delivery when DISPATCHED */
+      if (role === 'farmer' && status === 'DISPATCHED') {
+        const btn = document.createElement('button');
+        btn.className = 'btn-primary';
+        btn.textContent = 'Confirm / Reject Delivery';
+        btn.addEventListener('click', () => {
+          window.location.href =
+            `../supply-confirm/farmer-confirm-delivery.html?orderId=${orderId(o)}`;
+        });
+        right.appendChild(btn);
       }
 
-      // Dispatch Harvest button
-      if ((order.stage || '').toUpperCase() === 'FINAL' && (order.status || '').toUpperCase() === 'FARMER_CONFIRMED') {
-        const dispatchBtn = document.createElement('button');
-        dispatchBtn.className = 'btn-primary';
-        dispatchBtn.textContent = 'Dispatch Harvest';
-        dispatchBtn.addEventListener('click', () => openDispatchDialog(order));
-        right.appendChild(dispatchBtn);
+      /* FARMER: dispatch harvest when FINAL + FARMER_CONFIRMED */
+      if (role === 'farmer' && stage === 'FINAL' && status === 'FARMER_CONFIRMED') {
+        const btn = document.createElement('button');
+        btn.className = 'btn-primary';
+        btn.textContent = 'Dispatch Harvest';
+        btn.addEventListener('click', () => openDispatchDialog(o));
+        right.appendChild(btn);
       }
 
-      card.appendChild(left);
-      card.appendChild(right);
+      /* BUYER: confirm delivery when FINAL + IN_TRANSIT */
+      if (role === 'buyer' && stage === 'FINAL' && status === 'IN_TRANSIT') {
+        const btn = document.createElement('button');
+        btn.className = 'btn-primary';
+        btn.textContent = 'Confirm Delivery';
+        btn.addEventListener('click', () => {
+          window.location.href =
+            `../supply-confirm/buyer-confirm-delivery.html?orderId=${orderId(o)}`;
+        });
+        right.appendChild(btn);
+      }
+
+      /* BUYER: view system remark on DISPUTE */
+      if (role === 'buyer' && status === 'DISPUTE') {
+        const btn = document.createElement('button');
+        btn.className = 'btn-outline';
+        btn.textContent = 'View Dispute';
+        btn.addEventListener('click', () => openModal(o));
+        right.appendChild(btn);
+      }
+
+      card.append(left, right);
       ordersListEl.appendChild(card);
     });
   }
 
-  // modal helpers
-  function openModal(order) {
-    modalBody.innerHTML = '';
+  /* ── Detail modal ── */
+  function openModal(o) {
+    modalBody.innerHTML = `
+      <h3>Order #${orderId(o) || '—'}</h3>
+      <div class="modal-body-section">
+        <div><strong>Agreement:</strong> #${o.agreementId || '—'}</div>
+        <div><strong>Stage:</strong> ${o.stage || '—'}</div>
+        <div><strong>Status:</strong> ${o.status || '—'}</div>
+        <div><strong>Escrow:</strong> ${o.escrowStatus || '—'}</div>
+        <div><strong>Supplier Type:</strong> ${o.supplierType || '—'}</div>
+        <div><strong>Allocated:</strong> ${fmtCurrency(o.allocatedAmount)}</div>
+        <div><strong>Bill Amount:</strong> ${fmtCurrency(o.billAmount)}</div>
+        <div><strong>Expected Delivery:</strong> ${fmtDate(o.expectedDeliveryDate)}</div>
+        <div><strong>Actual Delivery:</strong> ${fmtDate(o.actualDeliveryDate)}</div>
+        ${o.systemRemark ? `<div class="system-remark"><strong>⚠ System:</strong> ${o.systemRemark}</div>` : ''}
+      </div>
+    `;
 
-    const hdr = document.createElement('div');
-    hdr.innerHTML = `<h3>Order: ${order.orderId || order.id || '—'}</h3>`;
-    modalBody.appendChild(hdr);
-
-    // items
-    const itemsSec = document.createElement('div');
-    itemsSec.className = 'modal-body-section';
-    itemsSec.innerHTML = '<strong>Items</strong>';
-    const list = document.createElement('ul');
-    (order.items || []).forEach(it => {
-      const li = document.createElement('li');
-      li.textContent = `${it.productName || '-'} — ${it.quantity || '-'} ${it.unit || ''} (₹ ${it.expectedPrice ?? '-'})`;
-      list.appendChild(li);
-    });
-    itemsSec.appendChild(list);
-    modalBody.appendChild(itemsSec);
-
-    // invoice breakdown
-    const inv = document.createElement('div');
-    inv.className = 'modal-body-section';
-    inv.innerHTML = `<strong>Invoice</strong><div>Allocated: ₹ ${order.allocatedAmount ?? 0}</div><div>Invoice Amount: ₹ ${order.invoiceAmount ?? '-'}</div>`;
-    modalBody.appendChild(inv);
-
-    // proofs
-    const proofsSec = document.createElement('div');
-    proofsSec.className = 'modal-body-section';
-    proofsSec.innerHTML = '<strong>Proof Images</strong>';
-    const proofsWrap = document.createElement('div');
-    proofsWrap.className = 'proof-images';
-    (order.proofUrls || order.proofs || []).forEach(url => {
-      const img = document.createElement('img');
-      img.src = url;
-      proofsWrap.appendChild(img);
-    });
-    proofsSec.appendChild(proofsWrap);
-    modalBody.appendChild(proofsSec);
-
-    // system remark
-    if (order.systemRemark) {
-      const rm = document.createElement('div');
-      rm.className = 'modal-body-section';
-      rm.innerHTML = `<strong>System remark</strong><div>${order.systemRemark}</div>`;
-      modalBody.appendChild(rm);
+    if (o.items?.length) {
+      const sec = document.createElement('div');
+      sec.className = 'modal-body-section';
+      sec.innerHTML = '<strong>Items</strong>';
+      const ul = document.createElement('ul');
+      o.items.forEach(it => {
+        const li = document.createElement('li');
+        li.textContent = `${it.productName || it.description || '—'} — ${it.quantity || '—'} ${it.unit || ''} @ ₹${it.expectedPrice ?? it.rate ?? '—'}`;
+        ul.appendChild(li);
+      });
+      sec.appendChild(ul);
+      modalBody.appendChild(sec);
     }
-
-    // timeline
-    const timelineSec = document.createElement('div');
-    timelineSec.className = 'modal-body-section';
-    timelineSec.innerHTML = '<strong>Status timeline</strong>';
-    const tlist = document.createElement('ol');
-    (order.statusHistory || []).forEach(s => {
-      const li = document.createElement('li');
-      li.textContent = `${s.status} — ${s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}`;
-      tlist.appendChild(li);
-    });
-    timelineSec.appendChild(tlist);
-    modalBody.appendChild(timelineSec);
 
     modal.classList.remove('hidden');
   }
 
-  document.querySelector('#orderModal .modal-close')?.addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
-
-  modal.addEventListener('click', (ev) => {
+  document.querySelector('#orderModal .modal-close')
+    ?.addEventListener('click', () => modal.classList.add('hidden'));
+  modal?.addEventListener('click', ev => {
     if (ev.target === modal) modal.classList.add('hidden');
   });
 
-  // Confirm delivery API
-  async function confirmDelivery(order) {
-    if (!confirm('Confirm delivery for this order?')) return;
-    try {
-      const res = await fetch('/api/advance-supply/farmer/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ orderId: order.id || order.orderId })
-      });
-      if (!res.ok) throw new Error('Confirm failed');
-      if (window.toast) window.toast('Delivery confirmed'); else alert('Delivery confirmed');
-      loadAndRender();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to confirm delivery');
-    }
-  }
+  /* ── Dispatch harvest dialog ── */
+  function openDispatchDialog(o) {
+    modalBody.innerHTML = `
+      <h3>Dispatch Harvest — Order #${orderId(o)}</h3>
+      <div class="modal-body-section">
+        <div class="form-row">
+          <label>Vehicle Number *</label>
+          <input id="dVehicle" type="text" placeholder="e.g. WB-1234" />
+        </div>
+        <div class="form-row">
+          <label>Loading Photo URL *</label>
+          <input id="dLoadingUrl" type="text" placeholder="https://..." />
+        </div>
+        <div class="form-row">
+          <label>Bag Count</label>
+          <input id="dBagCount" type="number" min="0" />
+        </div>
+        <div id="dMsg" style="color:#c0392b;margin-top:8px;min-height:20px"></div>
+        <button id="dSubmit" class="btn-primary" style="margin-top:12px">Submit Dispatch</button>
+      </div>
+    `;
+    modal.classList.remove('hidden');
 
-  // Dispatch harvest: show file input and then call dispatch endpoint
-  function openDispatchDialog(order) {
-    // reuse modal for upload
-    modalBody.innerHTML = '';
-    const hdr = document.createElement('div');
-    hdr.innerHTML = `<h3>Dispatch Harvest — ${order.orderId || order.id}</h3>`;
-    modalBody.appendChild(hdr);
+    document.getElementById('dSubmit').addEventListener('click', async () => {
+      const vehicle   = document.getElementById('dVehicle').value.trim();
+      const loadingUrl = document.getElementById('dLoadingUrl').value.trim();
+      const bagCount  = document.getElementById('dBagCount').value;
+      const msgEl     = document.getElementById('dMsg');
 
-    const inpWrap = document.createElement('div');
-    inpWrap.className = 'modal-body-section';
-    inpWrap.innerHTML = '<strong>Upload proof images</strong>';
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.multiple = true;
-    inpWrap.appendChild(fileInput);
-    modalBody.appendChild(inpWrap);
+      if (!vehicle)    { msgEl.textContent = 'Vehicle number is required'; return; }
+      if (!loadingUrl) { msgEl.textContent = 'Loading photo URL is required'; return; }
 
-    const actions = document.createElement('div');
-    actions.className = 'modal-body-section';
-    const sendBtn = document.createElement('button');
-    sendBtn.className = 'btn-primary';
-    sendBtn.textContent = 'Send Dispatch Proof';
-    sendBtn.addEventListener('click', async () => {
-      const files = Array.from(fileInput.files || []);
-      // upload files first
-      const urls = [];
-      for (const f of files) {
-        try {
-          const uploaded = await uploadImage(f);
-          if (uploaded) urls.push(uploaded);
-        } catch (err) {
-          console.error('Upload failed', err);
-        }
-      }
-
-      // call dispatch API
       try {
-        const res = await fetch('/api/advance-supply/farmer/dispatch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ orderId: order.id || order.orderId, proofUrls: urls })
+        const res = await fetch(`${API}/farmer/dispatch`, {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({
+            orderId:      orderId(o),
+            vehicleNumber: vehicle,
+            loadingPhotoUrl: loadingUrl,
+            bagCount: bagCount ? Number(bagCount) : null
+          })
         });
-        if (!res.ok) throw new Error('Dispatch failed');
-        if (window.toast) window.toast('Dispatch submitted'); else alert('Dispatch submitted');
+        if (!res.ok) throw new Error(await res.text() || 'Dispatch failed');
         modal.classList.add('hidden');
+        if (window.toast) window.toast('Harvest dispatched — buyer notified');
+        else alert('Harvest dispatched — buyer has been notified');
         loadAndRender();
       } catch (err) {
-        console.error(err);
-        alert('Failed to send dispatch');
+        document.getElementById('dMsg').textContent = err.message || 'Failed';
       }
     });
-
-    actions.appendChild(sendBtn);
-    modalBody.appendChild(actions);
-    modal.classList.remove('hidden');
   }
 
-  // basic image upload helper — expects /api/uploads to return { url }
-  async function uploadImage(file) {
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error('Upload failed');
-      const body = await res.json();
-      return body.url || body.data?.url || null;
-    } catch (err) {
-      console.error(err);
-      // fallback: return object URL so UI shows images (backend will likely reject)
-      return URL.createObjectURL(file);
-    }
-  }
-
-  // refresh loop
   async function loadAndRender() {
-    const data = await fetchOrders();
-    renderOrders(data);
+    ordersListEl.innerHTML = '<p class="empty-text">Loading…</p>';
+    renderOrders(await fetchOrders());
   }
 
   loadAndRender();
-  setInterval(loadAndRender, 30000); // refresh every 30s
+  setInterval(loadAndRender, 30000);
 })();

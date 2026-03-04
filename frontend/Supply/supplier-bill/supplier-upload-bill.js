@@ -1,196 +1,235 @@
-(function () {
-  // protect supplier
-  (function protect() {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    const role = (localStorage.getItem('role') || '').toLowerCase();
-    if (!token || !userId || role !== 'supplier') {
-      alert('User not found or unauthorized access!');
-      localStorage.clear();
-      window.location.href = '../../Login/login.html';
-      return;
-    }
-  })();
+/* ============================================================
+   Farm360 — Supplier Upload Bill
+   Supplier uploads invoice after accepting an order.
 
-  const qs = new URLSearchParams(location.search);
+   Endpoints:
+     GET  /api/advance-supply/{orderId}    → load order summary
+     POST /api/advance-supply/supplier/bill → submit invoice
+     POST /api/uploads                     → upload photo
+   ============================================================ */
+(function () {
+  const token  = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  const role   = (localStorage.getItem('role') || '').toLowerCase();
+
+  if (!token || !userId || role !== 'supplier') {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = '../../Login/login.html';
+    return;
+  }
+
+  const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API = '/api/advance-supply';
+  const API     = '/api/advance-supply';
+
+  function authHeaders(json = false) {
+    const h = { Authorization: 'Bearer ' + token };
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+  }
 
   // DOM refs
-  const sumAgreement = document.getElementById('sumAgreement');
-  const sumStage = document.getElementById('sumStage');
-  const sumAllocated = document.getElementById('sumAllocated');
-  const sumExpected = document.getElementById('sumExpected');
-
-  const invoiceNumberEl = document.getElementById('invoiceNumber');
-  const deliveryChargeEl = document.getElementById('deliveryCharge');
-  const invoicePhotoEl = document.getElementById('invoicePhoto');
-  const invoicePreview = document.getElementById('invoicePreview');
-
-  const itemsBody = document.getElementById('itemsBody');
-  const addItemBtn = document.getElementById('addItemBtn');
-
-  const totalItemsEl = document.getElementById('totalItems');
-  const totalDeliveryEl = document.getElementById('totalDelivery');
-  const grandTotalEl = document.getElementById('grandTotal');
+  const sumAgreement  = document.getElementById('sumAgreement');
+  const sumStage      = document.getElementById('sumStage');
+  const sumAllocated  = document.getElementById('sumAllocated');
+  const sumExpected   = document.getElementById('sumExpected');
+  const invoiceNumber = document.getElementById('invoiceNumber');
+  const deliveryCharge= document.getElementById('deliveryCharge');
+  const invoicePhotoEl= document.getElementById('invoicePhoto');
+  const invoicePreview= document.getElementById('invoicePreview');
+  const itemsBody     = document.getElementById('itemsBody');
+  const addItemBtn    = document.getElementById('addItemBtn');
+  const totalItemsEl  = document.getElementById('totalItems');
+  const totalDelivery = document.getElementById('totalDelivery');
+  const grandTotalEl  = document.getElementById('grandTotal');
   const validationMsg = document.getElementById('validationMsg');
-  const submitBtn = document.getElementById('submitInvoiceBtn');
-  const cancelBtn = document.getElementById('cancelBtn');
+  const submitBtn     = document.getElementById('submitInvoiceBtn');
+  const cancelBtn     = document.getElementById('cancelBtn');
 
   let items = [];
   let order = null;
 
-  function money(n) { return '₹ ' + (Number(n || 0).toLocaleString()); }
+  function money(n) { return '₹ ' + Number(n || 0).toLocaleString('en-IN'); }
 
-  async function fetchOrder() {
-    if (!orderId) return;
+  function fmtDate(d) {
+    if (!d) return '—';
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API}/${encodeURIComponent(orderId)}`, { headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error('fetch-order-failed');
+      return Array.isArray(d)
+        ? new Date(d[0], d[1]-1, d[2]).toLocaleDateString('en-IN')
+        : new Date(d).toLocaleDateString('en-IN');
+    } catch { return String(d); }
+  }
+
+  /* ── Load order ── */
+  async function fetchOrder() {
+    if (!orderId) { alert('No order specified'); return; }
+    try {
+      const res = await fetch(
+        `${API}/${encodeURIComponent(orderId)}`,
+        { headers: authHeaders() }
+      );
+      if (!res.ok) throw new Error('Failed to load order');
       order = await res.json();
       populateOrder(order);
     } catch (err) {
       console.error(err);
-      alert('Failed to load order');
+      alert(err.message || 'Failed to load order');
     }
   }
 
   function populateOrder(o) {
-    sumAgreement.textContent = o.agreementId || o.id || '-';
-    sumStage.textContent = o.stage || '-';
-    sumAllocated.textContent = money(o.allocatedAmount || 0);
-    sumExpected.textContent = o.expectedDeliveryDate ? new Date(o.expectedDeliveryDate).toLocaleDateString() : '-';
+    if (sumAgreement) sumAgreement.textContent = o.agreementId || '—';
+    if (sumStage)     sumStage.textContent     = o.stage || '—';
+    if (sumAllocated) sumAllocated.textContent = money(o.allocatedAmount);
+    if (sumExpected)  sumExpected.textContent  = fmtDate(o.expectedDeliveryDate);
 
-    // prefill items from order.items if present
-    items = (o.items || []).map((it) => ({ description: it.description || it.productName || '', quantity: it.quantity || 1, rate: it.rate || it.expectedPrice || 0, unit: it.unit || '' }));
-    if (items.length === 0) items.push({ description: '', quantity: 1, rate: 0, unit: '' });
+    // Pre-fill items from the order (supplier can edit quantities/rates)
+    items = (o.items || []).map(it => ({
+      description: it.productName || it.description || '',
+      quantity: it.quantity || 1,
+      rate: it.expectedPrice || it.rate || 0,
+      unit: it.unit || ''
+    }));
+    if (!items.length) items.push({ description: '', quantity: 1, rate: 0, unit: '' });
+
     renderItems();
     recalcTotals();
   }
 
+  /* ── Render items table ── */
   function renderItems() {
+    if (!itemsBody) return;
     itemsBody.innerHTML = '';
     items.forEach((it, idx) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><input data-idx="${idx}" class="desc" value="${it.description || ''}" /></td>
-        <td><input data-idx="${idx}" type="number" class="qty" min="0" value="${it.quantity || 0}" /></td>
-        <td><input data-idx="${idx}" type="number" class="rate" min="0" value="${it.rate || 0}" /></td>
-        <td><input data-idx="${idx}" class="unit" value="${it.unit || ''}" /></td>
+        <td><input data-idx="${idx}" class="idesc" value="${it.description || ''}" /></td>
+        <td><input data-idx="${idx}" type="number" class="iqty" min="0" value="${it.quantity || 0}" /></td>
+        <td><input data-idx="${idx}" type="number" class="irate" min="0" value="${it.rate || 0}" /></td>
+        <td><input data-idx="${idx}" class="iunit" value="${it.unit || ''}" /></td>
         <td class="amount">${money((it.quantity || 0) * (it.rate || 0))}</td>
-        <td><button class="btn-danger-outline remove">Remove</button></td>
+        <td><button class="btn-danger-outline iremove">Remove</button></td>
       `;
-
       itemsBody.appendChild(tr);
     });
 
-    // attach listeners
-    itemsBody.querySelectorAll('input').forEach((inp) => {
-      inp.addEventListener('input', (e) => {
-        const idx = Number(e.target.dataset.idx);
-        const row = items[idx];
-        if (e.target.classList.contains('qty')) row.quantity = Number(e.target.value || 0);
-        if (e.target.classList.contains('rate')) row.rate = Number(e.target.value || 0);
-        if (e.target.classList.contains('desc')) row.description = e.target.value;
-        if (e.target.classList.contains('unit')) row.unit = e.target.value;
-        renderItems();
-        recalcTotals();
+    itemsBody.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const i = Number(e.target.dataset.idx);
+        if (e.target.classList.contains('iqty'))  items[i].quantity    = Number(e.target.value);
+        if (e.target.classList.contains('irate')) items[i].rate        = Number(e.target.value);
+        if (e.target.classList.contains('idesc')) items[i].description = e.target.value;
+        if (e.target.classList.contains('iunit')) items[i].unit        = e.target.value;
+        renderItems(); recalcTotals();
       });
     });
 
-    itemsBody.querySelectorAll('.remove').forEach((btn, i) => {
-      btn.addEventListener('click', () => { items.splice(i, 1); if (items.length === 0) items.push({ description: '', quantity: 1, rate: 0, unit: '' }); renderItems(); recalcTotals(); });
+    itemsBody.querySelectorAll('.iremove').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        items.splice(i, 1);
+        if (!items.length) items.push({ description: '', quantity: 1, rate: 0, unit: '' });
+        renderItems(); recalcTotals();
+      });
     });
   }
 
-  addItemBtn.addEventListener('click', () => { items.push({ description: '', quantity: 1, rate: 0, unit: '' }); renderItems(); recalcTotals(); });
-
-  invoicePhotoEl.addEventListener('change', (e) => {
-    const f = e.target.files[0];
-    if (!f) { invoicePreview.textContent = 'No file chosen'; return; }
-    invoicePreview.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-width:160px;border-radius:8px;border:1px solid var(--border)"/>`;
+  addItemBtn?.addEventListener('click', () => {
+    items.push({ description: '', quantity: 1, rate: 0, unit: '' });
+    renderItems(); recalcTotals();
   });
 
-  deliveryChargeEl.addEventListener('input', recalcTotals);
+  /* ── Photo preview ── */
+  invoicePhotoEl?.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f || !invoicePreview) return;
+    invoicePreview.innerHTML =
+      `<img src="${URL.createObjectURL(f)}" style="max-width:160px;border-radius:8px"/>`;
+  });
 
+  deliveryCharge?.addEventListener('input', recalcTotals);
+
+  /* ── Recalc totals + 25% logistics check ── */
   function recalcTotals() {
-    const itemsTotal = items.reduce((s, it) => s + ((Number(it.quantity || 0) * Number(it.rate || 0)) || 0), 0);
-    const delivery = Number(deliveryChargeEl.value || 0);
-    const grand = itemsTotal + delivery;
-    totalItemsEl.textContent = money(itemsTotal);
-    totalDeliveryEl.textContent = money(delivery);
-    grandTotalEl.textContent = money(grand);
+    const itemsTotal  = items.reduce((s, it) => s + (Number(it.quantity||0) * Number(it.rate||0)), 0);
+    const delivery    = Number(deliveryCharge?.value || 0);
+    const grand       = itemsTotal + delivery;
 
-    // validation: delivery <= 25% of itemsTotal
-    validationMsg.textContent = '';
-    if (itemsTotal > 0 && delivery > itemsTotal * 0.25) {
+    if (totalItemsEl) totalItemsEl.textContent = money(itemsTotal);
+    if (totalDelivery) totalDelivery.textContent = money(delivery);
+    if (grandTotalEl) grandTotalEl.textContent = money(grand);
+
+    if (validationMsg) validationMsg.textContent = '';
+    if (itemsTotal > 0 && delivery > itemsTotal * 0.25 && validationMsg)
       validationMsg.textContent = 'Delivery charge cannot exceed 25% of items total.';
-    }
   }
 
-  // helper to upload image and return url (re-uses repo /api/uploads)
+  /* ── Upload image ── */
   async function uploadImage(file) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/uploads', { method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error('upload-failed');
+      if (!res.ok) throw new Error();
       const body = await res.json();
       return body.url || body.data?.url || null;
-    } catch (err) {
-      console.error('uploadImage', err);
-      return URL.createObjectURL(file);
+    } catch {
+      return URL.createObjectURL(file); // dev fallback
     }
   }
 
-  // submit invoice
-  submitBtn.addEventListener('click', async () => {
-    validationMsg.textContent = '';
-    const invoiceNumber = invoiceNumberEl.value.trim();
-    const deliveryCharge = Number(deliveryChargeEl.value || 0);
-    const photoFile = invoicePhotoEl.files[0];
+  /* ── Submit invoice ── */
+  submitBtn?.addEventListener('click', async () => {
+    if (validationMsg) validationMsg.textContent = '';
 
-    // validations
-    if (!invoiceNumber) return (validationMsg.textContent = 'Invoice number is required');
-    if (items.length === 0 || items.reduce((s,i)=>s + (i.quantity||0),0) === 0) return (validationMsg.textContent = 'Add at least one item');
-    const itemsTotal = items.reduce((s, it) => s + ((Number(it.quantity || 0) * Number(it.rate || 0)) || 0), 0);
-    if (deliveryCharge > itemsTotal * 0.25) return (validationMsg.textContent = 'Delivery charge cannot exceed 25% of items total');
-    if (!photoFile) return (validationMsg.textContent = 'Invoice photo is required');
+    const invNum       = invoiceNumber?.value.trim();
+    const delivCharge  = Number(deliveryCharge?.value || 0);
+    const photoFile    = invoicePhotoEl?.files[0];
+
+    if (!invNum)    { if (validationMsg) validationMsg.textContent = 'Invoice number is required'; return; }
+    if (!items.length || items.every(i => !i.quantity))
+                    { if (validationMsg) validationMsg.textContent = 'Add at least one item'; return; }
+    const itemsTotal = items.reduce((s,it) => s + (Number(it.quantity||0)*Number(it.rate||0)), 0);
+    if (delivCharge > itemsTotal * 0.25)
+                    { if (validationMsg) validationMsg.textContent = 'Delivery charge exceeds 25% limit'; return; }
+    if (!photoFile) { if (validationMsg) validationMsg.textContent = 'Invoice photo is required'; return; }
 
     submitBtn.disabled = true;
+
     try {
-      // upload invoice photo first
       const photoUrl = await uploadImage(photoFile);
 
       const payload = {
-        orderId: orderId,
-        invoiceNumber: invoiceNumber,
-        deliveryCharge: deliveryCharge,
+        orderId:         Number(orderId),
+        invoiceNumber:   invNum,
+        deliveryCharge:  delivCharge,
         invoicePhotoUrl: photoUrl,
-        items: items.map((it) => ({ description: it.description, quantity: Number(it.quantity || 0), rate: Number(it.rate || 0), unit: it.unit })),
-        proofs: [ { type: 'INVOICE', fileUrl: photoUrl, metadata: {} } ]
+        items: items.map(it => ({
+          description: it.description,
+          quantity:    Number(it.quantity || 0),
+          rate:        Number(it.rate || 0),
+          unit:        it.unit
+        })),
+        proofs: [{ type: 'INVOICE', fileUrl: photoUrl, metadata: '' }]
       };
 
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/advance-supply/supplier/bill', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error('submit-failed');
+      const res = await fetch(`${API}/supplier/bill`, {
+        method: 'POST', headers: authHeaders(true),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(await res.text() || 'Submit failed');
 
-      (window.toast || alert)('Invoice submitted');
+      if (window.toast) window.toast('Invoice submitted');
+      else alert('Invoice submitted — farmer has been notified');
       window.location.href = 'supplier-supply-orders.html';
     } catch (err) {
       console.error(err);
-      validationMsg.textContent = 'Failed to submit invoice';
+      if (validationMsg) validationMsg.textContent = err.message || 'Failed to submit invoice';
       submitBtn.disabled = false;
     }
   });
 
-  cancelBtn.addEventListener('click', () => window.history.back());
+  cancelBtn?.addEventListener('click', () => window.history.back());
 
-  // init
-  (async function init() {
-    await fetchOrder();
-    recalcTotals();
-  })();
+  (async function init() { await fetchOrder(); })();
 })();

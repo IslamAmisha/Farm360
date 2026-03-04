@@ -39,17 +39,17 @@ const dashboardTranslations = {
     dashboard: "Dashboard",
 
     sidebarDashboard: "Dashboard",
-sidebarMyProfile: "My Profile",
-sidebarLandsBuyers: "My Lands & Buyers",
-sidebarProposalsRequests: "Proposals / Requests",
-sidebarNegotiation: "Negotiation / Messages",
-sidebarAgreements: "Agreements",
-sidebarWallet: "Wallet",
-sidebarInputSupply: "Input Supply",
-sidebarCultivationHarvest: "Cultivation / Harvest",
-sidebarDelivery: "Delivery / Logistics",
-sidebarSettings: "Settings",
-sidebarLogout: "Logout",
+    sidebarMyProfile: "My Profile",
+    sidebarLandsBuyers: "My Lands & Buyers",
+    sidebarProposalsRequests: "Proposals / Requests",
+    sidebarNegotiation: "Negotiation / Messages",
+    sidebarAgreements: "Agreements",
+    sidebarWallet: "Wallet",
+    sidebarInputSupply: "Input Supply",
+    sidebarCultivationHarvest: "Cultivation / Harvest",
+    sidebarDelivery: "Delivery / Logistics",
+    sidebarSettings: "Settings",
+    sidebarLogout: "Logout",
 
 
     dashboardTitle: "Overview",
@@ -108,19 +108,18 @@ sidebarLogout: "Logout",
     dashboard: "ড্যাশবোর্ড",
 
     sidebarDashboard: "ড্যাশবোর্ড",
-sidebarMyProfile: "আমার প্রোফাইল",
-sidebarLandsBuyers: "জমি ও ক্রেতা",
-sidebarRequests: "Requests",
-sidebarProposals: "Proposals",
-
-sidebarNegotiation: "আলোচনা / বার্তা",
-sidebarAgreements: "চুক্তি",
-sidebarWallet: "ওয়ালেট",
-sidebarInputSupply: "ইনপুট সরবরাহ",
-sidebarCultivationHarvest: "চাষ / ফসল সংগ্রহ",
-sidebarDelivery: "ডেলিভারি / লজিস্টিক্স",
-sidebarSettings: "সেটিংস",
-sidebarLogout: "লগআউট",
+    sidebarMyProfile: "আমার প্রোফাইল",
+    sidebarLandsBuyers: "জমি ও ক্রেতা",
+    sidebarRequests: "অনুরোধ",
+    sidebarProposals: "প্রস্তাব",
+    sidebarNegotiation: "আলোচনা / বার্তা",
+    sidebarAgreements: "চুক্তি",
+    sidebarWallet: "ওয়ালেট",
+    sidebarInputSupply: "ইনপুট সরবরাহ",
+    sidebarCultivationHarvest: "চাষ / ফসল সংগ্রহ",
+    sidebarDelivery: "ডেলিভারি / লজিস্টিক্স",
+    sidebarSettings: "সেটিংস",
+    sidebarLogout: "লগআউট",
 
 
     dashboardTitle: "ওভারভিউ",
@@ -137,9 +136,7 @@ sidebarLogout: "লগআউট",
     cropAll: "সব ফসল",
 
     summaryAgreements: "মোট চুক্তি",
-    sidebarRequests: "অনুরোধ",
-sidebarProposals: "প্রস্তাব",
-
+    summaryProposals: "প্রস্তাব",
     summaryPayments: "মোট পেমেন্ট",
     summaryProgress: "অগ্রগতি",
 
@@ -170,11 +167,53 @@ sidebarProposals: "প্রস্তাব",
   },
 };
 
+// ── EXISTING sidebar nav ──────────────────────────────────────────────
 // Handle My Profile button click
 document.getElementById("farmerProfileMenu")?.addEventListener("click", () => {
   window.location.href = "../Farmer-Profile/farmer-profile.html";
 });
 
+// Requests page link
+document.getElementById("farmerRequestsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Request/farmer-request.html";
+});
+
+// Proposals page link
+document.getElementById("farmerProposalsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Farmer-Proposals/farmer-proposals.html";
+});
+
+// ── NEW: post-agreement sidebar nav ──────────────────────────────────
+// Agreements list — all signed agreements
+document.getElementById("farmerAgreementsMenu")?.addEventListener("click", () => {
+  window.location.href = "../Agreement/agreements-list.html";
+});
+
+// Input Supply — farmer CREATES supply requests here
+document.getElementById("farmerInputSupplyMenu")?.addEventListener("click", () => {
+  window.location.href = "../supply-req/supply-request.html";
+});
+
+// Supply Orders — farmer tracks orders, confirms/rejects delivery, dispatches harvest
+document.getElementById("farmerSupplyOrdersMenu")?.addEventListener("click", () => {
+  window.location.href = "../supply-order/supply-orders.html";
+});
+
+// Cultivation / Harvest — dispatch step lives on supply orders page
+document.getElementById("farmerCultivationMenu")?.addEventListener("click", () => {
+  window.location.href = "../supply-order/supply-orders.html";
+});
+
+// Delivery / Logistics — alias
+document.getElementById("farmerDeliveryMenu")?.addEventListener("click", () => {
+  window.location.href = "../supply-order/supply-orders.html";
+});
+
+// Wallet
+document.getElementById("farmerWalletMenu")?.addEventListener("click", () => {
+  window.location.href = "../Wallet/farmer-wallet.html";
+});
+// ─────────────────────────────────────────────────────────────────────
 
 // Merge translations
 if (typeof translations !== "undefined") {
@@ -306,10 +345,9 @@ function renderBuyers(list) {
 
     if (reqBtn && !disabled) {
       reqBtn.addEventListener("click", () => {
-  selectedBuyer = b;
-  openRequestModal(b);
-});
-
+        selectedBuyer = b;
+        openRequestModal(b);
+      });
     }
 
     if (detailsBtn) {
@@ -345,52 +383,49 @@ function openBuyerDetailsModal(buyer) {
     ? (buyer.cropSubcategories || buyer.subcategories).join(", ")
     : (buyer.cropSubcategories || buyer.subcategories || "N/A");
 
- buyerDetailsBody.innerHTML = `
-  <div class="section-header">BUYER OVERVIEW</div>
-  <div class="info-card">
-    <div class="details-grid">
-      ${detailRow("Name", buyer.name)}
-      ${detailRow("Business Name", buyer.businessName)}
-      ${detailRow("Phone", maskedPhone)}
-      ${detailRow("Aadhaar", maskedAadhaar)}
+  buyerDetailsBody.innerHTML = `
+    <div class="section-header">BUYER OVERVIEW</div>
+    <div class="info-card">
+      <div class="details-grid">
+        ${detailRow("Name", buyer.name)}
+        ${detailRow("Business Name", buyer.businessName)}
+        ${detailRow("Phone", maskedPhone)}
+        ${detailRow("Aadhaar", maskedAadhaar)}
+      </div>
     </div>
-  </div>
 
-  <div class="section-header">LOCATION</div>
-  <div class="info-card">
-    <div class="details-grid">
-      ${detailRow("District", buyer.district)}
-      ${detailRow("Village / City", buyer.villageOrCity)}
-      ${detailRow("Warehouse Name", buyer.warehouseName)}
-      ${detailRow("Warehouse Location", buyer.warehouseLocation)}
+    <div class="section-header">LOCATION</div>
+    <div class="info-card">
+      <div class="details-grid">
+        ${detailRow("District", buyer.district)}
+        ${detailRow("Village / City", buyer.villageOrCity)}
+        ${detailRow("Warehouse Name", buyer.warehouseName)}
+        ${detailRow("Warehouse Location", buyer.warehouseLocation)}
+      </div>
     </div>
-  </div>
 
-  <div class="section-header">BUSINESS INFORMATION</div>
-  <div class="info-card">
-    <div class="details-grid">
-      ${detailRow("Business Type", buyer.businessType)}
-      ${detailRow("Business Scale", buyer.businessScale)}
-      ${detailRow("Annual Purchase", buyer.annualPurchase)}
-      ${detailRow("Contract Model", buyer.contractModel)}
+    <div class="section-header">BUSINESS INFORMATION</div>
+    <div class="info-card">
+      <div class="details-grid">
+        ${detailRow("Business Type", buyer.businessType)}
+        ${detailRow("Business Scale", buyer.businessScale)}
+        ${detailRow("Annual Purchase", buyer.annualPurchase)}
+        ${detailRow("Contract Model", buyer.contractModel)}
+      </div>
     </div>
-  </div>
 
-  <div class="section-header">CROPS & SEASONS</div>
-  <div class="info-card">
-    <div class="details-grid">
-      ${detailRow("Seasons", seasons)}
-      ${detailRow("Crops", crops)}
-      ${detailRow("Crop Subcategories", subcats)}
+    <div class="section-header">CROPS & SEASONS</div>
+    <div class="info-card">
+      <div class="details-grid">
+        ${detailRow("Seasons", seasons)}
+        ${detailRow("Crops", crops)}
+        ${detailRow("Crop Subcategories", subcats)}
+      </div>
     </div>
-  </div>
-`;
-
-
+  `;
 
   buyerDetailsModal.hidden = false;
 }
-
 
 
 function closeBuyerModal() {
@@ -444,60 +479,6 @@ async function loadBuyers() {
   }
 }
 
-// async function sendRequestToBuyer(receiverUserId, btn) {
-//   const { token, userId } = getAuthInfo();
-//   const { t } = getDashText();
-
-//   if (!token || !userId) return alert(t.msgLoginRequired);
-
-//   btn.disabled = true;
-
-//   try {
-//     const resp = await fetch(
-//       `${API_BASE_URL}/request/send?userId=${encodeURIComponent(userId)}`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: "Bearer " + token,
-//         },
-//         body: JSON.stringify({ receiverId: receiverUserId }),
-//       }
-//     );
-
-//     const body = await resp.json().catch(() => ({}));
-
-//     if (resp.ok && body.success) {
-//       alert(t.msgRequestSent);
-//       btn.textContent = t.btnRequested;
-//       btn.disabled = true;
-//     } else {
-//       alert(t.msgRequestFailed);
-//       btn.disabled = false;
-//     }
-//   } catch (e) {
-//     alert(t.msgRequestFailed);
-//     btn.disabled = false;
-//   }
-// }
-
-function attachRequestButtonHandlers() {
-  const cards = document.querySelectorAll(".buyer-card .btn-request");
-
-  cards.forEach((btn) => {
-    if (btn.dataset.bound === "1") return;
-    btn.dataset.bound = "1";
-
-    btn.addEventListener("click", () => {
-      if (btn.disabled) return;
-
-      const card = btn.closest(".buyer-card");
-      const receiver = card.getAttribute("data-receiver-id");
-      if (receiver) sendRequestToBuyer(receiver, btn);
-    });
-  });
-}
-
 function applyFilters() {
   loadBuyers();
 }
@@ -511,18 +492,6 @@ function syncDashboardLanguage() {
   loadBuyers();
 }
 
-// Requests page link
-document.getElementById("farmerRequestsMenu")?.addEventListener("click", () => {
-  window.location.href = "../Farmer-Request/farmer-request.html";
-});
-
-// Proposals page link
-document.getElementById("farmerProposalsMenu")?.addEventListener("click", () => {
-  window.location.href = "../Farmer-Proposals/farmer-proposals.html"; 
-  // (or your actual proposals page)
-});
-
-
 document.getElementById("langToggle")?.addEventListener("click", () =>
   setTimeout(syncDashboardLanguage, 0)
 );
@@ -533,6 +502,37 @@ document.getElementById("mobileLangToggle")?.addEventListener("click", () =>
 document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   document.querySelector(".sidebar")?.classList.toggle("collapsed");
 });
+
+// ── NEW: active agreement banner ──────────────────────────────────────
+// After an agreement is signed this injects a banner above the buyers
+// grid so the farmer immediately sees their next step.
+async function loadActiveAgreementBanner() {
+  const { token } = getAuthInfo();
+  try {
+    const res = await fetch("/api/agreements/active", {
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+    });
+    if (!res.ok) return;
+    const list = await res.json();
+    if (!list?.length) return;
+
+    const banner = document.getElementById("agreementBanner");
+    if (!banner) return;
+
+    banner.innerHTML = `
+      <div class="agreement-banner-content">
+        <span>🌾 You have <strong>${list.length}</strong> active agreement${list.length > 1 ? "s" : ""}.
+          Create a supply request to get started.</span>
+        <div class="banner-actions">
+          <a href="../supply-req/supply-request.html"   class="banner-btn">Create Supply Request</a>
+          <a href="../supply-order/supply-orders.html"  class="banner-btn banner-btn-outline">View Orders</a>
+          <a href="../Agreement/agreements-list.html"   class="banner-btn banner-btn-outline">View Agreements</a>
+        </div>
+      </div>`;
+    banner.classList.remove("hidden");
+  } catch (e) { /* banner is non-critical */ }
+}
+// ─────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", async () => {
   const { t } = getDashText();
@@ -558,7 +558,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.querySelector(".logout")?.addEventListener("click", logoutUser);
 
-    await loadFarmerLands();
+  loadActiveAgreementBanner(); // ← NEW
+
+  await loadFarmerLands();
   loadBuyers();
 });
 
@@ -610,7 +612,7 @@ function openRequestModal(buyer) {
       // populate crops
       land.crops.forEach(crop => {
         const opt = document.createElement("option");
-        opt.value = crop.id;        // ✅ cropId
+        opt.value = crop.id;
         opt.textContent = crop.name;
         cropSelect.appendChild(opt);
       });
@@ -624,17 +626,17 @@ function openRequestModal(buyer) {
   landInput.onclick = () => landPicker.classList.toggle("hidden");
 
   const seasonGroup = document.getElementById("seasonGroup");
-const seasonSelect = document.getElementById("reqSeasonSelect");
+  const seasonSelect = document.getElementById("reqSeasonSelect");
 
-// 🔑 CONTRACT MODEL BASED UI
-if (buyer.contractModel === "SEASONAL") {
-  seasonGroup.style.display = "block";
-  seasonSelect.value = "";
-} else {
-  // ANNUAL contract → no season selection
-  seasonGroup.style.display = "none";
-  seasonSelect.value = "";
-}
+  // 🔑 CONTRACT MODEL BASED UI
+  if (buyer.contractModel === "SEASONAL") {
+    seasonGroup.style.display = "block";
+    seasonSelect.value = "";
+  } else {
+    // ANNUAL contract → no season selection
+    seasonGroup.style.display = "none";
+    seasonSelect.value = "";
+  }
 
 
   // -------- crop → subcategory --------
@@ -650,7 +652,7 @@ if (buyer.contractModel === "SEASONAL") {
 
     crop.subcategories.forEach(sc => {
       const opt = document.createElement("option");
-      opt.value = sc.id;          // ✅ subCategoryId
+      opt.value = sc.id;
       opt.textContent = sc.name;
       subSelect.appendChild(opt);
     });
@@ -663,7 +665,16 @@ if (buyer.contractModel === "SEASONAL") {
   modal.hidden = false;
 }
 
+document.addEventListener("click", (e) => {
+  const picker = document.getElementById("landPicker");
+  const input = document.getElementById("reqLandInput");
 
+  if (!picker || !input) return;
+
+  if (!picker.contains(e.target) && e.target !== input) {
+    picker.classList.add("hidden");
+  }
+});
 
 document.getElementById("requestModalClose").onclick =
 document.getElementById("cancelRequestBtn").onclick = () => {
@@ -674,10 +685,10 @@ document.getElementById("cancelRequestBtn").onclick = () => {
 document.getElementById("confirmRequestBtn").onclick = async () => {
 
   const { token, userId } = getAuthInfo();
-const season =
-  selectedBuyer.contractModel === "SEASONAL"
-    ? document.getElementById("reqSeasonSelect").value
-    : null;
+  const season =
+    selectedBuyer.contractModel === "SEASONAL"
+      ? document.getElementById("reqSeasonSelect").value
+      : null;
 
   // -------- frontend validation --------
   if (!selectedLandId) {
@@ -696,12 +707,12 @@ const season =
   }
 
   if (
-  selectedBuyer.contractModel === "SEASONAL" &&
-  !season
-) {
-  alert("Please select season");
-  return;
-}
+    selectedBuyer.contractModel === "SEASONAL" &&
+    !season
+  ) {
+    alert("Please select season");
+    return;
+  }
 
 
   // -------- send request --------
@@ -754,5 +765,3 @@ async function loadFarmerLands() {
   farmerLands = await resp.json();
   console.log("Farmer lands loaded:", farmerLands);
 }
-
-

@@ -1,181 +1,180 @@
+/* ============================================================
+   Farm360 — Buyer Confirm Delivery  (FINAL stage only)
+   Buyer reviews transport proofs and confirms delivery,
+   which triggers autoApproveAndRelease() on the backend.
+
+   Endpoints:
+     GET  /api/advance-supply/{orderId}           → load order
+     POST /api/advance-supply/{orderId}/buyer/confirm → confirm
+   ============================================================ */
 (function () {
-  const qs = new URLSearchParams(window.location.search);
-  const orderId = qs.get('orderId');
-  const API = '/api/advance-supply';
   const token = localStorage.getItem('token');
-  const role = (localStorage.getItem('role') || '').toLowerCase();
+  const role  = (localStorage.getItem('role') || '').toLowerCase();
 
-  // DOM refs
-  const backBtn = document.getElementById('backBtn');
-  const agreementIdEl = document.getElementById('agreementId');
-  const stageBadgeEl = document.getElementById('stageBadge');
-  const farmerNameEl = document.getElementById('farmerName');
-  const supplierNameEl = document.getElementById('supplierName');
-  const allocatedAmountEl = document.getElementById('allocatedAmount');
-  const invoiceTotalEl = document.getElementById('invoiceTotal');
-  const statusBadgeEl = document.getElementById('statusBadge');
+  if (!token || role !== 'buyer') {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = '../../Login/login.html';
+    return;
+  }
 
-  const vehicleNumberEl = document.getElementById('vehicleNumber');
-  const farmLoadingPreview = document.getElementById('farmLoadingPreview');
-  const warehouseUnloadingPreview = document.getElementById('warehouseUnloadingPreview');
+  const qs      = new URLSearchParams(location.search);
+  const orderId = qs.get('orderId');
+  const API     = '/api/advance-supply';
 
-  const confirmBtn = document.getElementById('confirmBtn');
-  const raiseDisputeBtn = document.getElementById('raiseDisputeBtn');
-  const proofWarning = document.getElementById('proofWarning');
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+  }
 
-  let order = null;
+  function money(n) { return '₹ ' + Number(n || 0).toLocaleString('en-IN'); }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    try {
+      return Array.isArray(d)
+        ? new Date(d[0], d[1]-1, d[2]).toLocaleDateString('en-IN')
+        : new Date(d).toLocaleDateString('en-IN');
+    } catch { return String(d); }
+  }
 
   function showToast(msg, type = 'error') {
     const c = document.getElementById('toast-container');
+    if (!c) { console.warn(msg); return; }
     const t = document.createElement('div');
     t.className = `toast ${type}`;
-    t.innerText = msg;
+    t.textContent = msg;
     c.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
+    setTimeout(() => t.remove(), 3500);
   }
 
-  function money(n) { return '₹ ' + (Number(n || 0).toLocaleString()); }
-  function statusClass(status) { if (!status) return ''; return 'status-' + String(status).toUpperCase(); }
+  function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
 
-  // Helper: try to find image URL from various possible fields / proofUrls
-  function findImage(o, patterns = []) {
-    if (!o) return null;
-    // direct named fields
-    const keys = Object.keys(o || {});
-    for (const k of keys) {
-      const v = (o[k] || '').toString();
-      if (!v) continue;
-      for (const p of patterns) {
-        if (k.toLowerCase().includes(p) && (v.startsWith('http') || v.startsWith('/')) ) return v;
-      }
-    }
+  let order = null;
 
-    // check common explicit fields
-    for (const k of ['farmLoadingPhotoUrl','farmLoadingPhoto','loadingPhotoUrl','loadingPhoto','warehouseUnloadingPhotoUrl','warehouseUnloadingPhoto','unloadingPhotoUrl','unloadingPhoto']) {
-      if (o[k]) return o[k];
-    }
-
-    // fallback to proofUrls/proofs array
-    const arr = (o.proofUrls || o.proofs || []);
-    if (Array.isArray(arr) && arr.length) {
-      for (const p of patterns) {
-        const found = arr.find(u => u && (new RegExp(p, 'i')).test(u));
-        if (found) return found;
-      }
-      // otherwise return first image-like URL
-      const first = arr.find(u => /\.(jpg|jpeg|png|webp|gif)$/i.test(u));
-      if (first) return first;
-    }
-
-    return null;
-  }
-
+  /* ── Load order ── */
   async function fetchOrder() {
-    if (!orderId) return showToast('Order not specified');
+    if (!orderId) { showToast('No order specified'); return; }
     try {
-      const res = await fetch(`${API}/${encodeURIComponent(orderId)}`, { headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error('fetch-failed');
+      const res = await fetch(
+        `${API}/${encodeURIComponent(orderId)}`,
+        { headers: authHeaders() }
+      );
+      if (!res.ok) throw new Error('Failed to load order');
       order = await res.json();
       populateOrder(order);
     } catch (err) {
       console.error(err);
-      showToast('Failed to load order');
+      showToast(err.message || 'Failed to load order');
     }
   }
 
   function populateOrder(o) {
-    agreementIdEl.textContent = o.agreementId || o.agreement || o.id || '-';
-    stageBadgeEl.textContent = (o.stage || '-').toUpperCase();
-    stageBadgeEl.className = `badge-stage badge-${(o.stage || '').toUpperCase()}`;
+    setText('agreementId',    o.agreementId  || '—');
+    setText('farmerName',     o.farmerName   || '—');
+    setText('supplierName',   o.supplierName || o.supplierType || '—');
+    setText('allocatedAmount', money(o.allocatedAmount));
+    setText('invoiceTotal',   money(o.billAmount || o.invoiceAmount));
 
-    farmerNameEl.textContent = o.farmerName || o.farmer?.name || '-';
-    supplierNameEl.textContent = o.supplierName || o.supplier?.name || '-';
-
-    allocatedAmountEl.textContent = money(o.allocatedAmount || o.demandAmount || 0);
-    invoiceTotalEl.textContent = money(o.invoiceAmount || o.total || 0);
-
-    statusBadgeEl.textContent = o.status || '-';
-    statusBadgeEl.className = `status-badge ${statusClass(o.status)}`;
-
-    // vehicle number (try several possible fields)
-    const veh = o.vehicleNumber || o.vehicle_no || o.truckNumber || o.truckNo || o.vehicleNumberAtSource || o.vehicle || o.vehicleNo || o.truck_no;
-    vehicleNumberEl.textContent = veh || (o.transport || {}).vehicleNumber || '—';
-
-    // images
-    const farmLoading = findImage(o, ['load', 'loading', 'farm']);
-    const warehouseUnload = findImage(o, ['unload', 'unloading', 'warehouse', 'delivery']);
-
-    if (farmLoading) {
-      farmLoadingPreview.innerHTML = `<img src="${farmLoading}" alt="farm-loading"/>`;
-    }
-    if (warehouseUnload) {
-      warehouseUnloadingPreview.innerHTML = `<img src="${warehouseUnload}" alt="warehouse-unload"/>`;
+    const badge = document.getElementById('stageBadge');
+    if (badge) {
+      badge.textContent = (o.stage || '—').toUpperCase();
+      badge.className   = `badge-stage badge-${(o.stage || '').toUpperCase()}`;
     }
 
-    // enable confirm only when conditions met and proofs present
-    const isFinal = (String(o.stage || '').toUpperCase() === 'FINAL');
-    const inTransit = (String(o.status || '').toUpperCase() === 'IN_TRANSIT');
+    const statusBadge = document.getElementById('statusBadge');
+    if (statusBadge) {
+      statusBadge.textContent = o.status || '—';
+      statusBadge.className   = `status-badge status-${(o.status || '').toUpperCase()}`;
+    }
 
-    const hasVehicle = Boolean(veh || (o.transport && (o.transport.vehicleNumber || o.transport.truckNo)));
-    const hasFarmLoading = Boolean(farmLoading);
-    const hasWarehouseUnloading = Boolean(warehouseUnload);
+    // Transport proofs — find vehicle number and photos from proofs[]
+    const proofs = o.proofs || [];
 
-    const proofsPresent = hasVehicle && hasFarmLoading && hasWarehouseUnloading;
+    const vehicleProof = proofs.find(p =>
+      (p.type || '').toUpperCase() === 'VEHICLE_NUMBER_AT_SOURCE');
+    const loadingProof = proofs.find(p =>
+      (p.type || '').toUpperCase() === 'FARM_LOADING_PHOTO');
+    const warehouseProof = proofs.find(p =>
+      (p.type || '').toUpperCase() === 'WAREHOUSE_UNLOADING_PHOTO');
+
+    setText('vehicleNumber', vehicleProof?.metadata || o.vehicleNumber || '—');
+
+    const farmLoadingPrev = document.getElementById('farmLoadingPreview');
+    if (farmLoadingPrev && loadingProof?.fileUrl)
+      farmLoadingPrev.innerHTML = `<img src="${loadingProof.fileUrl}" alt="farm-loading"/>`;
+
+    const warehousePrev = document.getElementById('warehouseUnloadingPreview');
+    if (warehousePrev && warehouseProof?.fileUrl)
+      warehousePrev.innerHTML = `<img src="${warehouseProof.fileUrl}" alt="warehouse"/>`;
+
+    // System remark
+    if (o.systemRemark) showToast('⚠ ' + o.systemRemark);
+
+    // Enable confirm button only when FINAL + IN_TRANSIT + all proofs present
+    const confirmBtn   = document.getElementById('confirmBtn');
+    const proofWarning = document.getElementById('proofWarning');
+
+    const isFinal    = (o.stage   || '').toUpperCase() === 'FINAL';
+    const inTransit  = (o.status  || '').toUpperCase() === 'IN_TRANSIT';
+    const hasVehicle = Boolean(vehicleProof?.metadata || o.vehicleNumber);
+    const hasLoading = Boolean(loadingProof?.fileUrl);
+    // Warehouse proof is uploaded by supplier — buyer checks it arrived
+    const hasWarehouse = Boolean(warehouseProof?.fileUrl);
+
+    const proofsOk = hasVehicle && hasLoading; // warehouse required by autoApprove, encouraged here
 
     if (!isFinal || !inTransit) {
-      confirmBtn.disabled = true;
-      proofWarning.textContent = 'Confirm available only when Stage = FINAL and Status = IN_TRANSIT.';
-    } else if (!proofsPresent) {
-      confirmBtn.disabled = true;
+      if (confirmBtn)   confirmBtn.disabled = true;
+      if (proofWarning) proofWarning.textContent =
+        'Confirm available only when Stage = FINAL and Status = IN_TRANSIT.';
+    } else if (!proofsOk) {
+      if (confirmBtn)   confirmBtn.disabled = true;
       const missing = [];
-      if (!hasVehicle) missing.push('Vehicle Number');
-      if (!hasFarmLoading) missing.push('Farm Loading Photo');
-      if (!hasWarehouseUnloading) missing.push('Warehouse Unloading Photo');
-      proofWarning.textContent = 'Missing proof: ' + missing.join(', ');
+      if (!hasVehicle)   missing.push('Vehicle Number');
+      if (!hasLoading)   missing.push('Farm Loading Photo');
+      if (!hasWarehouse) missing.push('Warehouse Unloading Photo (supplier must upload)');
+      if (proofWarning) proofWarning.textContent = 'Waiting for proof: ' + missing.join(', ');
     } else {
-      confirmBtn.disabled = false;
-      proofWarning.textContent = '';
+      if (confirmBtn)   confirmBtn.disabled = false;
+      if (proofWarning) proofWarning.textContent = '';
     }
   }
 
-  confirmBtn.addEventListener('click', async () => {
-    if (!orderId) return showToast('Order not specified');
-    confirmBtn.disabled = true;
+  /* ── Confirm ── */
+  document.getElementById('confirmBtn')?.addEventListener('click', async () => {
+    if (!orderId) { showToast('Order not specified'); return; }
+    const btn = document.getElementById('confirmBtn');
+    if (btn) btn.disabled = true;
+
     try {
-      const res = await fetch(`${API}/${encodeURIComponent(orderId)}/buyer/confirm`, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => 'Confirm failed');
-        throw new Error(text || 'Confirm failed');
-      }
-      showToast('Delivery confirmed — escrow release approved', 'success');
-      // redirect to agreement view (include agreementId if available)
-      const agr = (order && (order.agreementId || order.agreement || order.id)) || '';
-      setTimeout(() => { window.location.href = `../Agreement/agreement.html?agreementId=${encodeURIComponent(agr)}`; }, 700);
+      const res = await fetch(
+        `${API}/${encodeURIComponent(orderId)}/buyer/confirm`,
+        { method: 'POST', headers: authHeaders() }
+      );
+      if (!res.ok) throw new Error(await res.text() || 'Confirm failed');
+
+      showToast('Delivery confirmed — escrow release in progress', 'success');
+
+      const agrId = order?.agreementId || '';
+      setTimeout(() => {
+        window.location.href =
+          `../Agreement/agreement.html?agreementId=${encodeURIComponent(agrId)}`;
+      }, 900);
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Confirm failed');
-      confirmBtn.disabled = false;
+      const btn = document.getElementById('confirmBtn');
+      if (btn) btn.disabled = false;
     }
   });
 
-  raiseDisputeBtn.addEventListener('click', () => {
-    // navigate to Support with context (simple fallback)
+  /* ── Raise dispute ── */
+  document.getElementById('raiseDisputeBtn')?.addEventListener('click', () => {
     const q = new URLSearchParams({ orderId: orderId || '', type: 'dispute' });
-    window.location.href = `../Support/support.html?${q.toString()}`;
+    window.location.href = `../../Support/support.html?${q.toString()}`;
   });
 
-  backBtn.addEventListener('click', () => window.history.back());
+  document.getElementById('backBtn')?.addEventListener('click', () => window.history.back());
 
-  // init
-  (function init() {
-    if (!token || role !== 'buyer') {
-      // client-side guard only — show warning but do not forcibly redirect
-      console.warn('Missing token or role != buyer');
-    }
-    fetchOrder();
-  })();
-
+  fetchOrder();
 })();
