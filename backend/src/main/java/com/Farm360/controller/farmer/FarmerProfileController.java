@@ -15,12 +15,18 @@ public class FarmerProfileController {
 
     @Autowired
     private FarmerProfileService farmerProfileService;
+
     @GetMapping
     public ResponseEntity<FarmerProfileRS> getProfile(Authentication authentication) {
-
         UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = user.getId();
+        return ResponseEntity.ok(farmerProfileService.getProfile(user.getId()));
+    }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<FarmerProfileRS> getProfileById(
+            @PathVariable Long userId,
+            Authentication authentication
+    ) {
         return ResponseEntity.ok(farmerProfileService.getProfile(userId));
     }
 
@@ -30,8 +36,6 @@ public class FarmerProfileController {
             @RequestBody FarmerProfileUpdateRQ rq
     ) {
         UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = user.getId();
-
-        return ResponseEntity.ok(farmerProfileService.updateProfile(userId, rq));
+        return ResponseEntity.ok(farmerProfileService.updateProfile(user.getId(), rq));
     }
 }
