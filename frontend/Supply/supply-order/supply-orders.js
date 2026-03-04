@@ -17,7 +17,7 @@
     return;
   }
 
-  const API = '/api/advance-supply';
+  const API = 'http://localhost:8080/api/advance-supply';
   const ordersListEl = document.getElementById('ordersList');
   const modal        = document.getElementById('orderModal');
   const modalBody    = document.getElementById('modalBody');

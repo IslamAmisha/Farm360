@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Session expired. Please login again.");
+    window.location.href = "../../Login/login.html";
+    return;
+  }
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
   const walletBalanceEl = document.getElementById("walletBalance");
   const transactionTableBody = document.getElementById("transactionTableBody");
   const noTransactionsEl = document.getElementById("noTransactions");
   const backBtn = document.getElementById("backToDashboard");
 
-  const API_BASE = "/api/escrow";
+  const API_BASE = "http://localhost:8080";
 
   /* -------------------------------
      Utility Functions
@@ -40,9 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadWalletBalance() {
     try {
-      const response = await fetch(`${API_BASE}/wallet`, {
+      const response = await fetch(`${API_BASE}/api/escrow/wallet`, {
         method: "GET",
-        credentials: "include",
+        headers: {
+    "Authorization": "Bearer " + localStorage.getItem("token")
+  },
       });
 
       if (!response.ok) {
@@ -51,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const data = await response.json();
 
-      walletBalanceEl.innerText = formatCurrency(data.balance);
+      walletBalanceEl.textContent = formatCurrency(data.balance ?? 0);
 
     } catch (error) {
       showError(error.message);
@@ -64,9 +77,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadTransactions() {
     try {
-      const response = await fetch(`${API_BASE}/transactions`, {
+      const response = await fetch(`${API_BASE}/api/escrow/transactions`, {
         method: "GET",
-        credentials: "include",
+        headers: {
+    "Authorization": "Bearer " + localStorage.getItem("token")
+  },
       });
 
       if (!response.ok) {
@@ -135,3 +150,4 @@ document.addEventListener("DOMContentLoaded", function () {
   loadWalletBalance();
   loadTransactions();
 });
+})

@@ -18,7 +18,7 @@
     return;
   }
 
-  const API = '/api/advance-supply';
+  const API = 'http://localhost:8080/api/advance-supply';
 
   function authHeaders() {
     return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
@@ -39,7 +39,12 @@
   /* ── Load active agreements ── */
   async function loadAgreements() {
     try {
-      const res = await fetch('/api/agreements/active', { headers: authHeaders() });
+     const res = await fetch('http://localhost:8080/api/agreements/active', {
+  headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')  // ← ADD THIS
+      }
+});
       if (!res.ok) throw new Error('Failed');
       const list = await res.json();  // List<AgreementListRS>
 
@@ -47,8 +52,7 @@
       list.forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.agreementId;
-        opt.textContent = `#${a.agreementId} — ${a.counterPartyRole || ''} (User ${a.counterPartyId || ''})`;
-        opt.dataset.proposalVersion = a.proposalVersion || '';
+opt.textContent = `#${a.agreementId} — ${a.counterPartyName || ''} (${a.counterPartyRole || ''})`;        opt.dataset.proposalVersion = a.proposalVersion || '';
         agreementIdEl.appendChild(opt);
       });
     } catch (err) {
@@ -67,9 +71,9 @@
     if (!supplierType) return [];
     try {
       const res = await fetch(
-        `/api/item-names?supplierType=${encodeURIComponent(supplierType)}`,
-        { headers: authHeaders() }
-      );
+  `http://localhost:8080/api/item-names?supplierType=${encodeURIComponent(supplierType)}`,
+  { headers: authHeaders() }
+);
       return res.ok ? await res.json() : [];
     } catch (e) { return []; }
   }

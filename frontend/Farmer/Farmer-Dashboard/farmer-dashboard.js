@@ -191,27 +191,27 @@ document.getElementById("farmerAgreementsMenu")?.addEventListener("click", () =>
 
 // Input Supply — farmer CREATES supply requests here
 document.getElementById("farmerInputSupplyMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-req/supply-request.html";
+  window.location.href = "../../Supply/supply-req/supply-request.html";
 });
 
 // Supply Orders — farmer tracks orders, confirms/rejects delivery, dispatches harvest
 document.getElementById("farmerSupplyOrdersMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-order/supply-orders.html";
+  window.location.href = "../../Supply/supply-order/supply-orders.html";
 });
 
 // Cultivation / Harvest — dispatch step lives on supply orders page
 document.getElementById("farmerCultivationMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-order/supply-orders.html";
+  window.location.href = "../../Supply/supply-order/supply-orders.html";
 });
 
 // Delivery / Logistics — alias
 document.getElementById("farmerDeliveryMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-order/supply-orders.html";
+  window.location.href = "../../Supply/supply-order/supply-orders.html";
 });
 
 // Wallet
 document.getElementById("farmerWalletMenu")?.addEventListener("click", () => {
-  window.location.href = "../Wallet/farmer-wallet.html";
+  window.location.href = "../Farmer-Wallet/farmer-wallet.html";
 });
 // ─────────────────────────────────────────────────────────────────────
 
@@ -509,9 +509,15 @@ document.getElementById("sidebarToggle")?.addEventListener("click", () => {
 async function loadActiveAgreementBanner() {
   const { token } = getAuthInfo();
   try {
-    const res = await fetch("/api/agreements/active", {
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-    });
+    const res = await fetch(
+  `${API_BASE_URL}/api/agreements/active`,
+  {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    }
+  }
+);
     if (!res.ok) return;
     const list = await res.json();
     if (!list?.length) return;
