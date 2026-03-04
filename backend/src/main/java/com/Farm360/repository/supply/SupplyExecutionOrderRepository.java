@@ -14,7 +14,7 @@ public interface SupplyExecutionOrderRepository
 
     List<SupplyExecutionOrderEntity> findBySupplierUserId(Long supplierUserId);
 
-    List<SupplyExecutionOrderEntity> findByAgreementId(Long agreementId);
+    List<SupplyExecutionOrderEntity> findByAgreement_AgreementId(Long agreementId);
 
     @Query("SELECT o FROM SupplyExecutionOrderEntity o " +
             "WHERE o.supplierType = :type AND o.status = 'SUPPLIER_NOTIFIED' " +
@@ -37,9 +37,9 @@ public interface SupplyExecutionOrderRepository
 
     @Modifying
     @Query("UPDATE SupplyExecutionOrderEntity o SET o.status = 'APPROVED' " +
-            "WHERE o.agreementId = :agreementId AND o.status != 'APPROVED'")
+            "WHERE o.agreement.agreementId = :agreementId AND o.status != 'APPROVED'")
     void markAllStagesApproved(@Param("agreementId") Long agreementId);
 
 
-    List<SupplyExecutionOrderEntity> findByAgreementIdIn(List<Long> agreementIds);
+    List<SupplyExecutionOrderEntity> findByAgreement_AgreementIdIn(List<Long> agreementIds);
 }

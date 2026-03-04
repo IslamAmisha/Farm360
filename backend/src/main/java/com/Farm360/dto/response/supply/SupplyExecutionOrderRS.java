@@ -1,6 +1,7 @@
 package com.Farm360.dto.response.supply;
 
 import com.Farm360.utils.EscrowReleaseStatus;
+import com.Farm360.utils.FarmingStage;
 import com.Farm360.utils.SupplierType;
 import com.Farm360.utils.SupplyStatus;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,13 @@ public class SupplyExecutionOrderRS {
 
     private Long orderId;
     private Long agreementId;
+
+    private String buyerName;
+    private String farmerName;
+    private String cropName;
+    private String deliveryLocation;
+
+    private FarmingStage stage;
 
     private SupplierType supplierType;
     private SupplyStatus status;

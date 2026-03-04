@@ -200,13 +200,29 @@ public class AgreementServiceImpl implements AgreementService {
                 .stream()
                 .map(a -> {
                     AgreementListRS rs = agreementMapper.toListRS(a);
+                    rs.setProposalVersion(a.getProposalVersion());
+
                     if (a.getFarmerUserId().equals(userId)) {
+                        // Current user is farmer → counterparty is buyer
+                        String buyerName = buyerProfileRepo.findByUserId(a.getBuyerUserId())
+                                .map(b -> b.getFullName() != null ? b.getFullName() : b.getBusinessName())
+                                .orElse("Buyer #" + a.getBuyerUserId());
+
                         rs.setCounterPartyRole("buyer");
-                        rs.setCounterPartyName("User-" + a.getBuyerUserId());
+                        rs.setCounterPartyId(a.getBuyerUserId());
+                        rs.setCounterPartyName(buyerName);
+
                     } else {
+                        // Current user is buyer → counterparty is farmer
+                        String farmerName = farmerProfileRepo.findByUserId(a.getFarmerUserId())
+                                .map(f -> f.getFarmerName() != null ? f.getFarmerName() : "Farmer #" + a.getFarmerUserId())
+                                .orElse("Farmer #" + a.getFarmerUserId());
+
                         rs.setCounterPartyRole("farmer");
-                        rs.setCounterPartyName("User-" + a.getFarmerUserId());
+                        rs.setCounterPartyId(a.getFarmerUserId());
+                        rs.setCounterPartyName(farmerName);
                     }
+
                     return rs;
                 })
                 .toList();
@@ -321,7 +337,7 @@ public class AgreementServiceImpl implements AgreementService {
     public void completeAgreement(Long agreementId) {
 
         List<SupplyExecutionOrderEntity> orders =
-                orderRepo.findByAgreementId(agreementId);
+                orderRepo.findByAgreement_AgreementId(agreementId);
 
         boolean allApproved = orders.stream()
                 .allMatch(o -> o.getStatus() == SupplyStatus.APPROVED);

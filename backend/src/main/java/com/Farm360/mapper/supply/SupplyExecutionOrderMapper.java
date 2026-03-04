@@ -12,6 +12,8 @@ import org.mapstruct.Mapping;
 public interface SupplyExecutionOrderMapper {
 
     @Mapping(source = "id", target = "orderId")
+    @Mapping(source = "stage", target = "stage")
+    @Mapping(source = "agreement.agreementId", target = "agreementId")
     @Mapping(source = "items", target = "items")
     SupplyExecutionOrderRS mapEntityToRS(SupplyExecutionOrderEntity entity);
 }

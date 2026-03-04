@@ -18,8 +18,12 @@ public class AgreementListRS {
 
     private AgreementStatus status;
 
+    private Long counterPartyId;
     private String counterPartyName;
     private String counterPartyRole;
 
     private LocalDateTime signedAt;
+
+    private Integer proposalVersion;
+
 }

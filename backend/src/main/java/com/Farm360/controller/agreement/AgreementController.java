@@ -5,6 +5,7 @@ import com.Farm360.dto.response.agreement.AgreementListRS;
 import com.Farm360.dto.response.agreement.AgreementRS;
 import com.Farm360.security.UserDetailsImpl;
 import com.Farm360.service.agreement.AgreementService;
+import com.Farm360.utils.AgreementStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -64,6 +65,17 @@ public class AgreementController {
 
         return ResponseEntity.ok(
                 agreementService.getMyAgreements(user.getId())
+        );
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<AgreementListRS>> activeAgreements(Authentication authentication) {
+        UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
+        return ResponseEntity.ok(
+                agreementService.getMyAgreements(user.getId())
+                        .stream()
+                        .filter(a -> AgreementStatus.SIGNED == a.getStatus())  // ← enum comparison
+                        .toList()
         );
     }
 }

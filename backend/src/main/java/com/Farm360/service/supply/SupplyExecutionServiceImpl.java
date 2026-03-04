@@ -4,6 +4,7 @@ import com.Farm360.dto.request.supply.*;
 import com.Farm360.dto.response.supply.SupplyExecutionOrderRS;
 import com.Farm360.mapper.supply.SupplyExecutionOrderMapper;
 import com.Farm360.model.SupplierEntity;
+import com.Farm360.model.agreement.AgreementEntity;
 import com.Farm360.model.master.items.SupplyItemName;
 import com.Farm360.model.payment.AgreementEscrowAllocation;
 import com.Farm360.model.supply.*;
@@ -58,13 +59,13 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
             case "FARMER" -> {
                 List<Long> ids = agreementRepo.findByFarmerUserId(userId)
                         .stream().map(a -> a.getAgreementId()).toList();
-                orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreementIdIn(ids);
+                orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreement_AgreementIdIn(ids);
             }
 
             case "BUYER" -> {
                 List<Long> ids = agreementRepo.findByBuyerUserId(userId)
                         .stream().map(a -> a.getAgreementId()).toList();
-                orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreementIdIn(ids);
+                orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreement_AgreementIdIn(ids);
             }
 
             default -> orders = List.of();
@@ -101,8 +102,11 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
 
         List<Long> supplierUserIds = supplierBroadcastResolver.resolveSuppliers(rq.getSupplierType());
 
+        AgreementEntity agreement =
+                agreementRepo.findById(rq.getAgreementId())
+                        .orElseThrow(() -> new RuntimeException("Agreement not found"));
         SupplyExecutionOrderEntity order = SupplyExecutionOrderEntity.builder()
-                .agreementId(rq.getAgreementId())
+                .agreement(agreement)
                 .proposalVersion(rq.getProposalVersion())
                 .stage(rq.getStage())
                 .supplierUserId(null)
@@ -122,7 +126,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
                     order.getId());
         }
 
-        Long buyerId = allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId();
+        Long buyerId = allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId();
         notificationService.notifyUser(buyerId, NotificationType.SUPPLY_REQUEST_CREATED,
                 "Supply Requested",
                 "Farmer requested materials for stage " + order.getStage(),
@@ -174,7 +178,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setStatus(SupplyStatus.SUPPLIER_ACCEPTED);
         orderRepo.save(order);
 
-        Long farmerId = allocationService.getByAgreementId(order.getAgreementId()).getFarmerUserId();
+        Long farmerId = allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getFarmerUserId();
         notificationService.notifyUser(farmerId, NotificationType.SUPPLIER_ACCEPTED,
                 "Supplier Accepted", "A supplier has accepted your request", order.getId());
 
@@ -239,11 +243,11 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setPayableAmount(total);
         order.setStatus(SupplyStatus.DISPATCHED);
 
-        Long farmerId = allocationService.getByAgreementId(order.getAgreementId()).getFarmerUserId();
+        Long farmerId = allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getFarmerUserId();
         notificationService.notifyUser(farmerId, NotificationType.SUPPLY_DISPATCHED,
                 "Supply Dispatched", "Your farming materials are on the way", order.getId());
 
-        Long buyerId = allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId();
+        Long buyerId = allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId();
         notificationService.notifyUser(buyerId, NotificationType.SUPPLIER_BILL_UPLOADED,
                 "Supplier Bill Uploaded", "Supplier uploaded bill for verification", order.getId());
 
@@ -265,7 +269,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
                     NotificationType.SUPPLY_REJECTED, "Delivery Rejected",
                     "Farmer rejected the delivery", order.getId());
             notificationService.notifyUser(
-                    allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId(),
+                    allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId(),
                     NotificationType.SUPPLY_FAILED, "Supply Failed",
                     "Farmer rejected supplier delivery", order.getId());
 
@@ -290,7 +294,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order = orderRepo.saveAndFlush(order);
 
         notificationService.notifyUser(
-                allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId(),
+                allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId(),
                 NotificationType.FARMER_CONFIRMED_SUPPLY, "Farmer Confirmed Delivery",
                 "Farmer confirmed delivery. Please verify.", order.getId());
 
@@ -337,7 +341,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setStatus(SupplyStatus.IN_TRANSIT);
         orderRepo.save(order);
 
-        Long buyerId = allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId();
+        Long buyerId = allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId();
         notificationService.notifyUser(buyerId, NotificationType.HARVEST_DISPATCHED,
                 "Harvest Dispatched",
                 "Farmer loaded harvest into vehicle " + rq.getVehicleNumber(), order.getId());
@@ -411,7 +415,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         };
 
         escrowService.releaseToSupplier(
-                order.getAgreementId(), getBuyerUserId(order),
+                order.getAgreement().getAgreementId(), getBuyerUserId(order),
                 order.getSupplierUserId(), invoiceTotal, purpose,
                 order.getStage() + "_SUPPLY_" + orderId);
 
@@ -422,13 +426,13 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         notificationService.notifyUser(order.getSupplierUserId(), NotificationType.SUPPLY_APPROVED,
                 "Supply Approved", "Buyer approved delivery and payment released", order.getId());
 
-        orderRepo.markAllStagesApproved(order.getAgreementId());
-        agreementService.completeAgreement(order.getAgreementId());
+        orderRepo.markAllStagesApproved(order.getAgreement().getAgreementId());
+        agreementService.completeAgreement(order.getAgreement().getAgreementId());
     }
 
 
     private Long getBuyerUserId(SupplyExecutionOrderEntity order) {
-        return allocationService.getByAgreementId(order.getAgreementId()).getBuyerUserId();
+        return allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId();
     }
 
     private double getAvailableEscrowByStage(AgreementEscrowAllocation alloc, FarmingStage stage) {

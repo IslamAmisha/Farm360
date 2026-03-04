@@ -1,5 +1,6 @@
 package com.Farm360.model.supply;
 
+import com.Farm360.model.agreement.AgreementEntity;
 import com.Farm360.utils.EscrowReleaseStatus;
 import com.Farm360.utils.FarmingStage;
 import com.Farm360.utils.SupplierType;
@@ -25,8 +26,9 @@ public class SupplyExecutionOrderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long agreementId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agreement_id")
+    private AgreementEntity agreement;
 
     @Column(nullable = false)
     private Integer proposalVersion;
@@ -35,8 +37,6 @@ public class SupplyExecutionOrderEntity {
     @Column(nullable = false)
     private FarmingStage stage;
 
-
-    @Column(nullable = false)
     private Long supplierUserId;
 
     @Enumerated(EnumType.STRING)
