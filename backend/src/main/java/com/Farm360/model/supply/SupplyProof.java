@@ -20,7 +20,7 @@ public class SupplyProof {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "supply_order_id") 
     private SupplyExecutionOrderEntity order;
 
     @Enumerated(EnumType.STRING)

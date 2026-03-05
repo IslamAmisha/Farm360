@@ -21,7 +21,7 @@ public class SupplierInvoice {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @JoinColumn(name = "supply_order_id", nullable = false, unique = true)
     private SupplyExecutionOrderEntity order;
 
     private String invoiceNumber;

@@ -19,7 +19,8 @@ public class SupplyExecutionItemEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "supply_order_id")
     private SupplyExecutionOrderEntity order;
 
     @Enumerated(EnumType.STRING)
