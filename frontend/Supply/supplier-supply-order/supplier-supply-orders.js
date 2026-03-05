@@ -19,8 +19,7 @@
     window.location.href = '../../Login/login.html';
     return;
   }
-
-  const API = '/api/advance-supply';
+  const API = 'http://localhost:8080/api/advance-supply';
 
   const availableListEl  = document.getElementById('availableList');
   const acceptedListEl   = document.getElementById('acceptedList');
@@ -66,7 +65,7 @@
   /* ── Load dashboard stats ── */
   async function loadStats() {
     try {
-      const res = await fetch('/dashboard/supplier/overview', { headers: authHeaders() });
+      const res = await fetch('http://localhost:8080/dashboard/supplier/overview', { headers: authHeaders() });
       if (!res.ok) return;
       const d = await res.json();
       const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -76,6 +75,24 @@
       setText('statWallet',    fmtCurrency(d.walletBalance));
     } catch { /* stats are non-critical */ }
   }
+
+  async function loadOrderDetails(id) {
+  try {
+    const res = await fetch(`${API}/${id}`, {
+      headers: authHeaders()
+    });
+
+    if (!res.ok) throw new Error("Failed to load order");
+
+    const order = await res.json();
+
+    openDetailsModal(order);
+
+  } catch (err) {
+    console.error(err);
+    alert("Unable to load order details");
+  }
+}
 
   /* ── Render available requests ── */
   function renderAvailable(list) {
@@ -114,7 +131,7 @@
       const viewBtn = document.createElement('button');
       viewBtn.className = 'btn-outline';
       viewBtn.textContent = 'View Details';
-      viewBtn.addEventListener('click', () => openDetailsModal(o));
+     viewBtn.addEventListener('click', () => loadOrderDetails(orderId(o)));
 
       const acceptBtn = document.createElement('button');
       acceptBtn.className = 'btn-primary';
@@ -185,7 +202,7 @@
       const viewBtn = document.createElement('button');
       viewBtn.className = 'btn-outline';
       viewBtn.textContent = 'View Details';
-      viewBtn.addEventListener('click', () => openDetailsModal(o));
+viewBtn.addEventListener('click', () => loadOrderDetails(orderId(o)));
       actions.appendChild(viewBtn);
 
       // Upload bill when SUPPLIER_ACCEPTED
@@ -207,37 +224,94 @@
   }
 
   /* ── Detail modal ── */
-  function openDetailsModal(o) {
-    orderModalBody.innerHTML = `
-      <h3>Order #${orderId(o) || '—'}</h3>
-      <div class="modal-section">
-        <div><strong>Agreement:</strong> #${o.agreementId || '—'}</div>
-        <div><strong>Stage:</strong> ${o.stage || '—'}</div>
-        <div><strong>Status:</strong> ${o.status || '—'}</div>
-        <div><strong>Supplier Type:</strong> ${o.supplierType || '—'}</div>
-        <div><strong>Allocated:</strong> ${fmtCurrency(o.allocatedAmount)}</div>
-        <div><strong>Bill Amount:</strong> ${fmtCurrency(o.billAmount)}</div>
-        <div><strong>Expected Delivery:</strong> ${fmtDate(o.expectedDeliveryDate)}</div>
-        ${o.systemRemark ? `<div class="system-remark"><strong>⚠ Remark:</strong> ${o.systemRemark}</div>` : ''}
-      </div>
-    `;
+function openDetailsModal(o) {
 
-    if (o.items?.length) {
-      const sec = document.createElement('div');
-      sec.className = 'modal-section';
-      sec.innerHTML = '<strong>Items</strong>';
-      const ul = document.createElement('ul');
-      o.items.forEach(it => {
-        const li = document.createElement('li');
-        li.textContent = `${it.productName || it.description || '—'} — ${it.quantity} ${it.unit || ''} @ ₹${it.expectedPrice ?? it.rate ?? '—'}`;
-        ul.appendChild(li);
-      });
-      sec.appendChild(ul);
-      orderModalBody.appendChild(sec);
-    }
+  let itemsRows = '';
 
-    if (orderModal) orderModal.hidden = false;
+  if (o.items && o.items.length > 0) {
+    itemsRows = o.items.map(i => `
+      <tr>
+        <td>${i.type || '—'}</td>
+        <td>${i.productName || '—'}</td>
+        <td>${i.brandName || '—'}</td>
+        <td>${i.quantity || '—'}</td>
+        <td>${i.unit || '—'}</td>
+        <td>₹ ${i.expectedPrice || '—'}</td>
+      </tr>
+    `).join('');
   }
+
+  orderModalBody.innerHTML = `
+    <div class="request-details-grid">
+
+      <div>
+        <label>Agreement ID</label>
+        <p>#${o.agreementId || '—'}</p>
+      </div>
+
+      <div>
+        <label>Farming Stage</label>
+        <p>${o.stage || '—'}</p>
+      </div>
+
+      <div>
+        <label>Supplier Type</label>
+        <p>${o.supplierType || '—'}</p>
+      </div>
+
+      <div>
+        <label>Expected Delivery</label>
+        <p>${fmtDate(o.expectedDeliveryDate)}</p>
+      </div>
+
+      <div>
+        <label>Demand Amount</label>
+        <p>${fmtCurrency(o.allocatedAmount)}</p>
+      </div>
+
+      <div>
+        <label>Farmer</label>
+        <p>${o.farmerName || '—'}</p>
+      </div>
+
+      <div>
+        <label>Buyer</label>
+        <p>${o.buyerName || '—'}</p>
+      </div>
+
+      <div>
+        <label>Crop</label>
+        <p>${o.cropName || '—'}</p>
+      </div>
+
+      <div>
+        <label>Delivery Location</label>
+        <p>${o.deliveryLocation || '—'}</p>
+      </div>
+
+    </div>
+
+    <h4 class="items-title">Requested Items</h4>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Item Type</th>
+          <th>Product Name</th>
+          <th>Brand</th>
+          <th>Quantity</th>
+          <th>Unit</th>
+          <th>Expected Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsRows}
+      </tbody>
+    </table>
+  `;
+
+  orderModal.hidden = false;
+}
 
   orderModalClose?.addEventListener('click', () => { if (orderModal) orderModal.hidden = true; });
   orderModal?.addEventListener('click', e => { if (e.target === orderModal) orderModal.hidden = true; });

@@ -8,15 +8,15 @@
      POST /api/advance-supply/{orderId}/buyer/confirm → confirm
    ============================================================ */
 (function () {
-  const token = localStorage.getItem('token');
-  const role  = (localStorage.getItem('role') || '').toLowerCase();
+  // const token = localStorage.getItem('token');
+  // const role  = (localStorage.getItem('role') || '').toLowerCase();
 
-  if (!token || role !== 'buyer') {
-    alert('User not found or unauthorized access!');
-    localStorage.clear();
-    window.location.href = '../../Login/login.html';
-    return;
-  }
+  // if (!token || role !== 'buyer') {
+  //   alert('User not found or unauthorized access!');
+  //   localStorage.clear();
+  //   window.location.href = '../../Login/login.html';
+  //   return;
+  // }
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
