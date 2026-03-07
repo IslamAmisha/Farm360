@@ -8,26 +8,27 @@
      POST /api/uploads                     → upload photo
    ============================================================ */
 (function () {
-  // const token  = localStorage.getItem('token');
-  // const userId = localStorage.getItem('userId');
-  // const role   = (localStorage.getItem('role') || '').toLowerCase();
+  const token  = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  const role   = (localStorage.getItem('role') || '').toLowerCase();
 
-  // if (!token || !userId || role !== 'supplier') {
-  //   alert('User not found or unauthorized access!');
-  //   localStorage.clear();
-  //   window.location.href = '../../Login/login.html';
-  //   return;
-  // }
+  if (!token || !userId || role !== 'supplier') {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = '../../Login/login.html';
+    return;
+  }
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API     = '/api/advance-supply';
+  const API = 'http://localhost:8080/api/advance-supply';
 
   function authHeaders(json = false) {
-    const h = { Authorization: 'Bearer ' + token };
-    if (json) h['Content-Type'] = 'application/json';
-    return h;
-  }
+  const token = localStorage.getItem('token');  
+  const h = { Authorization: 'Bearer ' + token };
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
 
   // DOM refs
   const sumAgreement  = document.getElementById('sumAgreement');
@@ -166,17 +167,26 @@
 
   /* ── Upload image ── */
   async function uploadImage(file) {
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error();
-      const body = await res.json();
-      return body.url || body.data?.url || null;
-    } catch {
-      return URL.createObjectURL(file); // dev fallback
-    }
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+
+  const res = await fetch('http://localhost:8080/api/uploads',{
+      method: 'POST',
+      body: fd,
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (!res.ok) throw new Error();
+
+    const body = await res.json();
+    return body.url || body.data?.url || null;
+  } catch {
+    return URL.createObjectURL(file);
   }
+}
 
   /* ── Submit invoice ── */
   submitBtn?.addEventListener('click', async () => {
@@ -210,7 +220,7 @@
           rate:        Number(it.rate || 0),
           unit:        it.unit
         })),
-        proofs: [{ type: 'INVOICE', fileUrl: photoUrl, metadata: '' }]
+        proofs: [{ type: 'INVOICE_PHOTO', fileUrl: photoUrl, metadata: '' }]
       };
 
       const res = await fetch(`${API}/supplier/bill`, {
@@ -221,7 +231,7 @@
 
       if (window.toast) window.toast('Invoice submitted');
       else alert('Invoice submitted — farmer has been notified');
-      window.location.href = 'supplier-supply-orders.html';
+     window.location.href = '/Supply/supplier-supply-order/supplier-supply-orders.html';
     } catch (err) {
       console.error(err);
       if (validationMsg) validationMsg.textContent = err.message || 'Failed to submit invoice';

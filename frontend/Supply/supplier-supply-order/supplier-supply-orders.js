@@ -212,7 +212,7 @@ viewBtn.addEventListener('click', () => loadOrderDetails(orderId(o)));
         uploadBtn.textContent = 'Upload Bill';
         uploadBtn.addEventListener('click', () => {
           window.location.href =
-            `supplier-upload-bill.html?orderId=${encodeURIComponent(orderId(o))}`;
+             `../supplier-bill/supplier-upload-bill.html?orderId=${encodeURIComponent(orderId(o))}`;
         });
         actions.appendChild(uploadBtn);
       }

@@ -104,7 +104,7 @@
         btn.textContent = 'Confirm / Reject Delivery';
         btn.addEventListener('click', () => {
           window.location.href =
-            `../supply-confirm/farmer-confirm-delivery.html?orderId=${orderId(o)}`;
+             `../Supply/farmer-confirm-supply/farmer-confirm-supply.html?orderId=${orderId(o)}`;
         });
         right.appendChild(btn);
       }
@@ -125,7 +125,7 @@
         btn.textContent = 'Confirm Delivery';
         btn.addEventListener('click', () => {
           window.location.href =
-            `../supply-confirm/buyer-confirm-delivery.html?orderId=${orderId(o)}`;
+            `../Supply/buyer-confirm-harvest/buyer-confirm-harvest.html?orderId=${orderId(o)}`;
         });
         right.appendChild(btn);
       }

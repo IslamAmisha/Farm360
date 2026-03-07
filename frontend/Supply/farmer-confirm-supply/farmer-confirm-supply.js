@@ -20,7 +20,7 @@
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API     = '/api/advance-supply';
+  const API = 'http://localhost:8080/api/advance-supply';
 
   function authHeaders(json = false) {
     const h = { Authorization: 'Bearer ' + token };
@@ -139,7 +139,7 @@
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
+     const res = await fetch('http://localhost:8080/api/uploads',{ method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
       if (!res.ok) throw new Error();
       const b = await res.json();
       return b.url || b.data?.url || null;
@@ -196,7 +196,7 @@
 
       if (!res.ok) throw new Error(await res.text() || 'Confirm failed');
       showToast('Delivery accepted — buyer has been notified', 'success');
-      setTimeout(() => window.location.href = '../supply-order/supply-orders.html', 800);
+      setTimeout(() => window.location.href = '../Supply/supply-order/supply-orders.html', 800);
     } catch (err) {
       const msg = document.getElementById('validationMsg');
       if (msg) msg.textContent = err.message || 'Failed to accept delivery';
@@ -232,7 +232,7 @@
 
       if (!res.ok) throw new Error(await res.text() || 'Reject failed');
       showToast('Delivery rejected', 'success');
-      setTimeout(() => window.location.href = '../supply-order/supply-orders.html', 800);
+      setTimeout(() =>window.location.href = '../../Supply/supply-order/supply-orders.html', 800);
     } catch (err) {
       const msg = document.getElementById('validationMsg');
       if (msg) msg.textContent = err.message || 'Failed to reject delivery';

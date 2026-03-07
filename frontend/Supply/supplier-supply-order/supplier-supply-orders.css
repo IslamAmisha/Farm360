@@ -214,24 +214,27 @@
 }
 
 /* Details modal (lightweight) */
-.modal-overlay { 
-    position: fixed; 
-    inset: 0; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    background: rgba(2,6,23,0.45); 
-    z-index: 60; 
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,6,23,0.45);
+  z-index:60;
+  padding:40px 20px; /* adds spacing around modal */
 }
 
-.modal-box { 
-    background: var(--card); 
-    border-radius: 12px; 
-    padding: 18px; 
-    border: 1px solid var(--border); 
-    max-width: 980px; 
-    width: 94%; 
-    box-shadow: 0 12px 40px rgba(2,6,23,0.18); 
+.modal-box{
+  background:var(--card);
+  border-radius:16px;
+  padding:28px 32px;
+  border:1px solid var(--border);
+  max-width:1000px;
+  width:100%;
+  max-height:85vh;
+  overflow:auto;
+  box-shadow:0 20px 60px rgba(2,6,23,0.25);
 }
 
 .modal-box.wide-modal { 
@@ -276,4 +279,75 @@
 .section-subtitle { 
     color: var(--muted-foreground); 
     margin-bottom: 8px; 
+}
+
+/* ===============================
+   Order Details Modal Layout
+================================ */
+
+/* Details grid */
+.request-details-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px 40px;
+  margin-bottom:24px;
+}
+
+/* label + value */
+.request-details-grid label{
+  display:block;
+  font-size:12px;
+  color:var(--muted-foreground);
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  margin-bottom:4px;
+}
+
+.request-details-grid p{
+  font-size:15px;
+  font-weight:600;
+  color:var(--foreground);
+}
+
+/* Items section title */
+.items-title{
+  font-size:16px;
+  font-weight:700;
+  margin:18px 0 12px;
+}
+
+.items-table{
+  width:100%;
+  border-collapse:collapse;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+
+.items-table thead{
+  background:rgba(22,163,74,0.06); /* Farm360 green tint */
+}
+
+.items-table th{
+  text-align:left;
+  padding:12px 14px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted-foreground);
+}
+
+.items-table td{
+  padding:12px 14px;
+  border-top:1px solid var(--border);
+  font-size:14px;
+}
+
+.items-table tbody tr:hover{
+  background:rgba(22,163,74,0.04);
+}
+/* Responsive */
+@media(max-width:700px){
+  .request-details-grid{
+    grid-template-columns:1fr;
+  }
 }
