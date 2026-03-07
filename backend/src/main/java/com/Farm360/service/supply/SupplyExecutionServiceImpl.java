@@ -227,16 +227,19 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setInvoice(invoice);
 
         if (rq.getProofs() != null) {
-            List<SupplyProof> proofs = new ArrayList<>();
+            if (order.getProofs() == null) {
+                order.setProofs(new ArrayList<>());
+            } else {
+                order.getProofs().clear();
+            }
             for (ProofUploadRQ p : rq.getProofs()) {
                 SupplyProof proof = new SupplyProof();
                 proof.setOrder(order);
                 proof.setType(p.getType());
                 proof.setFileUrl(p.getFileUrl());
                 proof.setMetadata(p.getMetadata());
-                proofs.add(proof);
+                order.getProofs().add(proof);  // ← add to existing collection
             }
-            order.setProofs(proofs);
         }
 
         order.setBillAmount(total);
@@ -327,17 +330,16 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         if (order.getStatus() != SupplyStatus.FARMER_CONFIRMED)
             throw new RuntimeException("Farmer must confirm materials first");
 
-        List<SupplyProof> proofs = order.getProofs() == null ? new ArrayList<>() : order.getProofs();
-
-        proofs.add(SupplyProof.builder()
+        if (order.getProofs() == null) {
+            order.setProofs(new ArrayList<>());
+        }
+        order.getProofs().add(SupplyProof.builder()
                 .order(order).type(ProofType.VEHICLE_NUMBER_AT_SOURCE)
                 .metadata(rq.getVehicleNumber()).build());
-        proofs.add(SupplyProof.builder()
+        order.getProofs().add(SupplyProof.builder()
                 .order(order).type(ProofType.FARM_LOADING_PHOTO)
                 .fileUrl(rq.getLoadingPhotoUrl())
                 .metadata(rq.getBagCount() == null ? null : rq.getBagCount().toString()).build());
-
-        order.setProofs(proofs);
         order.setStatus(SupplyStatus.IN_TRANSIT);
         orderRepo.save(order);
 
