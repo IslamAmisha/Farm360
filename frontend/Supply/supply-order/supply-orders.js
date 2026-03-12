@@ -103,8 +103,8 @@
         btn.className = 'btn-primary';
         btn.textContent = 'Confirm / Reject Delivery';
         btn.addEventListener('click', () => {
-          window.location.href =
-             `../Supply/farmer-confirm-supply/farmer-confirm-supply.html?orderId=${orderId(o)}`;
+window.location.href =
+ `/Supply/farmer-confirm-supply/farmer-confirm-supply.html?orderId=${orderId(o)}`;
         });
         right.appendChild(btn);
       }

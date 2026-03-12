@@ -119,10 +119,24 @@
     }
 
     // Invoice photo
-    const photoUrl = inv.invoicePhotoUrl || o.invoicePhotoUrl;
-    const preview  = document.getElementById('invoicePreview');
-    if (preview && photoUrl)
-      preview.innerHTML = `<img src="${photoUrl}" alt="invoice" />`;
+  // Invoice photo
+const photoUrl = inv.invoicePhotoUrl || o.invoicePhotoUrl;
+
+const previewEl = document.getElementById('invoicePreview');
+
+if (previewEl && photoUrl) {
+
+  const fullUrl = photoUrl.startsWith("http")
+      ? photoUrl
+      : "http://localhost:8080" + photoUrl;
+
+  previewEl.innerHTML =
+    `<img src="${fullUrl}" alt="invoice"
+      style="max-width:220px;border-radius:8px"/>`;
+
+} else if (previewEl) {
+  previewEl.innerHTML = `<span>No file</span>`;
+}
 
     // Disable actions if not DISPATCHED
     const acceptBtn = document.getElementById('acceptBtn');
@@ -196,7 +210,7 @@
 
       if (!res.ok) throw new Error(await res.text() || 'Confirm failed');
       showToast('Delivery accepted — buyer has been notified', 'success');
-      setTimeout(() => window.location.href = '../Supply/supply-order/supply-orders.html', 800);
+      setTimeout(() => window.location.href = '../supply-order/supply-orders.html', 800);
     } catch (err) {
       const msg = document.getElementById('validationMsg');
       if (msg) msg.textContent = err.message || 'Failed to accept delivery';
@@ -232,7 +246,7 @@
 
       if (!res.ok) throw new Error(await res.text() || 'Reject failed');
       showToast('Delivery rejected', 'success');
-      setTimeout(() =>window.location.href = '../../Supply/supply-order/supply-orders.html', 800);
+      window.location.href = '../supply-order/supply-orders.html'
     } catch (err) {
       const msg = document.getElementById('validationMsg');
       if (msg) msg.textContent = err.message || 'Failed to reject delivery';

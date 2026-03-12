@@ -191,12 +191,12 @@ document.getElementById("farmerAgreementsMenu")?.addEventListener("click", () =>
 
 // Input Supply — farmer CREATES supply requests here
 document.getElementById("farmerInputSupplyMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-req/supply-request.html";
+  window.location.href = "../../Supply/supply-req/supply-request.html";
 });
 
 // Supply Orders — farmer tracks orders, confirms/rejects delivery, dispatches harvest
 document.getElementById("farmerSupplyOrdersMenu")?.addEventListener("click", () => {
-  window.location.href = "../supply-order/supply-orders.html";
+  window.location.href = "../../Supply/supply-order/supply-orders.html";
 });
 
 // Cultivation / Harvest — dispatch step lives on supply orders page
