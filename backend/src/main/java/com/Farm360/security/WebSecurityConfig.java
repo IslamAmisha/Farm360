@@ -43,6 +43,8 @@ public class WebSecurityConfig {
                         // public endpoints
                         .requestMatchers(
                                 "/auth/**",
+                                "/api/uploads/**",
+                                "/uploads/**",
                                 "/user/*/role",
                                 "/farmer/register/**",
                                 "/buyer/register/**",

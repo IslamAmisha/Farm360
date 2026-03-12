@@ -25,6 +25,7 @@ public class FileUploadController {
                 java.nio.file.Paths.get(uploadDir + fileName),
                 file.getBytes()
         );
-        return ResponseEntity.ok(Map.of("url", "/" + uploadDir + fileName));
+        String url = "/uploads/" + fileName;
+        return ResponseEntity.ok(Map.of("url", url));
     }
 }
