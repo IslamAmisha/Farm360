@@ -159,6 +159,11 @@ public class ProposalServiceImpl implements ProposalService {
         proposal.setEndYear(rq.getEndYear());
         proposal.setFarmerProfitPercent(rq.getFarmerProfitPercent());
 
+        if (rq.getBillToleranceType() != null) {
+            proposal.setBillToleranceType(
+                    BillToleranceType.valueOf(rq.getBillToleranceType().toUpperCase()));
+            proposal.setBillToleranceValue(rq.getBillToleranceValue());
+        }
         if (rq.getDeliveryLocation() != null) {
             proposal.setDeliveryLocation(
                     DeliveryLocation.valueOf(rq.getDeliveryLocation().toUpperCase())
@@ -603,6 +608,8 @@ public class ProposalServiceImpl implements ProposalService {
                 .endYear(old.getEndYear())
                 .remarks(old.getRemarks())
                 .farmerProfitPercent(old.getFarmerProfitPercent())
+                .billToleranceType(old.getBillToleranceType())
+                .billToleranceValue(old.getBillToleranceValue())
                 .totalContractAmount(old.getTotalContractAmount())
                 .proposalStatus(ProposalStatus.DRAFT)
                 .proposalVersion(old.getProposalVersion() + 1)
@@ -754,6 +761,9 @@ public class ProposalServiceImpl implements ProposalService {
                 .finalPercent(p.getFinalPercent())
 
                 .remarks(p.getRemarks())
+
+                .billToleranceType(p.getBillToleranceType())
+                .billToleranceValue(p.getBillToleranceValue())
                 .farmerProfitPercent(p.getFarmerProfitPercent())
 
                 .proposalStatus(p.getProposalStatus().name())

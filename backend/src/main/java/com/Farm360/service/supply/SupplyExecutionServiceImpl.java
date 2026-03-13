@@ -1,6 +1,7 @@
 package com.Farm360.service.supply;
 
 import com.Farm360.dto.request.supply.*;
+import com.Farm360.dto.response.agreement.AgreementSnapshotRS;
 import com.Farm360.dto.response.supply.SupplyExecutionOrderRS;
 import com.Farm360.mapper.supply.SupplyExecutionOrderMapper;
 import com.Farm360.model.SupplierEntity;
@@ -18,6 +19,8 @@ import com.Farm360.service.agreement.AgreementService;
 import com.Farm360.service.escrow.EscrowService;
 import com.Farm360.service.notification.NotificationService;
 import com.Farm360.utils.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,14 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
     @Autowired private SupplierBroadcastResolver supplierBroadcastResolver;
     @Autowired private AgreementRepo agreementRepo;
 
+    // Shared ObjectMapper — reuse instead of constructing per call
+    private static final ObjectMapper MAPPER =
+            new ObjectMapper().registerModule(new JavaTimeModule());
+
+    // ═══════════════════════════════════════════════════════════════
+    //  READ
+    // ═══════════════════════════════════════════════════════════════
+
     @Override
     public SupplyExecutionOrderRS getOrder(Long orderId) {
         SupplyExecutionOrderEntity order =
@@ -58,13 +69,13 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
 
             case "FARMER" -> {
                 List<Long> ids = agreementRepo.findByFarmerUserId(userId)
-                        .stream().map(a -> a.getAgreementId()).toList();
+                        .stream().map(AgreementEntity::getAgreementId).toList();
                 orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreement_AgreementIdIn(ids);
             }
 
             case "BUYER" -> {
                 List<Long> ids = agreementRepo.findByBuyerUserId(userId)
-                        .stream().map(a -> a.getAgreementId()).toList();
+                        .stream().map(AgreementEntity::getAgreementId).toList();
                 orders = ids.isEmpty() ? List.of() : orderRepo.findByAgreement_AgreementIdIn(ids);
             }
 
@@ -84,7 +95,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    //  EXISTING METHODS (unchanged)
+    //  CREATE ORDER
     // ═══════════════════════════════════════════════════════════════
 
     @Override
@@ -105,6 +116,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         AgreementEntity agreement =
                 agreementRepo.findById(rq.getAgreementId())
                         .orElseThrow(() -> new RuntimeException("Agreement not found"));
+
         SupplyExecutionOrderEntity order = SupplyExecutionOrderEntity.builder()
                 .agreement(agreement)
                 .proposalVersion(rq.getProposalVersion())
@@ -160,6 +172,10 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         return supplyMapper.mapEntityToRS(order);
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    //  SUPPLIER ACCEPT
+    // ═══════════════════════════════════════════════════════════════
+
     @Override
     public SupplyExecutionOrderRS supplierAccept(Long orderId, Long supplierUserId) {
         SupplyExecutionOrderEntity order =
@@ -184,6 +200,10 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
 
         return supplyMapper.mapEntityToRS(order);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  SUPPLIER BILL UPLOAD
+    // ═══════════════════════════════════════════════════════════════
 
     @Override
     public SupplyExecutionOrderRS uploadSupplierBill(SupplierBillUploadRQ rq, Long supplierUserId) {
@@ -215,7 +235,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
             items.add(item);
         }
 
-        double deliveryCharge = rq.getDeliveryCharge() == null ? 0 : rq.getDeliveryCharge();
+        double deliveryCharge = rq.getDeliveryCharge() == null ? 0.0 : rq.getDeliveryCharge();
         total += deliveryCharge;
         double itemTotal = total - deliveryCharge;
 
@@ -238,7 +258,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
                 proof.setType(p.getType());
                 proof.setFileUrl(p.getFileUrl());
                 proof.setMetadata(p.getMetadata());
-                order.getProofs().add(proof);  // ← add to existing collection
+                order.getProofs().add(proof);
             }
         }
 
@@ -257,13 +277,22 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         return supplyMapper.mapEntityToRS(orderRepo.save(order));
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    //  FARMER CONFIRM
+    //  FIX #2: after confirming, auto-release for ADVANCE / MID.
+    //          For FINAL, just set FARMER_CONFIRMED and wait for
+    //          farmerDispatch → buyerConfirm → autoApproveAndRelease.
+    // ═══════════════════════════════════════════════════════════════
+
     @Override
     public SupplyExecutionOrderRS farmerConfirm(FarmerSupplyConfirmRQ rq, Long farmerUserId) {
         SupplyExecutionOrderEntity order = orderRepo.findById(rq.getOrderId()).orElseThrow();
 
+        // ── REJECTION path ──────────────────────────────────────────
         if (!rq.getAccepted()) {
             if (rq.getFarmerRemark() == null || rq.getFarmerRemark().isBlank())
                 throw new RuntimeException("Rejection reason required");
+
             order.setStatus(SupplyStatus.FAILED);
             order.setSystemRemark(rq.getFarmerRemark());
             order.setRejectionReason(rq.getFarmerRemark());
@@ -279,6 +308,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
             return supplyMapper.mapEntityToRS(orderRepo.save(order));
         }
 
+        // ── ACCEPTANCE path ─────────────────────────────────────────
         if (order.getInvoice() == null)
             throw new RuntimeException("Supplier invoice not uploaded yet");
         if (rq.getDeliveryPhotoUrl() == null || rq.getBillPhotoUrl() == null || rq.getBillAmountEntered() == null)
@@ -296,30 +326,24 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         order.setStatus(SupplyStatus.FARMER_CONFIRMED);
         order = orderRepo.saveAndFlush(order);
 
-        notificationService.notifyUser(
-                allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId(),
-                NotificationType.FARMER_CONFIRMED_SUPPLY, "Farmer Confirmed Delivery",
-                "Farmer confirmed delivery. Please verify.", order.getId());
+        // FIX #2: ADVANCE and MID release immediately after farmer confirmation.
+        //         FINAL needs farmerDispatch → buyerConfirm first.
+        if (order.getStage() == FarmingStage.ADVANCE || order.getStage() == FarmingStage.MID) {
+            autoApproveAndRelease(order.getId());
+        } else {
+            // FINAL — notify buyer that farmer confirmed; buyer must verify delivery
+            notificationService.notifyUser(
+                    allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId(),
+                    NotificationType.FARMER_CONFIRMED_SUPPLY, "Farmer Confirmed Delivery",
+                    "Farmer confirmed delivery. Please verify.", order.getId());
+        }
 
         return supplyMapper.mapEntityToRS(order);
     }
 
-    @Override
-    public SupplyExecutionOrderRS buyerConfirm(Long orderId, Long buyerUserId) {
-        SupplyExecutionOrderEntity order =
-                orderRepo.findById(orderId)
-                        .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (order.getStage() != FarmingStage.FINAL)
-            throw new RuntimeException("Buyer confirmation allowed only for FINAL stage");
-        if (order.getStatus() != SupplyStatus.IN_TRANSIT)
-            throw new RuntimeException("Harvest not dispatched yet");
-
-        order.setStatus(SupplyStatus.BUYER_CONFIRMED);
-        orderRepo.save(order);
-        autoApproveAndRelease(order.getId());
-        return supplyMapper.mapEntityToRS(order);
-    }
+    // ═══════════════════════════════════════════════════════════════
+    //  FARMER DISPATCH  (FINAL stage only)
+    // ═══════════════════════════════════════════════════════════════
 
     @Override
     public SupplyExecutionOrderRS farmerDispatch(FarmerDispatchRQ rq, Long farmerUserId) {
@@ -340,6 +364,7 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
                 .order(order).type(ProofType.FARM_LOADING_PHOTO)
                 .fileUrl(rq.getLoadingPhotoUrl())
                 .metadata(rq.getBagCount() == null ? null : rq.getBagCount().toString()).build());
+
         order.setStatus(SupplyStatus.IN_TRANSIT);
         orderRepo.save(order);
 
@@ -351,65 +376,146 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         return supplyMapper.mapEntityToRS(order);
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    //  BUYER CONFIRM  (FINAL stage only)
+    // ═══════════════════════════════════════════════════════════════
+
+    @Override
+    public SupplyExecutionOrderRS buyerConfirm(Long orderId, Long buyerUserId) {
+        SupplyExecutionOrderEntity order =
+                orderRepo.findById(orderId)
+                        .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStage() != FarmingStage.FINAL)
+            throw new RuntimeException("Buyer confirmation allowed only for FINAL stage");
+        if (order.getStatus() != SupplyStatus.IN_TRANSIT)
+            throw new RuntimeException("Harvest not dispatched yet");
+
+        order.setStatus(SupplyStatus.BUYER_CONFIRMED);
+        orderRepo.saveAndFlush(order);
+
+        // Now safe to verify and release escrow
+        autoApproveAndRelease(order.getId());
+        return supplyMapper.mapEntityToRS(order);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  AUTO APPROVE & RELEASE
+    //
+    //  FIX #1: removed the blanket BUYER_CONFIRMED status guard.
+    //          ADVANCE / MID enter here with status FARMER_CONFIRMED.
+    //          FINAL enters here with status BUYER_CONFIRMED.
+    //          Each branch is verified separately below.
+    //
+    //  FIX #3: agreementService.completeAgreement() is called only
+    //          when the FINAL stage is released.
+    //
+    //  FIX #4: stage allocation check now allows tolerance buffer.
+    // ═══════════════════════════════════════════════════════════════
+
     @Override
     public void autoApproveAndRelease(Long orderId) {
         SupplyExecutionOrderEntity order = orderRepo.findById(orderId).orElseThrow();
 
+        // Guard: already released — idempotent, skip silently
         if (order.getEscrowStatus() == EscrowReleaseStatus.RELEASED) return;
-        if (order.getStatus() != SupplyStatus.BUYER_CONFIRMED)
-            throw new RuntimeException("Buyer confirmation pending");
+
         if (order.getInvoice() == null)
             throw new RuntimeException("Supplier invoice not uploaded");
 
+        // ── FIX #1: stage-aware status guard ────────────────────────
+        boolean isFinal = order.getStage() == FarmingStage.FINAL;
+
+        if (isFinal) {
+            // FINAL requires buyer to have confirmed harvest delivery
+            if (order.getStatus() != SupplyStatus.BUYER_CONFIRMED)
+                throw new RuntimeException("Buyer confirmation required for FINAL stage release");
+        } else {
+            // ADVANCE / MID — only farmer confirmation is needed
+            if (order.getStatus() != SupplyStatus.FARMER_CONFIRMED)
+                throw new RuntimeException("Farmer confirmation required before escrow release");
+        }
+
+        // ── Invoice integrity check ──────────────────────────────────
         double calculatedTotal = order.getInvoice().getItems().stream()
-                .mapToDouble(i -> i.getAmount()).sum();
-        calculatedTotal += order.getInvoice().getDeliveryCharge() == null ? 0 : order.getInvoice().getDeliveryCharge();
+                .mapToDouble(SupplierInvoiceItem::getAmount)
+                .sum();
+        calculatedTotal += order.getInvoice().getDeliveryCharge() == null
+                ? 0.0
+                : order.getInvoice().getDeliveryCharge();
         double invoiceTotal = order.getInvoice().getTotalAmount();
 
-        if (Math.abs(calculatedTotal - invoiceTotal) > 1) {
-            order.setStatus(SupplyStatus.DISPUTE);
-            order.setSystemRemark("Invoice calculation mismatch");
-            orderRepo.save(order);
+        if (Math.abs(calculatedTotal - invoiceTotal) > 1.0) {
+            markDispute(order, "Invoice calculation mismatch");
             return;
         }
 
+        // ── Farmer verification required ────────────────────────────
         if (order.getFarmerEnteredBillAmount() == null)
             throw new RuntimeException("Farmer verification missing");
 
-        if (Math.abs(order.getFarmerEnteredBillAmount() - invoiceTotal) > 2.0) {
-            order.setStatus(SupplyStatus.DISPUTE);
-            order.setSystemRemark("Farmer and supplier amounts mismatch");
-            orderRepo.save(order);
+        // ── Read tolerance from the frozen agreement snapshot ────────
+        AgreementSnapshotRS snapshot = parseSnapshot(order.getAgreement().getAgreementSnapshot());
+
+        BillToleranceType toleranceType  = snapshot.getBillToleranceType();
+        Double            toleranceValue = snapshot.getBillToleranceValue();
+
+        // Safe fallback for agreements predating the tolerance feature
+        if (toleranceType == null || toleranceValue == null) {
+            toleranceType  = BillToleranceType.PERCENT;
+            toleranceValue = 2.0;
+        }
+
+        double allowedRange = switch (toleranceType) {
+            case FIXED   -> toleranceValue;
+            case PERCENT -> (invoiceTotal * toleranceValue) / 100.0;
+        };
+
+        // ── Farmer vs supplier amount comparison ─────────────────────
+        double billDifference = Math.abs(order.getFarmerEnteredBillAmount() - invoiceTotal);
+
+        if (billDifference > allowedRange) {
+            markDispute(order, "Farmer and supplier amounts mismatch beyond allowed range");
+
             Long buyerId = getBuyerUserId(order);
             notificationService.notifyUser(buyerId, NotificationType.SUPPLY_DISPUTE,
-                    "Supply Amount Mismatch", "Farmer reported different amount than supplier invoice", order.getId());
+                    "Supply Amount Mismatch",
+                    "Farmer reported bill outside allowed range", order.getId());
             notificationService.notifyUser(order.getSupplierUserId(), NotificationType.SUPPLY_DISPUTE,
-                    "Payment On Hold", "Amount mismatch — waiting for buyer resolution", order.getId());
+                    "Payment On Hold",
+                    "Bill mismatch detected — awaiting buyer review", order.getId());
             return;
         }
 
-        if (invoiceTotal > order.getAllocatedAmount()) {
-            order.setStatus(SupplyStatus.DISPUTE);
-            order.setSystemRemark("Invoice exceeds stage allocation");
-            orderRepo.save(order);
+        // ── FIX #4: stage allocation check WITH tolerance buffer ─────
+        // The invoice may legitimately exceed the stage allocation by up to
+        // the same allowedRange (e.g. minor price fluctuation at delivery).
+        if (invoiceTotal > order.getAllocatedAmount() + allowedRange) {
+            markDispute(order, "Invoice exceeds stage allocation beyond allowed tolerance");
             return;
         }
 
+        // ── Late delivery warning (non-blocking) ─────────────────────
         if (order.getActualDeliveryDate() != null && order.getExpectedDeliveryDate() != null
-                && order.getActualDeliveryDate().isAfter(order.getExpectedDeliveryDate().plusDays(3)))
+                && order.getActualDeliveryDate().isAfter(order.getExpectedDeliveryDate().plusDays(3))) {
             order.setSystemRemark("Late delivery beyond tolerance");
+        }
 
-        if (order.getStage() == FarmingStage.FINAL) {
+        // ── FINAL: verify transport proof chain ──────────────────────
+        if (isFinal) {
             if (order.getProofs() == null || order.getProofs().isEmpty())
                 throw new RuntimeException("Transport proof missing");
+
             boolean hasSource = order.getProofs().stream()
                     .anyMatch(p -> p.getType() == ProofType.VEHICLE_NUMBER_AT_SOURCE);
             boolean hasWarehouse = order.getProofs().stream()
                     .anyMatch(p -> p.getType() == ProofType.WAREHOUSE_UNLOADING_PHOTO);
+
             if (!hasSource || !hasWarehouse)
                 throw new RuntimeException("Transport chain proof incomplete");
         }
 
+        // ── Escrow release ───────────────────────────────────────────
         EscrowPurpose purpose = switch (order.getStage()) {
             case ADVANCE -> EscrowPurpose.SUPPLIER_ADVANCE;
             case MID     -> EscrowPurpose.SUPPLIER_MID;
@@ -417,8 +523,11 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         };
 
         escrowService.releaseToSupplier(
-                order.getAgreement().getAgreementId(), getBuyerUserId(order),
-                order.getSupplierUserId(), invoiceTotal, purpose,
+                order.getAgreement().getAgreementId(),
+                getBuyerUserId(order),
+                order.getSupplierUserId(),
+                invoiceTotal,
+                purpose,
                 order.getStage() + "_SUPPLY_" + orderId);
 
         order.setEscrowStatus(EscrowReleaseStatus.RELEASED);
@@ -428,10 +537,35 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
         notificationService.notifyUser(order.getSupplierUserId(), NotificationType.SUPPLY_APPROVED,
                 "Supply Approved", "Buyer approved delivery and payment released", order.getId());
 
-        orderRepo.markAllStagesApproved(order.getAgreement().getAgreementId());
-        agreementService.completeAgreement(order.getAgreement().getAgreementId());
+        // ── FIX #3: complete agreement only after FINAL stage release ─
+        if (isFinal) {
+            orderRepo.markAllStagesApproved(order.getAgreement().getAgreementId());
+            agreementService.completeAgreement(order.getAgreement().getAgreementId());
+        }
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    //  PRIVATE HELPERS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Centralised dispute marker — saves the order with DISPUTE status
+     * and the provided remark in a single place.
+     */
+    private void markDispute(SupplyExecutionOrderEntity order, String remark) {
+        order.setStatus(SupplyStatus.DISPUTE);
+        order.setSystemRemark(remark);
+        orderRepo.save(order);
+    }
+
+    /** Parse the frozen JSON snapshot from the agreement. */
+    private AgreementSnapshotRS parseSnapshot(String json) {
+        try {
+            return MAPPER.readValue(json, AgreementSnapshotRS.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse agreement snapshot", e);
+        }
+    }
 
     private Long getBuyerUserId(SupplyExecutionOrderEntity order) {
         return allocationService.getByAgreementId(order.getAgreement().getAgreementId()).getBuyerUserId();
@@ -443,5 +577,31 @@ public class SupplyExecutionServiceImpl implements SupplyExecutionService {
             case MID     -> alloc.getMidAllocated()     - alloc.getMidReleased();
             case FINAL   -> alloc.getFinalAllocated()   - alloc.getFinalReleased();
         };
+    }
+
+    public SupplyExecutionOrderRS buyerWarehouseConfirm(
+            Long orderId,
+            String unloadingPhotoUrl
+    ) {
+
+        SupplyExecutionOrderEntity order = orderRepo.findById(orderId).orElseThrow();
+
+        if (order.getStage() != FarmingStage.FINAL)
+            throw new RuntimeException("Warehouse confirmation only for FINAL stage");
+
+        if (order.getProofs() == null)
+            order.setProofs(new ArrayList<>());
+
+        order.getProofs().add(
+                SupplyProof.builder()
+                        .order(order)
+                        .type(ProofType.WAREHOUSE_UNLOADING_PHOTO)
+                        .fileUrl(unloadingPhotoUrl)
+                        .build()
+        );
+
+        orderRepo.save(order);
+
+        return supplyMapper.mapEntityToRS(order);
     }
 }

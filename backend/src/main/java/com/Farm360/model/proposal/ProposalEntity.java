@@ -35,8 +35,7 @@ public class ProposalEntity extends AuditTable<String> {
     private Long cropSubCategoryId;
 
     @Column(nullable = true)
-    private Double landAreaUsed; // acres or hectares
-
+    private Double landAreaUsed;
 
     @Enumerated(EnumType.STRING)
     private ContractModel contractModel;
@@ -57,7 +56,6 @@ public class ProposalEntity extends AuditTable<String> {
     private Integer advancePercent;
     private Integer midCyclePercent;
     private Integer finalPercent;
-
 
     @Enumerated(EnumType.STRING)
     private DeliveryLocation deliveryLocation;
@@ -88,9 +86,7 @@ public class ProposalEntity extends AuditTable<String> {
     private String remarks;
 
     private LocalDateTime acceptedAt;
-
     private LocalDateTime rejectedAt;
-
     private LocalDateTime expiredAt;
 
     @Column(nullable = true)
@@ -98,7 +94,7 @@ public class ProposalEntity extends AuditTable<String> {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role actionRequiredBy; // BUYER / FARMER
+    private Role actionRequiredBy;
 
     @OneToMany(
             mappedBy = "proposal",
@@ -110,4 +106,10 @@ public class ProposalEntity extends AuditTable<String> {
 
     private Integer farmerProfitPercent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bill_tolerance_type")
+    private BillToleranceType billToleranceType;
+
+    @Column(name = "bill_tolerance_value")
+    private Double billToleranceValue;
 }

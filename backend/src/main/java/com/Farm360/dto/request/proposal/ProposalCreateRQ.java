@@ -44,4 +44,7 @@ public class ProposalCreateRQ {
 
     private List<ProposalCropCreateRQ> proposalCrops;
 
+    private String billToleranceType;
+    private Double billToleranceValue;
+
 }

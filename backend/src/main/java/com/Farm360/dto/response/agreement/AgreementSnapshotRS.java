@@ -1,9 +1,6 @@
 package com.Farm360.dto.response.agreement;
 
-import com.Farm360.utils.ContractModel;
-import com.Farm360.utils.DeliveryLocation;
-import com.Farm360.utils.LogisticsHandledBy;
-import com.Farm360.utils.SeasonType;
+import com.Farm360.utils.*;
 import lombok.*;
 
 import java.util.List;
@@ -52,4 +49,7 @@ public class AgreementSnapshotRS {
     private String remarks;
 
     private List<AgreementCropSnapshotRS> crops;
+
+    private BillToleranceType billToleranceType;
+    private Double            billToleranceValue;
 }

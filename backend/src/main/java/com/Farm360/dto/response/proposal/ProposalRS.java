@@ -1,5 +1,6 @@
 package com.Farm360.dto.response.proposal;
 
+import com.Farm360.utils.BillToleranceType;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -62,4 +63,7 @@ public class ProposalRS {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private BillToleranceType billToleranceType;
+    private Double billToleranceValue;
 }

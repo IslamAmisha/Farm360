@@ -45,11 +45,9 @@ public class AgreementServiceImpl implements AgreementService {
     @Autowired private SupplyExecutionOrderRepository orderRepo;
     @Autowired private NotificationService notificationService;
 
-    // Already used in ProposalServiceImpl — safe to reuse here for snapshot
     @Autowired private CropRepo cropRepo;
     @Autowired private CropSubCategoriesRepo cropSubCategoryRepo;
 
-    // Inject profile repos to resolve real names at signing time
     @Autowired private FarmerRepo farmerProfileRepo;
     @Autowired private BuyerRepo buyerProfileRepo;
 
@@ -89,7 +87,6 @@ public class AgreementServiceImpl implements AgreementService {
                         ? proposal.getReceiverUserId()
                         : proposal.getSenderUserId();
 
-        // Build snapshot — includes resolved names, crop names
         AgreementSnapshotRS snapshotObj = buildSnapshotObject(proposal, farmerId, buyerId);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -163,8 +160,6 @@ public class AgreementServiceImpl implements AgreementService {
         return agreementMapper.toRS(agreement);
     }
 
-
-
     @Override
     public AgreementRS getAgreement(Long agreementId, Long userId) {
 
@@ -203,7 +198,6 @@ public class AgreementServiceImpl implements AgreementService {
                     rs.setProposalVersion(a.getProposalVersion());
 
                     if (a.getFarmerUserId().equals(userId)) {
-                        // Current user is farmer → counterparty is buyer
                         String buyerName = buyerProfileRepo.findByUserId(a.getBuyerUserId())
                                 .map(b -> b.getFullName() != null ? b.getFullName() : b.getBusinessName())
                                 .orElse("Buyer #" + a.getBuyerUserId());
@@ -213,7 +207,6 @@ public class AgreementServiceImpl implements AgreementService {
                         rs.setCounterPartyName(buyerName);
 
                     } else {
-                        // Current user is buyer → counterparty is farmer
                         String farmerName = farmerProfileRepo.findByUserId(a.getFarmerUserId())
                                 .map(f -> f.getFarmerName() != null ? f.getFarmerName() : "Farmer #" + a.getFarmerUserId())
                                 .orElse("Farmer #" + a.getFarmerUserId());
@@ -228,13 +221,13 @@ public class AgreementServiceImpl implements AgreementService {
                 .toList();
     }
 
+
     private AgreementSnapshotRS buildSnapshotObject(
             ProposalEntity p,
             Long farmerId,
             Long buyerId
     ) {
         /* ── Farmer ── */
-        // FarmerEntity: farmerName (single field), district→getName(), block→getName(), village
         String farmerName     = "—";
         String farmerLocation = "—";
         try {
@@ -250,7 +243,6 @@ public class AgreementServiceImpl implements AgreementService {
         } catch (Exception ignored) {}
 
         /* ── Buyer ── */
-        // BuyerEntity: fullName (single field), businessName, city→getName(), district→getName()
         String buyerName         = "—";
         String buyerBusinessName = "—";
         String buyerLocation     = "—";
@@ -331,6 +323,12 @@ public class AgreementServiceImpl implements AgreementService {
 
                 .remarks(p.getRemarks())
                 .crops(crops)
+
+                // FIX: freeze the negotiated tolerance into the snapshot so
+                // autoApproveAndRelease reads the correct value from JSON
+                .billToleranceType(p.getBillToleranceType())
+                .billToleranceValue(p.getBillToleranceValue())
+
                 .build();
     }
 
