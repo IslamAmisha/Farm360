@@ -41,11 +41,10 @@
     transition: transform 0.14s ease;
 }
 
-.order-card:hover {
+order-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 18px 40px rgba(2, 6, 23, 0.08);
 }
-
 .order-left {
     display: flex;
     gap: 14px;
@@ -69,7 +68,7 @@
 .badge-FINAL { background: #7c3aed; }
 .badge-OTHER { background: #6b7280; }
 
-/* Status badges - colored versions */
+
 .status-badge {
     display: inline-block;
     padding: 6px 12px;
@@ -121,6 +120,7 @@
     font-size: 16px;
 }
 
+
 /* Modal styles */
 .modal {
     position: fixed;
@@ -164,6 +164,31 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+}
+
+.btn-outline{
+    border:1px solid var(--border);
+    padding:8px 14px;
+    border-radius:8px;
+    background:white;
+    cursor:pointer;
+}
+
+.btn-outline:hover{
+    border-color:#16a34a;
+}
+
+.btn-primary{
+    background:#16a34a;
+    border:none;
+    color:white;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-primary:hover{
+    background:#15803d;
 }
 
 .modal-close:hover {
@@ -212,6 +237,57 @@
     border-radius: 12px;
     border: 1px dashed var(--border);
     grid-column: 1 / -1;
+}
+
+.order-modal h2{
+  font-size:22px;
+  font-weight:700;
+}
+
+.agreement-id{
+  color:var(--muted-foreground);
+  font-size:14px;
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
+  margin-top:25px;
+}
+
+.modal-section h4{
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  color:var(--muted-foreground);
+  margin-bottom:14px;
+}
+
+.detail-row{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.detail-row span:first-child{
+  color:var(--muted-foreground);
+}
+
+.detail-row span:last-child{
+  font-weight:600;
+}
+
+.items-section{
+  grid-column:1 / -1;
+}
+
+.item-row{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
 }
 
 /* Responsive */

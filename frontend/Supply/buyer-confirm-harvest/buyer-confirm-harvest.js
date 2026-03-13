@@ -4,23 +4,30 @@
    which triggers autoApproveAndRelease() on the backend.
 
    Endpoints:
-     GET  /api/advance-supply/{orderId}           → load order
+     GET  /api/advance-supply/{orderId}              → load order
      POST /api/advance-supply/{orderId}/buyer/confirm → confirm
    ============================================================ */
 (function () {
-  // const token = localStorage.getItem('token');
-  // const role  = (localStorage.getItem('role') || '').toLowerCase();
 
-  // if (!token || role !== 'buyer') {
-  //   alert('User not found or unauthorized access!');
-  //   localStorage.clear();
-  //   window.location.href = '../../Login/login.html';
-  //   return;
-  // }
+  // FIX: token and role were never declared (auth block was commented out).
+  //      Restored the guard — without token, authHeaders() would throw a
+  //      ReferenceError on every fetch call.
+  const token = localStorage.getItem('token');
+  const role  = (localStorage.getItem('role') || '').toLowerCase();
+
+  if (!token || role !== 'buyer') {
+    alert('User not found or unauthorized access!');
+    localStorage.clear();
+    window.location.href = '../../Login/login.html';
+    return;
+  }
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API     = '/api/advance-supply';
+
+  // FIX: was '/api/advance-supply' (relative, no host) — changed to absolute
+  //      so it is consistent with every other supply JS file.
+  const API = 'http://localhost:8080/api/advance-supply';
 
   function authHeaders() {
     return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
@@ -69,11 +76,11 @@
   }
 
   function populateOrder(o) {
-    setText('agreementId',    o.agreementId  || '—');
-    setText('farmerName',     o.farmerName   || '—');
-    setText('supplierName',   o.supplierName || o.supplierType || '—');
+    setText('agreementId',     o.agreementId  || '—');
+    setText('farmerName',      o.farmerName   || '—');
+    setText('supplierName',    o.supplierName || o.supplierType || '—');
     setText('allocatedAmount', money(o.allocatedAmount));
-    setText('invoiceTotal',   money(o.billAmount || o.invoiceAmount));
+    setText('invoiceTotal',    money(o.billAmount || o.invoiceAmount));
 
     const badge = document.getElementById('stageBadge');
     if (badge) {
@@ -87,15 +94,12 @@
       statusBadge.className   = `status-badge status-${(o.status || '').toUpperCase()}`;
     }
 
-    // Transport proofs — find vehicle number and photos from proofs[]
+    /* ── Transport proofs ── */
     const proofs = o.proofs || [];
 
-    const vehicleProof = proofs.find(p =>
-      (p.type || '').toUpperCase() === 'VEHICLE_NUMBER_AT_SOURCE');
-    const loadingProof = proofs.find(p =>
-      (p.type || '').toUpperCase() === 'FARM_LOADING_PHOTO');
-    const warehouseProof = proofs.find(p =>
-      (p.type || '').toUpperCase() === 'WAREHOUSE_UNLOADING_PHOTO');
+    const vehicleProof   = proofs.find(p => (p.type || '').toUpperCase() === 'VEHICLE_NUMBER_AT_SOURCE');
+    const loadingProof   = proofs.find(p => (p.type || '').toUpperCase() === 'FARM_LOADING_PHOTO');
+    const warehouseProof = proofs.find(p => (p.type || '').toUpperCase() === 'WAREHOUSE_UNLOADING_PHOTO');
 
     setText('vehicleNumber', vehicleProof?.metadata || o.vehicleNumber || '—');
 
@@ -107,36 +111,51 @@
     if (warehousePrev && warehouseProof?.fileUrl)
       warehousePrev.innerHTML = `<img src="${warehouseProof.fileUrl}" alt="warehouse"/>`;
 
-    // System remark
+    /* ── System remark ── */
     if (o.systemRemark) showToast('⚠ ' + o.systemRemark);
 
-    // Enable confirm button only when FINAL + IN_TRANSIT + all proofs present
+    /* ── Enable confirm button ──────────────────────────────────────
+       Backend requires:
+         stage  = FINAL
+         status = IN_TRANSIT   (farmer has dispatched)
+       Backend autoApproveAndRelease() further requires:
+         VEHICLE_NUMBER_AT_SOURCE proof
+         WAREHOUSE_UNLOADING_PHOTO proof
+       We surface warnings here but only hard-block on stage/status
+       so the buyer can still submit and let the backend reject with
+       a clear error message if a proof is still missing.
+    ─────────────────────────────────────────────────────────────── */
     const confirmBtn   = document.getElementById('confirmBtn');
     const proofWarning = document.getElementById('proofWarning');
 
-    const isFinal    = (o.stage   || '').toUpperCase() === 'FINAL';
-    const inTransit  = (o.status  || '').toUpperCase() === 'IN_TRANSIT';
-    const hasVehicle = Boolean(vehicleProof?.metadata || o.vehicleNumber);
-    const hasLoading = Boolean(loadingProof?.fileUrl);
-    // Warehouse proof is uploaded by supplier — buyer checks it arrived
+    const isFinal   = (o.stage  || '').toUpperCase() === 'FINAL';
+    const inTransit = (o.status || '').toUpperCase() === 'IN_TRANSIT';
+
+    const hasVehicle   = Boolean(vehicleProof?.metadata || o.vehicleNumber);
+    const hasLoading   = Boolean(loadingProof?.fileUrl);
     const hasWarehouse = Boolean(warehouseProof?.fileUrl);
 
-    const proofsOk = hasVehicle && hasLoading; // warehouse required by autoApprove, encouraged here
-
     if (!isFinal || !inTransit) {
+      // Hard block — wrong stage or status
       if (confirmBtn)   confirmBtn.disabled = true;
       if (proofWarning) proofWarning.textContent =
         'Confirm available only when Stage = FINAL and Status = IN_TRANSIT.';
-    } else if (!proofsOk) {
-      if (confirmBtn)   confirmBtn.disabled = true;
+
+    } else {
+      // Stage and status are correct — button is enabled.
+      // Warn about any missing proofs that the backend will reject.
+      if (confirmBtn) confirmBtn.disabled = false;
+
       const missing = [];
       if (!hasVehicle)   missing.push('Vehicle Number');
       if (!hasLoading)   missing.push('Farm Loading Photo');
       if (!hasWarehouse) missing.push('Warehouse Unloading Photo (supplier must upload)');
-      if (proofWarning) proofWarning.textContent = 'Waiting for proof: ' + missing.join(', ');
-    } else {
-      if (confirmBtn)   confirmBtn.disabled = false;
-      if (proofWarning) proofWarning.textContent = '';
+
+      if (proofWarning) {
+        proofWarning.textContent = missing.length
+          ? '⚠ Missing proof(s): ' + missing.join(', ') + ' — backend will reject until all are present.'
+          : '';
+      }
     }
   }
 
@@ -158,12 +177,11 @@
       const agrId = order?.agreementId || '';
       setTimeout(() => {
         window.location.href =
-          `../Agreement/agreement.html?agreementId=${encodeURIComponent(agrId)}`;
+          `../../Agreement/agreement.html?agreementId=${encodeURIComponent(agrId)}`;
       }, 900);
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Confirm failed');
-      const btn = document.getElementById('confirmBtn');
       if (btn) btn.disabled = false;
     }
   });
@@ -177,4 +195,5 @@
   document.getElementById('backBtn')?.addEventListener('click', () => window.history.back());
 
   fetchOrder();
+
 })();

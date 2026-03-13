@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -18,10 +18,10 @@
     <link rel="stylesheet" href="proposal.css" />
   </head>
 
-
   <body class="theme-light lang-en">
     <div id="toast-container"></div>
-    <!-- ================= HEADER (UNCHANGED, SAME AS PROFILE) ================= -->
+
+    <!-- ================= HEADER ================= -->
     <header id="site-header">
       <div class="header-container">
         <div class="header-left">
@@ -51,198 +51,196 @@
 
     <!-- ================= MAIN ================= -->
     <main class="container proposal-page">
+      <!-- Back -->
+      <button class="back-link">‹ Back</button>
 
-    <!-- Back -->
-    <button class="back-link">‹ Back</button>
+      <!-- ===== PROPOSAL META ===== -->
+      <section class="proposal-meta card">
+        <div class="meta-item">
+          <span class="meta-label">Proposal</span>
+          <strong>#—</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Version</span>
+          <strong>v1</strong>
+        </div>
+        <div class="meta-item">
+          <span class="status-badge draft">DRAFT</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Action Required</span>
+          <strong>—</strong>
+        </div>
+      </section>
 
-    <!-- ===== PROPOSAL META ===== -->
-    <section class="proposal-meta card">
-      <div class="meta-item">
-        <span class="meta-label">Proposal</span>
-        <strong>#—</strong>
+      <!-- ===== CONTENT GRID ===== -->
+      <div class="proposal-grid">
+        <!-- LEFT COLUMN -->
+        <div class="proposal-main">
+          <!-- LAND DETAILS -->
+          <section class="card">
+            <h3>Land Details</h3>
+            <div class="form-grid two">
+              <div>
+                <label>Land</label>
+                <select id="landSelect"></select>
+              </div>
+              <div>
+                <label>Total Land (acre)</label>
+                <input id="totalLand" disabled />
+              </div>
+              <div>
+                <label>Land Used (acre)</label>
+                <input id="landUsed" type="number" />
+              </div>
+            </div>
+          </section>
+
+          <!-- CONTRACT TYPE -->
+          <section class="card">
+            <h3>Contract Type</h3>
+            <div class="form-grid three">
+              <div>
+                <label>Model</label>
+                <select id="contractModel">
+                  <option value="SEASONAL">SEASONAL</option>
+                  <option value="ANNUAL">ANNUAL</option>
+                </select>
+              </div>
+              <div>
+                <label>Season</label>
+                <select id="seasonSelect">
+                  <option value="KHARIF">Kharif</option>
+                  <option value="RABI">Rabi</option>
+                  <option value="ZAID">Zaid</option>
+                </select>
+              </div>
+              <div>
+                <label>Start Year</label>
+                <input id="startYear" type="number" min="2025" max="2100" />
+              </div>
+              <div>
+                <label>End Year</label>
+                <input id="endYear" type="number" min="2025" max="2100" />
+              </div>
+            </div>
+          </section>
+
+          <!-- CROP PLAN -->
+          <section class="card">
+            <h3>Crop Plan</h3>
+            <div id="cropContainer"></div>
+            <div class="card"></div>
+            <button class="btn-link">+ Add Crop</button>
+          </section>
+
+          <!-- PRICING -->
+          <section class="card">
+            <h3>Pricing & Payment</h3>
+
+            <div class="form-grid three">
+              <div>
+                <label>Price / Unit</label>
+                <input id="pricePerUnit" />
+              </div>
+              <div>
+                <label>Total Amount</label>
+                <input id="totalAmount" disabled />
+              </div>
+              <div>
+                <label>Farmer Profit %</label>
+                <input
+                  id="farmerProfitPercent"
+                  type="number"
+                  min="1"
+                  max="100"
+                />
+              </div>
+            </div>
+
+            <!-- NEW: Bill Tolerance Fields -->
+            <div class="form-grid two">
+              <div>
+                <label>Bill Tolerance Type</label>
+                <select id="billToleranceType">
+                  <option value="PERCENT">PERCENT (% of invoice)</option>
+                  <option value="FIXED">FIXED (₹ flat amount)</option>
+                </select>
+              </div>
+              <div>
+                <label>Bill Tolerance Value</label>
+                <input
+                  id="billToleranceValue"
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 2 for 2% or 500 for ₹500"
+                />
+              </div>
+            </div>
+
+            <div class="form-grid three">
+              <div>
+                <label>Advance %</label>
+                <input id="advancePercent" value="30" disabled />
+              </div>
+              <div>
+                <label>Mid %</label>
+                <input id="midPercent" value="30" disabled />
+              </div>
+              <div>
+                <label>Final %</label>
+                <input id="finalPercent" value="40" disabled />
+              </div>
+            </div>
+          </section>
+
+          <!-- DELIVERY -->
+          <section class="card">
+            <h3>Delivery & Logistics</h3>
+            <div class="form-grid three">
+              <div>
+                <label>Delivery Location</label>
+                <select id="deliveryLocation"></select>
+              </div>
+              <div>
+                <label>Logistics By</label>
+                <select id="logisticsBy"></select>
+              </div>
+              <div>
+                <label>Delivery Window</label>
+                <input id="deliveryWindow" />
+              </div>
+            </div>
+          </section>
+
+          <!-- REMARKS -->
+          <section class="card">
+            <h3>Remarks</h3>
+            <textarea id="remarks" rows="3"></textarea>
+          </section>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <aside class="proposal-side card">
+          <h4>Proposal Info</h4>
+          <p><strong>Sender:</strong> <span id="senderInfo">—</span></p>
+          <p><strong>Receiver:</strong> <span id="receiverInfo">—</span></p>
+          <p><strong>Expires On:</strong> <span id="expiryInfo">—</span></p>
+        </aside>
       </div>
-      <div class="meta-item">
-        <span class="meta-label">Version</span>
-        <strong>v1</strong>
-      </div>
-      <div class="meta-item">
-        <span class="status-badge draft">DRAFT</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Action Required</span>
-        <strong>—</strong>
-      </div>
-    </section>
 
-    <!-- ===== CONTENT GRID ===== -->
-    <div class="proposal-grid">
+      <!-- ===== ACTION BAR ===== -->
+      <footer class="proposal-actions">
+        <button class="btn ghost">Save Draft</button>
+        <button class="btn primary">Send</button>
+        <button class="btn ghost">Counter</button>
+        <button class="btn success">Accept</button>
+        <button class="btn danger">Reject</button>
+        <button class="btn ghost">Cancel</button>
+      </footer>
+    </main>
 
-      <!-- LEFT COLUMN -->
-      <div class="proposal-main">
-
-        <!-- LAND DETAILS -->
-        <section class="card">
-  <h3>Land Details</h3>
-
-  <div class="form-grid two">
-    <div>
-      <label>Land</label>
-      <select id="landSelect"></select>
-    </div>
-
-    <div>
-      <label>Total Land (acre)</label>
-      <input id="totalLand" disabled />
-    </div>
-
-    <div>
-      <label>Land Used (acre)</label>
-      <input id="landUsed" type="number" />
-    </div>
-  </div>
-</section>
-
-
-        <!-- CONTRACT TYPE -->
-        <section class="card">
-  <h3>Contract Type</h3>
-
-  <div class="form-grid three">
-    <div>
-      <label>Model</label>
-      <select id="contractModel">
-        <option value="SEASONAL">SEASONAL</option>
-        <option value="ANNUAL">ANNUAL</option>
-      </select>
-    </div>
-
-    <div>
-      <label>Season</label>
-      <select id="seasonSelect">
-        <option value="KHARIF">Kharif</option>
-        <option value="RABI">Rabi</option>
-        <option value="ZAID">Zaid</option>
-      </select>
-    </div>
-
-    <div>
-      <label>Start Year</label>
-     <input id="startYear" type="number" min="2025" max="2100" />
-    </div>
-
-    <div>
-      <label>End Year</label>
-      <input id="endYear" type="number" min="2025" max="2100" />
-    </div>
-  </div>
-</section>
-
-
-
-        <!-- CROP PLAN -->
-        <section class="card">
-
-          <h3>Crop Plan</h3>
-
-          <!-- Seasonal → 1 crop | Annual → multiple -->
-         <div id="cropContainer"></div>
-<div class="card">
-</div>
-
-          <button class="btn-link">+ Add Crop</button>
-        </section>
-
-        <!-- PRICING -->
-        <section class="card">
-  <h3>Pricing & Payment</h3>
-
-  <div class="form-grid three">
-    <div>
-      <label>Price / Unit</label>
-      <input id="pricePerUnit" />
-    </div>
-
-    <div>
-      <label>Total Amount</label>
-      <input id="totalAmount" disabled />
-    </div>
-
-    <div>
-  <label>Farmer Profit %</label>
-  <input id="farmerProfitPercent" type="number" min="1" max="100" />
-</div>
-
-  </div>
-
-  <div class="form-grid three">
-    <div>
-      <label>Advance %</label>
-      <input id="advancePercent" value="30" disabled />
-    </div>
-    <div>
-      <label>Mid %</label>
-     <input id="midPercent" value="30" disabled />
-    </div>
-    <div>
-      <label>Final %</label>
-      <input id="finalPercent" value="40" disabled />
-    </div>
-  </div>
-</section>
-
-
-        <!-- DELIVERY -->
-        <section class="card">
-  <h3>Delivery & Logistics</h3>
-
-  <div class="form-grid three">
-    <div>
-      <label>Delivery Location</label>
-      <select id="deliveryLocation"></select>
-    </div>
-    <div>
-      <label>Logistics By</label>
-      <select id="logisticsBy"></select>
-    </div>
-    <div>
-      <label>Delivery Window</label>
-      <input id="deliveryWindow" />
-    </div>
-  </div>
-</section>
-
-
-        <!-- REMARKS -->
-        <section class="card">
-          <h3>Remarks</h3>
-          <textarea id="remarks" rows="3"></textarea>
-        </section>
-
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <aside class="proposal-side card">
-        <h4>Proposal Info</h4>
-       <p><strong>Sender:</strong> <span id="senderInfo">—</span></p>
-        <p><strong>Receiver:</strong> <span id="receiverInfo">—</span></p>
-<p><strong>Expires On:</strong> <span id="expiryInfo">—</span></p>
-
-    </div>
-
-    <!-- ===== ACTION BAR ===== -->
-    <footer class="proposal-actions">
-      <button class="btn ghost">Save Draft</button>
-      <button class="btn primary">Send</button>
-      <button class="btn ghost">Counter</button>
-      <button class="btn success">Accept</button>
-      <button class="btn danger">Reject</button>
-      <button class="btn ghost">Cancel</button>
-    </footer>
-
-  </main>
-
-    </div>
-<script src="../../Landing-page/landing-page.js"></script>
+    <script src="../../Landing-page/landing-page.js"></script>
     <script src="proposal.js"></script>
   </body>
 </html>

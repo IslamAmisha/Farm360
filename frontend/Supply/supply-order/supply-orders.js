@@ -97,19 +97,34 @@
       const status = (o.status || '').toUpperCase();
       const stage  = (o.stage  || '').toUpperCase();
 
-      /* FARMER: confirm/reject delivery when DISPATCHED */
+      /* ── FARMER actions ──────────────────────────────────────────
+         Backend flow after this session's fix:
+
+         ADVANCE / MID:
+           DISPATCHED → farmer confirms → backend auto-releases → APPROVED
+           The "Confirm / Reject Delivery" button is shown for DISPATCHED.
+           There is NO intermediate FARMER_CONFIRMED state for these stages.
+
+         FINAL:
+           DISPATCHED → farmer confirms → FARMER_CONFIRMED
+           → farmer dispatches harvest → IN_TRANSIT
+           → buyer confirms → APPROVED
+           "Confirm / Reject Delivery" shown for DISPATCHED (all stages).
+           "Dispatch Harvest" shown ONLY for FINAL + FARMER_CONFIRMED.
+      ─────────────────────────────────────────────────────────────── */
+
       if (role === 'farmer' && status === 'DISPATCHED') {
         const btn = document.createElement('button');
         btn.className = 'btn-primary';
         btn.textContent = 'Confirm / Reject Delivery';
         btn.addEventListener('click', () => {
-window.location.href =
- `/Supply/farmer-confirm-supply/farmer-confirm-supply.html?orderId=${orderId(o)}`;
+          window.location.href =
+            `/Supply/farmer-confirm-supply/farmer-confirm-supply.html?orderId=${orderId(o)}`;
         });
         right.appendChild(btn);
       }
 
-      /* FARMER: dispatch harvest when FINAL + FARMER_CONFIRMED */
+      /* FINAL-only: dispatch after farmer has confirmed the supply materials */
       if (role === 'farmer' && stage === 'FINAL' && status === 'FARMER_CONFIRMED') {
         const btn = document.createElement('button');
         btn.className = 'btn-primary';
@@ -118,7 +133,11 @@ window.location.href =
         right.appendChild(btn);
       }
 
-      /* BUYER: confirm delivery when FINAL + IN_TRANSIT */
+      /* ── BUYER actions ───────────────────────────────────────────
+         Buyer only confirms for FINAL stage when harvest is IN_TRANSIT.
+         ADVANCE and MID are released automatically — buyer has no action.
+      ─────────────────────────────────────────────────────────────── */
+
       if (role === 'buyer' && stage === 'FINAL' && status === 'IN_TRANSIT') {
         const btn = document.createElement('button');
         btn.className = 'btn-primary';
@@ -130,7 +149,7 @@ window.location.href =
         right.appendChild(btn);
       }
 
-      /* BUYER: view system remark on DISPUTE */
+      /* DISPUTE — buyer can review */
       if (role === 'buyer' && status === 'DISPUTE') {
         const btn = document.createElement('button');
         btn.className = 'btn-outline';
@@ -147,33 +166,95 @@ window.location.href =
   /* ── Detail modal ── */
   function openModal(o) {
     modalBody.innerHTML = `
-      <h3>Order #${orderId(o) || '—'}</h3>
-      <div class="modal-body-section">
-        <div><strong>Agreement:</strong> #${o.agreementId || '—'}</div>
-        <div><strong>Stage:</strong> ${o.stage || '—'}</div>
-        <div><strong>Status:</strong> ${o.status || '—'}</div>
-        <div><strong>Escrow:</strong> ${o.escrowStatus || '—'}</div>
-        <div><strong>Supplier Type:</strong> ${o.supplierType || '—'}</div>
-        <div><strong>Allocated:</strong> ${fmtCurrency(o.allocatedAmount)}</div>
-        <div><strong>Bill Amount:</strong> ${fmtCurrency(o.billAmount)}</div>
-        <div><strong>Expected Delivery:</strong> ${fmtDate(o.expectedDeliveryDate)}</div>
-        <div><strong>Actual Delivery:</strong> ${fmtDate(o.actualDeliveryDate)}</div>
-        ${o.systemRemark ? `<div class="system-remark"><strong>⚠ System:</strong> ${o.systemRemark}</div>` : ''}
+  <div class="order-modal">
+
+    <div class="modal-header">
+      <div>
+        <h2>Order #${orderId(o)}</h2>
+        <span class="agreement-id">Agreement #${o.agreementId || '—'}</span>
       </div>
-    `;
+    </div>
+
+    <div class="modal-grid">
+
+      <div class="modal-section">
+        <h4>Order Info</h4>
+        <div class="detail-row">
+          <span>Stage</span>
+          <span class="badge-stage badge-${o.stage}">${o.stage}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Status</span>
+          <span class="status-badge status-${o.status}">${o.status}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Escrow</span>
+          <span>${o.escrowStatus || '—'}</span>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <h4>Supply Details</h4>
+
+        <div class="detail-row">
+          <span>Supplier Type</span>
+          <span>${o.supplierType || '—'}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Allocated</span>
+          <span>${fmtCurrency(o.allocatedAmount)}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Bill Amount</span>
+          <span>${fmtCurrency(o.billAmount)}</span>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <h4>Delivery</h4>
+
+        <div class="detail-row">
+          <span>Expected</span>
+          <span>${fmtDate(o.expectedDeliveryDate)}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Actual</span>
+          <span>${fmtDate(o.actualDeliveryDate)}</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+`;
 
     if (o.items?.length) {
-      const sec = document.createElement('div');
-      sec.className = 'modal-body-section';
-      sec.innerHTML = '<strong>Items</strong>';
-      const ul = document.createElement('ul');
-      o.items.forEach(it => {
-        const li = document.createElement('li');
-        li.textContent = `${it.productName || it.description || '—'} — ${it.quantity || '—'} ${it.unit || ''} @ ₹${it.expectedPrice ?? it.rate ?? '—'}`;
-        ul.appendChild(li);
-      });
-      sec.appendChild(ul);
-      modalBody.appendChild(sec);
+      const itemsHTML = `
+  <div class="modal-section items-section">
+      <h4>Items</h4>
+      ${o.items.map(it => `
+        <div class="item-row">
+          <div>${it.productName}</div>
+          <div>${it.quantity} ${it.unit}</div>
+          <div>₹${it.expectedPrice}</div>
+        </div>
+      `).join("")}
+  </div>`;
+      modalBody.innerHTML += itemsHTML;
+    }
+
+    // Show system remark prominently in the modal for DISPUTE orders
+    if (o.systemRemark) {
+      modalBody.innerHTML += `
+  <div class="modal-section" style="border-left:3px solid #e74c3c;padding-left:12px;margin-top:12px">
+    <h4 style="color:#e74c3c">⚠ System Remark</h4>
+    <p>${o.systemRemark}</p>
+  </div>`;
     }
 
     modal.classList.remove('hidden');
@@ -209,10 +290,10 @@ window.location.href =
     modal.classList.remove('hidden');
 
     document.getElementById('dSubmit').addEventListener('click', async () => {
-      const vehicle   = document.getElementById('dVehicle').value.trim();
+      const vehicle    = document.getElementById('dVehicle').value.trim();
       const loadingUrl = document.getElementById('dLoadingUrl').value.trim();
-      const bagCount  = document.getElementById('dBagCount').value;
-      const msgEl     = document.getElementById('dMsg');
+      const bagCount   = document.getElementById('dBagCount').value;
+      const msgEl      = document.getElementById('dMsg');
 
       if (!vehicle)    { msgEl.textContent = 'Vehicle number is required'; return; }
       if (!loadingUrl) { msgEl.textContent = 'Loading photo URL is required'; return; }
@@ -221,10 +302,10 @@ window.location.href =
         const res = await fetch(`${API}/farmer/dispatch`, {
           method: 'POST', headers: authHeaders(),
           body: JSON.stringify({
-            orderId:      orderId(o),
-            vehicleNumber: vehicle,
+            orderId:         orderId(o),
+            vehicleNumber:   vehicle,
             loadingPhotoUrl: loadingUrl,
-            bagCount: bagCount ? Number(bagCount) : null
+            bagCount:        bagCount ? Number(bagCount) : null
           })
         });
         if (!res.ok) throw new Error(await res.text() || 'Dispatch failed');

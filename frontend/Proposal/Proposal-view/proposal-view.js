@@ -1,5 +1,7 @@
 // proposal-view.js
+
 (function () {
+
   const API_BASE = "http://localhost:8080";
 
   const state = {
@@ -40,7 +42,6 @@
       { headers: authHeaders() }
     );
 
-    // FIX: guard against non-ok response before parsing JSON
     if (!res.ok) {
       showToast("Failed to load proposal");
       return;
@@ -120,14 +121,19 @@
     document.getElementById("farmerProfitPercent").value =
       p.farmerProfitPercent != null ? p.farmerProfitPercent : "";
 
+    // NEW: bill tolerance fields
+    const bttEl = document.getElementById("billToleranceType");
+    if (bttEl) bttEl.value = p.billToleranceType || "PERCENT";
+
+    const btvEl = document.getElementById("billToleranceValue");
+    if (btvEl) btvEl.value = p.billToleranceValue ?? "";
+
     const remarksView = document.getElementById("remarks");
     if (remarksView) {
       remarksView.value = p.remarks || "";
       remarksView.readOnly = true;
     }
 
-    // FIX: backend field is totalContractAmount, not totalAmount —
-    // use the correct field name and fall back to recalc only if missing
     const totalAmount = p.totalContractAmount
       ?? (p.proposalCrops?.length && p.pricePerUnit
         ? p.proposalCrops.reduce(
@@ -168,17 +174,12 @@
 
     if (!res.ok) return showToast(await res.text());
 
-    // Determine whether this was a FINAL accept by re-fetching the proposal.
-    // After the backend processes the accept:
-    //   - First accept  → status stays SENT   (other party must confirm)
-    //   - Second accept → status = FINAL_ACCEPTED and agreement is created
     const updated = await fetch(
       `${API_BASE}/api/proposals/${state.proposal.proposalId}?userId=${state.user.id}`,
       { headers: authHeaders() }
     );
 
     if (!updated.ok) {
-      // Can't determine outcome — just reload to show latest state
       showToast("Accepted", "success");
       setTimeout(() => location.reload(), 800);
       return;
@@ -187,7 +188,6 @@
     const latestProposal = await updated.json();
 
     if (latestProposal.proposalStatus === "FINAL_ACCEPTED") {
-      // Agreement was auto-created by the backend — fetch it by proposalId
       const agrRes = await fetch(
         `${API_BASE}/api/agreements/by-proposal/${state.proposal.proposalId}`,
         { headers: authHeaders() }
@@ -201,14 +201,12 @@
             `/Agreement/agreement.html?agreementId=${agreement.agreementId}`;
         }, 800);
       } else {
-        // Agreement created but lookup failed — go to agreements list
         showToast("Contract finalized!", "success");
         setTimeout(() => {
           window.location.href = `/Agreement/agreement-list.html`;
         }, 800);
       }
     } else {
-      // First accept — waiting for the other party
       showToast("Accepted — waiting for other party's confirmation", "success");
       setTimeout(() => location.reload(), 800);
     }
@@ -221,7 +219,6 @@
       { method: "POST", headers: authHeaders() }
     );
 
-    // FIX: check response before showing success
     if (!res.ok) return showToast(await res.text());
 
     showToast("Proposal rejected", "success");
@@ -243,14 +240,10 @@
       { method: "POST", headers: authHeaders() }
     );
 
-    // FIX: check response BEFORE parsing JSON.
-    // Previously, if the backend returned an error, res.json() would parse the
-    // error body as a proposal object and redirect to a garbage proposalId URL.
     if (!res.ok) return showToast(await res.text());
 
     const newProposal = await res.json();
 
-    // Redirect to edit the NEW counter-proposal draft
     window.location.href =
       `/Proposal/proposal.html?proposalId=${newProposal.proposalId}`;
   }
@@ -258,11 +251,8 @@
   async function init() {
     await loadProposal();
 
-    // FIX: if loadProposal failed (bad response / missing ID), state.proposal
-    // is null — bail out to prevent null-pointer crashes on render calls
     if (!state.proposal) return;
 
-    // Populate delivery location dropdown before rendering data
     const deliveryLoc = document.getElementById("deliveryLocation");
     if (deliveryLoc) {
       ["BUYER_WAREHOUSE", "MANDI", "FARM_GATE", "CUSTOM"]
