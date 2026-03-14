@@ -20,7 +20,8 @@
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API = 'http://localhost:8080/api/advance-supply';
+  const API_BASE = 'http://localhost:8080';
+  const API      = API_BASE + '/api/advance-supply';
 
   function authHeaders(json = false) {
     const h = { Authorization: 'Bearer ' + token };
@@ -91,7 +92,7 @@
     }
 
     // Invoice summary
-    const inv    = o.invoice || {};
+    const inv     = o.invoice || {};
     const itmotal = (inv.items || []).reduce((s, it) => s + (it.amount || 0), 0);
     const grand   = o.billAmount || inv.totalAmount || 0;
     setText('invoiceNumber',  inv.invoiceNumber  || o.invoiceNumber || '—');
@@ -118,25 +119,18 @@
       });
     }
 
-    // Invoice photo
-  // Invoice photo
-const photoUrl = inv.invoicePhotoUrl || o.invoicePhotoUrl;
-
-const previewEl = document.getElementById('invoicePreview');
-
-if (previewEl && photoUrl) {
-
-  const fullUrl = photoUrl.startsWith("http")
-      ? photoUrl
-      : "http://localhost:8080" + photoUrl;
-
-  previewEl.innerHTML =
-    `<img src="${fullUrl}" alt="invoice"
-      style="max-width:220px;border-radius:8px"/>`;
-
-} else if (previewEl) {
-  previewEl.innerHTML = `<span>No file</span>`;
-}
+    // Invoice photo — only render if it's a real persistent URL (not a blob)
+    const photoUrl  = inv.invoicePhotoUrl || o.invoicePhotoUrl;
+    const previewEl = document.getElementById('invoicePreview');
+    if (previewEl) {
+      if (photoUrl && !photoUrl.startsWith('blob:')) {
+        const fullUrl = photoUrl.startsWith('http') ? photoUrl : API_BASE + photoUrl;
+        previewEl.innerHTML =
+          `<img src="${fullUrl}" alt="invoice" style="max-width:220px;border-radius:8px" />`;
+      } else {
+        previewEl.innerHTML = `<p style="color:#888;text-align:center;padding:20px">No invoice photo uploaded</p>`;
+      }
+    }
 
     // Disable actions if not DISPATCHED
     const acceptBtn = document.getElementById('acceptBtn');
@@ -148,25 +142,29 @@ if (previewEl && photoUrl) {
     }
   }
 
-  /* ── Upload image ── */
+  /* ── Upload image → returns a persistent server URL, never a blob ── */
   async function uploadImage(file) {
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-     const res = await fetch('http://localhost:8080/api/uploads',{ method: 'POST', body: fd, headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) throw new Error();
-      const b = await res.json();
-      return b.url || b.data?.url || null;
-    } catch { return URL.createObjectURL(file); }
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(API_BASE + '/api/uploads', {
+      method: 'POST',
+      body: fd,
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('Photo upload failed (' + res.status + '). Check your connection.');
+    const b = await res.json();
+    const url = b.url || b.data?.url || null;
+    if (!url) throw new Error('Server did not return a photo URL.');
+    return url;
   }
 
-  /* ── Photo previews ── */
+  /* ── Photo previews (local blob for preview only — never sent to server) ── */
   function wirePreview(inputId, previewId) {
     const inp = document.getElementById(inputId);
     const prv = document.getElementById(previewId);
     inp?.addEventListener('change', e => {
       const f = e.target.files[0];
-      if (f && prv) prv.innerHTML = `<img src="${URL.createObjectURL(f)}"/>`;
+      if (f && prv) prv.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-width:160px;border-radius:8px"/>`;
     });
   }
   wirePreview('deliveryPhoto', 'deliveryPreview');
@@ -174,7 +172,7 @@ if (previewEl && photoUrl) {
 
   /* ── Accept ── */
   document.getElementById('acceptBtn')?.addEventListener('click', async () => {
-    const validationMsg  = document.getElementById('validationMsg');
+    const validationMsg = document.getElementById('validationMsg');
     if (validationMsg) validationMsg.textContent = '';
 
     const deliveryFile = document.getElementById('deliveryPhoto')?.files[0];
@@ -198,13 +196,13 @@ if (previewEl && photoUrl) {
       const res = await fetch(`${API}/farmer/confirm`, {
         method: 'POST', headers: authHeaders(true),
         body: JSON.stringify({
-          orderId:             Number(orderId),
-          accepted:            true,
-          deliveryPhotoUrl:    deliveryUrl,
-          billPhotoUrl:        billUrl,
-          billAmountEntered:   billAmt,
-          actualDeliveryDate:  actualDate || null,
-          farmerRemark:        remark || null
+          orderId:            Number(orderId),
+          accepted:           true,
+          deliveryPhotoUrl:   deliveryUrl,
+          billPhotoUrl:       billUrl,
+          billAmountEntered:  billAmt,
+          actualDeliveryDate: actualDate || null,
+          farmerRemark:       remark || null
         })
       });
 
@@ -223,7 +221,7 @@ if (previewEl && photoUrl) {
     const validationMsg = document.getElementById('validationMsg');
     if (validationMsg) validationMsg.textContent = '';
 
-    const remark    = (document.getElementById('farmerRemark')?.value || '').trim();
+    const remark     = (document.getElementById('farmerRemark')?.value || '').trim();
     const actualDate = document.getElementById('actualDeliveryDate')?.value;
 
     if (!remark) { if (validationMsg) validationMsg.textContent = 'Rejection reason is required'; return; }
@@ -246,7 +244,7 @@ if (previewEl && photoUrl) {
 
       if (!res.ok) throw new Error(await res.text() || 'Reject failed');
       showToast('Delivery rejected', 'success');
-      window.location.href = '../supply-order/supply-orders.html'
+      window.location.href = '../supply-order/supply-orders.html';
     } catch (err) {
       const msg = document.getElementById('validationMsg');
       if (msg) msg.textContent = err.message || 'Failed to reject delivery';

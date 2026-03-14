@@ -18,7 +18,8 @@
     return;
   }
 
-  const API = 'http://localhost:8080/api/advance-supply';
+  const API_BASE = 'http://localhost:8080';
+  const API = API_BASE + '/api/advance-supply';
 
   function authHeaders() {
     return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
@@ -34,17 +35,12 @@
   const addItemBtn        = document.getElementById('addItemBtn');
   const supplyForm        = document.getElementById('supplyForm');
 
-  const ITEM_TYPES = ['SEED','FERTILIZER','CHEMICAL','EQUIPMENT','LABOUR','OTHER'];
+  const ITEM_TYPES = ['SEED','FERTILIZER','PESTICIDE','MACHINERY','EQUIPMENT','LABOUR','SERVICE','OTHER'];
 
   /* ── Load active agreements ── */
   async function loadAgreements() {
     try {
-     const res = await fetch('http://localhost:8080/api/agreements/active', {
-  headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token')  // ← ADD THIS
-      }
-});
+      const res = await fetch(API_BASE + '/api/agreements/active', { headers: authHeaders() });
       if (!res.ok) throw new Error('Failed');
       const list = await res.json();  // List<AgreementListRS>
 
@@ -52,7 +48,8 @@
       list.forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.agreementId;
-opt.textContent = `#${a.agreementId} — ${a.counterPartyName || ''} (${a.counterPartyRole || ''})`;        opt.dataset.proposalVersion = a.proposalVersion || '';
+        opt.textContent = `#${a.agreementId} — ${a.counterPartyName || 'Unknown'} (${a.counterPartyRole || ''})`;
+        opt.dataset.proposalVersion = a.proposalVersion || '';
         agreementIdEl.appendChild(opt);
       });
     } catch (err) {
@@ -71,9 +68,9 @@ opt.textContent = `#${a.agreementId} — ${a.counterPartyName || ''} (${a.counte
     if (!supplierType) return [];
     try {
       const res = await fetch(
-  `http://localhost:8080/api/item-names?supplierType=${encodeURIComponent(supplierType)}`,
-  { headers: authHeaders() }
-);
+        `${API_BASE}/api/item-names?supplierType=${encodeURIComponent(supplierType)}`,
+        { headers: authHeaders() }
+      );
       return res.ok ? await res.json() : [];
     } catch (e) { return []; }
   }

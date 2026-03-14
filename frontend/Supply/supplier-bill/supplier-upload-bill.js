@@ -21,14 +21,15 @@
 
   const qs      = new URLSearchParams(location.search);
   const orderId = qs.get('orderId');
-  const API = 'http://localhost:8080/api/advance-supply';
+  const API_BASE = 'http://localhost:8080';
+  const API      = API_BASE + '/api/advance-supply';
 
   function authHeaders(json = false) {
-  const token = localStorage.getItem('token');  
-  const h = { Authorization: 'Bearer ' + token };
-  if (json) h['Content-Type'] = 'application/json';
-  return h;
-}
+    const token = localStorage.getItem('token');
+    const h = { Authorization: 'Bearer ' + token };
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+  }
 
   // DOM refs
   const sumAgreement  = document.getElementById('sumAgreement');
@@ -140,7 +141,7 @@
     renderItems(); recalcTotals();
   });
 
-  /* ── Photo preview ── */
+  /* ── Photo preview (local only — blob URL is fine here, never sent to server) ── */
   invoicePhotoEl?.addEventListener('change', e => {
     const f = e.target.files[0];
     if (!f || !invoicePreview) return;
@@ -165,36 +166,29 @@
       validationMsg.textContent = 'Delivery charge cannot exceed 25% of items total.';
   }
 
-  /* ── Upload image ── */
+  /* ── Upload image → returns a persistent server URL, never a blob ── */
   async function uploadImage(file) {
-  try {
     const fd = new FormData();
     fd.append('file', file);
-
-  const res = await fetch('http://localhost:8080/api/uploads',{
+    const res = await fetch(API_BASE + '/api/uploads', {
       method: 'POST',
       body: fd,
-      headers: {
-        Authorization: 'Bearer ' + localStorage.getItem('token')
-      }
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
     });
-
-    if (!res.ok) throw new Error();
-
+    if (!res.ok) throw new Error('Photo upload failed (' + res.status + '). Check your connection.');
     const body = await res.json();
-    return body.url || body.data?.url || null;
-  } catch {
-    return URL.createObjectURL(file);
+    const url = body.url || body.data?.url || null;
+    if (!url) throw new Error('Server did not return a photo URL.');
+    return url;
   }
-}
 
   /* ── Submit invoice ── */
   submitBtn?.addEventListener('click', async () => {
     if (validationMsg) validationMsg.textContent = '';
 
-    const invNum       = invoiceNumber?.value.trim();
-    const delivCharge  = Number(deliveryCharge?.value || 0);
-    const photoFile    = invoicePhotoEl?.files[0];
+    const invNum      = invoiceNumber?.value.trim();
+    const delivCharge = Number(deliveryCharge?.value || 0);
+    const photoFile   = invoicePhotoEl?.files[0];
 
     if (!invNum)    { if (validationMsg) validationMsg.textContent = 'Invoice number is required'; return; }
     if (!items.length || items.every(i => !i.quantity))
@@ -231,7 +225,7 @@
 
       if (window.toast) window.toast('Invoice submitted');
       else alert('Invoice submitted — farmer has been notified');
-     window.location.href = '/Supply/supplier-supply-order/supplier-supply-orders.html';
+      window.location.href = '/Supply/supplier-supply-order/supplier-supply-orders.html';
     } catch (err) {
       console.error(err);
       if (validationMsg) validationMsg.textContent = err.message || 'Failed to submit invoice';
