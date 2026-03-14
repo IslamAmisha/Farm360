@@ -1,5 +1,6 @@
 package com.Farm360.controller.upload;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,8 @@ public class FileUploadController {
 
     @PostMapping
     public ResponseEntity<Map<String, String>> upload(
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) throws IOException {
 
         String uploadDir = "uploads/";
         new java.io.File(uploadDir).mkdirs();
@@ -25,7 +27,11 @@ public class FileUploadController {
                 java.nio.file.Paths.get(uploadDir + fileName),
                 file.getBytes()
         );
-        String url = "/uploads/" + fileName;
+
+        String baseUrl = request.getScheme() + "://" + request.getServerName()
+                + ":" + request.getServerPort();
+        String url = baseUrl + "/uploads/" + fileName;
+
         return ResponseEntity.ok(Map.of("url", url));
     }
 }

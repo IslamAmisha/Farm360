@@ -5,6 +5,7 @@ public enum SupplyItemType {
     FERTILIZER,
     PESTICIDE,
     MACHINERY,
+    EQUIPMENT,
     LABOUR,
     SERVICE,
     OTHER
