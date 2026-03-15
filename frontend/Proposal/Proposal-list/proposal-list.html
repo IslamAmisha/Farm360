@@ -3,34 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Farm360 — Proposal-List</title>
-
-    <!-- Fonts -->
+    <title>Farm360 — My Proposals</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Global Theme -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="../../Landing-page/landing-page.css" />
-
-    <!-- Page Specific Styles (you will add later) -->
     <link rel="stylesheet" href="proposal-list.css" />
   </head>
-
   <body class="theme-light lang-en">
     <div id="toast-container"></div>
-
-    <!-- ================= HEADER (UNCHANGED) ================= -->
     <header id="site-header">
       <div class="header-container">
         <div class="header-left">
           <a href="../../Landing-page/landing-page.html" class="logo">
-            <span class="logo-icon">🌿</span>
-            <span>Farm360</span>
+            <span class="logo-icon">🌿</span
+            ><span data-text="brandName">Farm360</span>
           </a>
         </div>
-
         <nav class="nav-links">
           <a href="../../Landing-page/landing-page.html" class="nav-item"
             >Home</a
@@ -42,28 +36,66 @@
           <a href="../../Insights/insights.html" class="nav-item">Insights</a>
           <a href="../../Support/support.html" class="nav-item">Support</a>
         </nav>
-
         <div class="header-right">
-          <button id="themeToggle" class="icon-btn">☀️</button>
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+          </button>
           <button id="langToggle" class="lang-btn">বাংলা</button>
           <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
         </div>
       </div>
+      <div id="mobileMenu" class="mobile-menu">
+        <a href="../../Landing-page/landing-page.html" class="mobile-item"
+          >Home</a
+        >
+        <a href="../../Modules/modules.html" class="mobile-item">Modules</a>
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
     </header>
 
-    <!-- ================= MAIN (EMPTY BODY) ================= -->
-    <main class="container">
-      <!-- 
-        🔹 PAGE CONTENT GOES HERE
-        - Proposal List (dashboard view)
-        - OR Proposal History (version timeline)
-      -->
+    <main class="container proposals-list-page">
+      <div class="page-header">
+        <button id="backBtn" class="back-link" onclick="window.history.back()">
+          ‹ Back
+        </button>
+        <h1 class="page-title">My Proposals</h1>
+        <p class="page-subtitle">All proposals you have sent or received.</p>
+      </div>
+
+      <!-- Search -->
+      <div class="list-controls">
+        <input
+          id="proposalSearch"
+          type="text"
+          class="search-input"
+          placeholder="Search proposals…"
+        />
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="ALL">All</button>
+        <button class="filter-tab" data-filter="SENT">Sent</button>
+        <button class="filter-tab" data-filter="DRAFT">Draft</button>
+        <button class="filter-tab" data-filter="FINAL_ACCEPTED">
+          Finalized
+        </button>
+        <button class="filter-tab" data-filter="COUNTERED">Countered</button>
+        <button class="filter-tab" data-filter="REJECTED">Rejected</button>
+      </div>
+
+      <!-- List -->
+      <div id="proposalsList" class="proposals-list">
+        <p class="empty-text">Loading…</p>
+      </div>
     </main>
 
-    <!-- ================= SCRIPTS ================= -->
     <script src="../../Landing-page/landing-page.js"></script>
-
-    <!-- Page-specific JS (you will add later) -->
     <script src="proposal-list.js"></script>
   </body>
 </html>
