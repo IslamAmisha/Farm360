@@ -1,16 +1,18 @@
 package com.Farm360.mapper.supply;
 
-import com.Farm360.dto.response.supply.SupplyExecutionOrderRS;
-import com.Farm360.dto.response.supply.SupplyProofRS;
+import com.Farm360.dto.response.supply.*;
 import com.Farm360.model.supply.SupplyExecutionOrderEntity;
 import com.Farm360.repository.buyer.BuyerRepo;
 import com.Farm360.repository.farmer.FarmerRepo;
 import com.Farm360.repository.master.CropRepo;
 import com.Farm360.utils.ProofType;
+import com.Farm360.utils.SupplyStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class SupplyExecutionOrderMapper {
@@ -26,6 +28,7 @@ public class SupplyExecutionOrderMapper {
 
         SupplyExecutionOrderRS rs = new SupplyExecutionOrderRS();
 
+        // ── Basic order fields (unchanged) ───────────────────────────
         rs.setOrderId(order.getId());
         rs.setAgreementId(order.getAgreement() != null ? order.getAgreement().getAgreementId() : null);
         rs.setStage(order.getStage() != null ? order.getStage().name() : null);
@@ -42,7 +45,12 @@ public class SupplyExecutionOrderMapper {
         rs.setRejectionReason(order.getRejectionReason());
         rs.setDeliveryPhotoUrl(order.getDeliveryPhotoUrl());
 
-        // Vehicle number from proofs
+        // ── NEW: tolerance range + delivery address ───────────────────
+        rs.setMinBillAmount(order.getMinBillAmount());
+        rs.setMaxBillAmount(order.getMaxBillAmount());
+        rs.setDeliveryAddress(order.getDeliveryAddress());
+
+        // ── Proofs (unchanged) ────────────────────────────────────────
         if (order.getProofs() != null) {
             order.getProofs().stream()
                     .filter(p -> p.getType() == ProofType.VEHICLE_NUMBER_AT_SOURCE)
@@ -58,20 +66,49 @@ public class SupplyExecutionOrderMapper {
                     .toList());
         }
 
-        // Items
+        // ── Items (unchanged) ─────────────────────────────────────────
         if (order.getItems() != null) {
             rs.setItems(order.getItems().stream()
                     .map(itemMapper::mapEntityToRS)
                     .toList());
         }
 
-        // Invoice
+        // ── NEW: full invoice object (replaces flat invoiceNumber/photoUrl) ──
         if (order.getInvoice() != null) {
-            rs.setInvoiceNumber(order.getInvoice().getInvoiceNumber());
-            rs.setInvoicePhotoUrl(order.getInvoice().getInvoicePhotoUrl());
+            var inv = order.getInvoice();
+
+            List<SupplierInvoiceItemRS> invItems = inv.getItems() == null ? List.of() :
+                    inv.getItems().stream()
+                            .map(i -> SupplierInvoiceItemRS.builder()
+                                    .description(i.getDescription())
+                                    .quantity(i.getQuantity())
+                                    .rate(i.getRate())
+                                    .amount(i.getAmount())
+                                    .unit(i.getUnit())
+                                    .build())
+                            .toList();
+
+            rs.setInvoice(SupplierInvoiceRS.builder()
+                    .invoiceNumber(inv.getInvoiceNumber())
+                    .deliveryCharge(inv.getDeliveryCharge())
+                    .totalAmount(inv.getTotalAmount())
+                    .invoicePhotoUrl(inv.getInvoicePhotoUrl())
+                    .items(invItems)
+                    .build());
+
+            // Keep flat fields for backward compat with existing frontend
+            rs.setInvoiceNumber(inv.getInvoiceNumber());
+            rs.setInvoicePhotoUrl(inv.getInvoicePhotoUrl());
         }
 
-        // ── Snapshot parse with DB fallback ──
+        // ── Snapshot parse — names + buyer warehouse (privacy-gated) ──
+        // Buyer warehouse address and phone are ONLY shown after the supplier
+        // has accepted the order (status != SUPPLIER_NOTIFIED).
+        // Before acceptance, any supplier in the broadcast can see the order,
+        // so we must not leak the buyer's private contact details.
+        boolean isAccepted = order.getStatus() != null
+                && order.getStatus() != SupplyStatus.SUPPLIER_NOTIFIED;
+
         try {
             if (order.getAgreement() != null
                     && order.getAgreement().getAgreementSnapshot() != null) {
@@ -79,7 +116,7 @@ public class SupplyExecutionOrderMapper {
                 JsonNode snap = objectMapper.readTree(
                         order.getAgreement().getAgreementSnapshot());
 
-                // farmerName — snapshot first, then DB fallback
+                // farmerName — snapshot first, then DB fallback (unchanged)
                 String farmerName = snap.path("farmerName").asText("");
                 if (farmerName.isBlank() || farmerName.equals("—")) {
                     long farmerUserId = snap.path("farmerUserId").asLong(0);
@@ -92,7 +129,7 @@ public class SupplyExecutionOrderMapper {
                 }
                 rs.setFarmerName(farmerName.isBlank() ? "—" : farmerName);
 
-                // buyerName — snapshot first, then DB fallback
+                // buyerName — snapshot first, then DB fallback (unchanged)
                 String buyerName = snap.path("buyerName").asText("");
                 if (buyerName.isBlank() || buyerName.equals("—")) {
                     long buyerUserId = snap.path("buyerUserId").asLong(0);
@@ -105,10 +142,10 @@ public class SupplyExecutionOrderMapper {
                 }
                 rs.setBuyerName(buyerName.isBlank() ? "—" : buyerName);
 
-                // deliveryLocation
+                // deliveryLocation (unchanged)
                 rs.setDeliveryLocation(snap.path("deliveryLocation").asText("—"));
 
-                // cropName — snapshot first, then DB fallback
+                // cropName — snapshot first, then DB fallback (unchanged)
                 JsonNode crops = snap.path("crops");
                 if (crops.isArray() && crops.size() > 0) {
                     String cropName = crops.get(0).path("cropName").asText("");
@@ -122,6 +159,17 @@ public class SupplyExecutionOrderMapper {
                     }
                     rs.setCropName(cropName.isBlank() ? "—" : cropName);
                 }
+
+                // ── NEW: buyer warehouse + phone — only after acceptance ──
+                if (isAccepted) {
+                    String warehouseAddress = snap.path("buyerWarehouseAddress").asText("");
+                    String phone            = snap.path("buyerPhone").asText("");
+                    rs.setBuyerWarehouseAddress(warehouseAddress.isBlank() || warehouseAddress.equals("—")
+                            ? null : warehouseAddress);
+                    rs.setBuyerPhone(phone.isBlank() || phone.equals("—")
+                            ? null : phone);
+                }
+                // if not accepted, buyerWarehouseAddress and buyerPhone stay null
             }
         } catch (Exception e) {
             System.out.println("SNAPSHOT PARSE ERROR: " + e.getMessage());

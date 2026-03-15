@@ -49,6 +49,12 @@ public class SupplyExecutionOrderEntity {
     private Double billAmount;
     private Double payableAmount;
 
+    @Column(name = "min_bill_amount")
+    private Double minBillAmount;
+
+    @Column(name = "max_bill_amount")
+    private Double maxBillAmount;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,6 +63,9 @@ public class SupplyExecutionOrderEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EscrowReleaseStatus escrowStatus;
+
+    @Column(name = "delivery_address", length = 500)
+    private String deliveryAddress;
 
     private LocalDate expectedDeliveryDate;
     private LocalDate actualDeliveryDate;

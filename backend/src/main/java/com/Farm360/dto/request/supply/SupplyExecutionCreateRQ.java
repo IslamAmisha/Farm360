@@ -29,4 +29,9 @@ public class SupplyExecutionCreateRQ {
     private Double demandAmount;
 
     private LocalDate expectedDeliveryDate;
+
+    private Double minBillAmount;
+    private Double maxBillAmount;
+
+    private String deliveryAddress;
 }

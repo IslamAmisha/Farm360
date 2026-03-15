@@ -37,12 +37,20 @@ public class SupplyExecutionOrderRS {
     private String  invoiceNumber;
     private String  invoicePhotoUrl;
 
+    private Double  minBillAmount;
+    private Double  maxBillAmount;
+
+    private String  deliveryAddress;
+
+    private String  buyerName;
+    private String  buyerWarehouseAddress;
+    private String  buyerPhone;
 
     private String  farmerName;
-    private String  buyerName;
     private String  cropName;
     private String  deliveryLocation;
 
     private List<SupplyExecutionItemRS> items;
     private List<SupplyProofRS>         proofs;
+    private SupplierInvoiceRS           invoice;
 }

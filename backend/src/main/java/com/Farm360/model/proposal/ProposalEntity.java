@@ -105,11 +105,4 @@ public class ProposalEntity extends AuditTable<String> {
     private List<ProposalCropEntity> proposalCrops;
 
     private Integer farmerProfitPercent;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "bill_tolerance_type")
-    private BillToleranceType billToleranceType;
-
-    @Column(name = "bill_tolerance_value")
-    private Double billToleranceValue;
 }

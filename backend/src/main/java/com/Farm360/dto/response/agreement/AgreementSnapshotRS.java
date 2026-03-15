@@ -50,6 +50,4 @@ public class AgreementSnapshotRS {
 
     private List<AgreementCropSnapshotRS> crops;
 
-    private BillToleranceType billToleranceType;
-    private Double            billToleranceValue;
 }

@@ -259,6 +259,28 @@ public class AgreementServiceImpl implements AgreementService {
             }
         } catch (Exception ignored) {}
 
+        String buyerPhone            = "—";
+        String buyerWarehouseAddress = "—";
+        try {
+            var bp = buyerProfileRepo.findByUserId(buyerId).orElse(null);
+            if (bp != null) {
+                // Phone lives on UserEntity, not BuyerEntity
+                if (bp.getUser() != null
+                        && bp.getUser().getPhoneNumber() != null
+                        && !bp.getUser().getPhoneNumber().isBlank()) {
+                    buyerPhone = bp.getUser().getPhoneNumber();
+                }
+                // Warehouse: combine warehouseName + warehouseLocation
+                String wName = bp.getWarehouseName()    != null ? bp.getWarehouseName().trim()    : "";
+                String wLoc  = bp.getWarehouseLocation() != null ? bp.getWarehouseLocation().trim() : "";
+                if (!wName.isBlank() || !wLoc.isBlank()) {
+                    buyerWarehouseAddress = Stream.of(wName, wLoc)
+                            .filter(s -> !s.isBlank())
+                            .collect(Collectors.joining(", "));
+                }
+            }
+        } catch (Exception ignored) {}
+
         /* ── Crops with resolved names ── */
         var crops = p.getProposalCrops().stream()
                 .map(c -> {
@@ -302,6 +324,8 @@ public class AgreementServiceImpl implements AgreementService {
                 .buyerBusinessName(buyerBusinessName)
                 .buyerLocation(buyerLocation)
 
+
+
                 .landId(p.getLandId())
                 .landAreaUsed(p.getLandAreaUsed())
 
@@ -323,11 +347,6 @@ public class AgreementServiceImpl implements AgreementService {
 
                 .remarks(p.getRemarks())
                 .crops(crops)
-
-                // FIX: freeze the negotiated tolerance into the snapshot so
-                // autoApproveAndRelease reads the correct value from JSON
-                .billToleranceType(p.getBillToleranceType())
-                .billToleranceValue(p.getBillToleranceValue())
 
                 .build();
     }
