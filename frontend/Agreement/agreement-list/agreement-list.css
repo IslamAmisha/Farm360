@@ -1,0 +1,82 @@
+/* ── Agreements List Page ── */
+@import url('../Landing-page/landing-page.css');
+.agreements-list-page { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+.page-header   { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+.page-title    { font-size: 1.6rem; font-weight: 700; margin: 0; }
+.page-subtitle { color: #666; margin: 0; font-size: 0.95rem; }
+.back-link     { background: none; border: none; cursor: pointer; color: var(--primary,#2e7d32);
+                 font-size: 0.95rem; padding: 0; margin-bottom: 8px; width: fit-content; }
+
+/* Summary row */
+.summary-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.summary-card {
+  flex: 1; min-width: 100px; background: #fff; border: 1px solid #e5e5e5;
+  border-radius: 12px; padding: 16px 20px; text-align: center;
+}
+.summary-value     { font-size: 2rem; font-weight: 700; color: #333; }
+.summary-label     { font-size: 0.85rem; color: #888; margin-top: 4px; }
+.summary-active .summary-value    { color: #2e7d32; }
+.summary-completed .summary-value { color: #1565c0; }
+
+/* Controls */
+.list-controls { margin-bottom: 16px; }
+.search-input  { width: 100%; max-width: 400px; padding: 9px 14px; border: 1px solid #ddd;
+                 border-radius: 8px; font-size: 0.95rem; }
+
+/* Tabs */
+.filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.filter-tab  { padding: 6px 18px; border: 1px solid #ddd; border-radius: 20px;
+               background: #fff; cursor: pointer; font-size: 0.85rem; transition: all .2s; }
+.filter-tab.active { background: var(--primary,#2e7d32); color: #fff; border-color: transparent; }
+
+/* Cards */
+.agreements-list { display: flex; flex-direction: column; gap: 16px; }
+.empty-text      { color: #888; text-align: center; padding: 40px 0; }
+
+.agreement-card {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  background: #fff; border: 1px solid #e5e5e5; border-radius: 12px;
+  padding: 20px 24px; gap: 16px; transition: box-shadow .2s;
+}
+.agreement-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.agreement-card.agreement-active { border-left: 4px solid #2e7d32; }
+
+.agreement-card-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.agreement-id { font-weight: 700; font-size: 1.05rem; }
+
+.agreement-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 24px; font-size: 0.9rem; }
+.agreement-card-meta div { color: #555; }
+.agreement-card-meta strong { color: #222; }
+
+.role-chip { display: inline-block; background: #f0f4ff; color: #1565c0;
+             border-radius: 8px; padding: 1px 8px; font-size: 0.75rem;
+             font-weight: 600; margin-left: 6px; text-transform: capitalize; }
+
+.agreement-card-right { display: flex; align-items: flex-start; }
+.agreement-actions    { display: flex; flex-direction: column; gap: 8px; min-width: 160px; }
+
+/* Status badges */
+.status-badge    { display: inline-flex; align-items: center; gap: 4px;
+                   padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+.status-signed    { background: #e8f5e9; color: #2e7d32; }
+.status-completed { background: #e3f2fd; color: #1565c0; }
+.status-terminated{ background: #fce4ec; color: #c62828; }
+.status-disputed  { background: #fff3e0; color: #e65100; }
+.status-unknown   { background: #f5f5f5; color: #888; }
+
+.btn-primary { padding: 8px 18px; border: none; border-radius: 8px;
+               background: var(--primary,#2e7d32); color: #fff; cursor: pointer;
+               font-size: 0.88rem; transition: filter .2s; width: 100%; text-align: center; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-outline { padding: 8px 18px; border: 1px solid var(--primary,#2e7d32); border-radius: 8px;
+               background: #fff; color: var(--primary,#2e7d32); cursor: pointer;
+               font-size: 0.88rem; transition: all .2s; width: 100%; text-align: center; }
+.btn-outline:hover { background: var(--primary,#2e7d32); color: #fff; }
+
+@media (max-width: 640px) {
+  .agreement-card      { flex-direction: column; }
+  .agreement-actions   { flex-direction: row; flex-wrap: wrap; min-width: unset; }
+  .agreement-card-meta { grid-template-columns: 1fr; }
+  .btn-primary, .btn-outline { width: auto; }
+}

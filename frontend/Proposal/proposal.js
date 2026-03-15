@@ -49,7 +49,7 @@
       expectedQuantity: null,
       unit: "QUINTAL",
       landAreaUsed: null,
-      farmerProfitPercent: null
+      farmerProfitPercent: null,
     };
   }
 
@@ -87,6 +87,7 @@
         { headers: authHeaders() }
       );
 
+      // FIX: handle non-ok responses before parsing JSON
       if (!res.ok) {
         showToast("Failed to load proposal");
         return;
@@ -98,6 +99,8 @@
         proposal.proposalStatus === "DRAFT" &&
         proposal.senderUserId === state.user.id;
 
+      // FIX: if not editable, redirect to view page and return early.
+      // state.proposal is intentionally left null — init() guards against this.
       if (!isEditable) {
         window.location.href =
           `/Proposal/Proposal-view/proposal-view.html?proposalId=${proposalId}`;
@@ -115,8 +118,6 @@
         advancePercent: 30,
         midCyclePercent: 30,
         finalPercent: 40,
-        billToleranceType: "PERCENT",
-        billToleranceValue: null,
         proposalCrops: [emptyCrop()]
       };
     }
@@ -201,6 +202,7 @@
   }
 
   function validateLandArea() {
+    // Buyer counter → land is fixed, skip validation
     if (state.user.role === "buyer") return true;
 
     const land = state.lands.find(l => l.landId == state.proposal.landId);
@@ -289,8 +291,10 @@
     cropSel.innerHTML = `<option value="">Crop</option>`;
     state.cropsMaster.forEach(c => cropSel.add(new Option(c.name, c.id)));
 
+    // FIX: restore existing crop values from state when re-rendering
     if (crop.cropId) {
       cropSel.value = crop.cropId;
+      // pre-load subcategories for the already-selected crop
       loadSubcategories(crop.cropId).then(subs => {
         subSel.innerHTML = `<option value="">Sub-category</option>`;
         subs.forEach(s => subSel.add(new Option(s.name, s.id)));
@@ -417,16 +421,6 @@
     if (!p.totalContractAmount || p.totalContractAmount <= 0)
       return showToast("Total amount invalid"), false;
 
-    // NEW: bill tolerance validation
-    if (!p.billToleranceType)
-      return showToast("Select bill tolerance type"), false;
-
-    if (p.billToleranceValue == null || p.billToleranceValue <= 0)
-      return showToast("Enter a valid bill tolerance value"), false;
-
-    if (p.billToleranceType === "PERCENT" && p.billToleranceValue > 100)
-      return showToast("Bill tolerance percent cannot exceed 100"), false;
-
     if (!p.deliveryLocation)
       return showToast("Select delivery location"), false;
 
@@ -456,6 +450,8 @@
 
     if (!res.ok) return showToast(await res.text());
 
+    // FIX: update state.proposal with server response so proposalId is always
+    // current — subsequent saves/sends use the correct ID
     state.proposal = await res.json();
     showToast("Draft saved", "success");
   }
@@ -467,6 +463,7 @@
 
     if (!validateBeforeSend()) return;
 
+    // Always save draft first to flush latest crops/fields to DB
     const draftRes = await fetch(
       `${API_BASE}/api/proposals/draft?senderUserId=${state.user.id}&currentUserRole=${state.user.role}`,
       {
@@ -478,6 +475,8 @@
 
     if (!draftRes.ok) return showToast(await draftRes.text());
 
+    // FIX: always update state from server response before sending —
+    // this guarantees state.proposal.proposalId is the latest version's ID
     state.proposal = await draftRes.json();
 
     const res = await fetch(
@@ -518,6 +517,8 @@
   async function init() {
     await loadProposalContext();
 
+    // FIX: if loadProposalContext redirected away (non-editable proposal),
+    // state.proposal is null — bail out before touching the DOM
     if (!state.proposal) return;
 
     const canEdit =
@@ -563,20 +564,22 @@
     fpEl.value = state.proposal.farmerProfitPercent != null ? state.proposal.farmerProfitPercent : "";
     fpEl.oninput = e => state.proposal.farmerProfitPercent = Number(e.target.value) || null;
 
-    // NEW: bill tolerance fields
-    const bttEl = document.getElementById("billToleranceType");
-    bttEl.value = state.proposal.billToleranceType || "PERCENT";
-    // Keep state in sync with initial select value
-    state.proposal.billToleranceType = bttEl.value;
-    bttEl.onchange = e => {
-      state.proposal.billToleranceType = e.target.value;
-    };
-
-    const btvEl = document.getElementById("billToleranceValue");
-    btvEl.value = state.proposal.billToleranceValue ?? "";
-    btvEl.oninput = e => {
-      state.proposal.billToleranceValue = e.target.value ? Number(e.target.value) : null;
-    };
+    // ── Escrow percents ──
+    const advEl = document.getElementById("advancePercent");
+    if (advEl) {
+      advEl.value = state.proposal.advancePercent ?? 30;
+      advEl.oninput = e => state.proposal.advancePercent = Number(e.target.value) || 0;
+    }
+    const midEl = document.getElementById("midCyclePercent");
+    if (midEl) {
+      midEl.value = state.proposal.midCyclePercent ?? 30;
+      midEl.oninput = e => state.proposal.midCyclePercent = Number(e.target.value) || 0;
+    }
+    const finEl = document.getElementById("finalPercent");
+    if (finEl) {
+      finEl.value = state.proposal.finalPercent ?? 40;
+      finEl.oninput = e => state.proposal.finalPercent = Number(e.target.value) || 0;
+    }
 
     document.getElementById("contractModel").value = state.proposal.contractModel || "";
     document.getElementById("seasonSelect").value = state.proposal.season || "";
@@ -599,11 +602,13 @@
       remarksEl.oninput = e => { state.proposal.remarks = e.target.value; };
     }
 
+    // Set contract model state then render crops (which now restores existing values)
     const modelSel = document.getElementById("contractModel");
     state.proposal.contractModel = modelSel.value;
     state.isAnnual = modelSel.value === "ANNUAL";
     toggleContractModel();
 
+    // Wire up change handlers
     document.getElementById("contractModel").onchange = toggleContractModel;
     document.getElementById("seasonSelect").onchange =
       e => state.proposal.season = e.target.value;

@@ -1,7 +1,5 @@
 // proposal-view.js
-
 (function () {
-
   const API_BASE = "http://localhost:8080";
 
   const state = {
@@ -108,29 +106,25 @@
         p.contractModel === "ANNUAL" ? "none" : "block";
     }
 
-    document.getElementById("totalLand").value = p.landAreaUsed ?? "";
-    document.getElementById("landUsed").value = p.landAreaUsed || "";
+    document.getElementById("totalLand").value    = p.landAreaUsed ?? "";
+    document.getElementById("landUsed").value     = p.landAreaUsed || "";
     document.getElementById("contractModel").value = p.contractModel || "";
-    document.getElementById("seasonSelect").value = p.season || "";
-    document.getElementById("logisticsBy").value = p.logisticsHandledBy || "";
-    document.getElementById("pricePerUnit").value = p.pricePerUnit || "";
-    document.getElementById("startYear").value = p.startYear || "";
-    document.getElementById("endYear").value = p.endYear || "";
+    document.getElementById("seasonSelect").value  = p.season || "";
+    document.getElementById("logisticsBy").value   = p.logisticsHandledBy || "";
+    document.getElementById("pricePerUnit").value  = p.pricePerUnit || "";
+    document.getElementById("startYear").value     = p.startYear || "";
+    document.getElementById("endYear").value       = p.endYear || "";
     document.getElementById("deliveryWindow").value = p.deliveryWindow || "";
 
     document.getElementById("farmerProfitPercent").value =
       p.farmerProfitPercent != null ? p.farmerProfitPercent : "";
 
-    // NEW: bill tolerance fields
-    const bttEl = document.getElementById("billToleranceType");
-    if (bttEl) bttEl.value = p.billToleranceType || "PERCENT";
-
-    const btvEl = document.getElementById("billToleranceValue");
-    if (btvEl) btvEl.value = p.billToleranceValue ?? "";
+    // billToleranceType / billToleranceValue removed —
+    // tolerance is now set per supply order, not at proposal level
 
     const remarksView = document.getElementById("remarks");
     if (remarksView) {
-      remarksView.value = p.remarks || "";
+      remarksView.value    = p.remarks || "";
       remarksView.readOnly = true;
     }
 
@@ -270,11 +264,11 @@
     renderProposalData();
     renderCropsReadOnly();
 
-    const acceptBtn = document.getElementById("acceptBtn");
-    if (acceptBtn) acceptBtn.onclick = acceptProposal;
+    const acceptBtn  = document.getElementById("acceptBtn");
+    if (acceptBtn)  acceptBtn.onclick  = acceptProposal;
 
-    const rejectBtn = document.getElementById("rejectBtn");
-    if (rejectBtn) rejectBtn.onclick = rejectProposal;
+    const rejectBtn  = document.getElementById("rejectBtn");
+    if (rejectBtn)  rejectBtn.onclick  = rejectProposal;
 
     const counterBtn = document.getElementById("counterBtn");
     if (counterBtn) counterBtn.onclick = counterProposal;

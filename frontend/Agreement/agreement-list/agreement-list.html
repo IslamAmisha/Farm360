@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Farm360 — My Agreements</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../Landing-page/landing-page.css" />
+    <link rel="stylesheet" href="agreements-list.css" />
+  </head>
+  <body class="theme-light lang-en">
+    <header id="site-header">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="../Landing-page/landing-page.html" class="logo">
+            <span class="logo-icon">🌿</span
+            ><span data-text="brandName">Farm360</span>
+          </a>
+        </div>
+        <nav class="nav-links">
+          <a href="../Landing-page/landing-page.html" class="nav-item">Home</a>
+          <a href="../Modules/modules.html" class="nav-item">Modules</a>
+          <a href="../Landing-page/landing-page.html#about" class="nav-item"
+            >About</a
+          >
+          <a href="../Insights/insights.html" class="nav-item">Insights</a>
+          <a href="../Support/support.html" class="nav-item">Support</a>
+        </nav>
+        <div class="header-right">
+          <button id="themeToggle" class="icon-btn">
+            <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+          </button>
+          <button id="langToggle" class="lang-btn">বাংলা</button>
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+      </div>
+      <div id="mobileMenu" class="mobile-menu">
+        <a href="../Landing-page/landing-page.html" class="mobile-item">Home</a>
+        <a href="../Modules/modules.html" class="mobile-item">Modules</a>
+        <div class="mobile-controls">
+          <button id="mobileThemeToggle" class="mobile-theme-btn">
+            Toggle Theme
+          </button>
+          <button id="mobileLangToggle" class="mobile-lang-btn">বাংলা</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container agreements-list-page">
+      <div class="page-header">
+        <button class="back-link" onclick="window.history.back()">
+          ‹ Back
+        </button>
+        <h1 class="page-title">My Agreements</h1>
+        <p class="page-subtitle">All farming contracts you are part of.</p>
+      </div>
+
+      <!-- Summary counts -->
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-value" id="summaryTotal">—</div>
+          <div class="summary-label">Total</div>
+        </div>
+        <div class="summary-card summary-active">
+          <div class="summary-value" id="summaryActive">—</div>
+          <div class="summary-label">Active</div>
+        </div>
+        <div class="summary-card summary-completed">
+          <div class="summary-value" id="summaryCompleted">—</div>
+          <div class="summary-label">Completed</div>
+        </div>
+      </div>
+
+      <!-- Search + Filter -->
+      <div class="list-controls">
+        <input
+          id="agreementSearch"
+          type="text"
+          class="search-input"
+          placeholder="Search agreements…"
+        />
+      </div>
+
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="ALL">All</button>
+        <button class="filter-tab" data-filter="SIGNED">Active</button>
+        <button class="filter-tab" data-filter="COMPLETED">Completed</button>
+        <button class="filter-tab" data-filter="TERMINATED">Terminated</button>
+      </div>
+
+      <!-- Agreements list -->
+      <div id="agreementsList" class="agreements-list">
+        <p class="empty-text">Loading…</p>
+      </div>
+    </main>
+
+    <script src="../Landing-page/landing-page.js"></script>
+    <script src="agreements-list.js"></script>
+  </body>
+</html>

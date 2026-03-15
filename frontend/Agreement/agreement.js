@@ -9,7 +9,7 @@
     };
   }
 
-  // Null-safe setter
+  // Null-safe setter — logs a warning instead of crashing if an ID is missing
   function setText(id, val) {
     const node = document.getElementById(id);
     if (node) node.textContent = val;
@@ -29,6 +29,7 @@
     try {
       let d;
       if (Array.isArray(val)) {
+        // Jackson serialises LocalDateTime as [year, month(1-based), day, h, m, s]
         d = new Date(val[0], val[1] - 1, val[2], val[3] || 0, val[4] || 0, val[5] || 0);
       } else {
         d = new Date(val);
@@ -211,22 +212,12 @@
     setText("finalPercent",        (snap.finalPercent       || 0) + "%");
     setText("farmerProfitPercent", (snap.farmerProfitPercent || 0) + "%");
 
-    // NEW: bill tolerance — format as e.g. "2%" or "₹500"
-    const toleranceType  = snap.billToleranceType;
-    const toleranceValue = snap.billToleranceValue;
-
-    let toleranceDisplay = "—";
-    if (toleranceValue != null && toleranceType) {
-      toleranceDisplay = toleranceType === "PERCENT"
-        ? `${toleranceValue}%`
-        : `₹ ${Number(toleranceValue).toLocaleString("en-IN")}`;
-    }
-    setText("billTolerance", toleranceDisplay);
-
     // Delivery
     setText("deliveryLocation",   snap.deliveryLocation   || "—");
     setText("deliveryWindow",     snap.deliveryWindow     || "—");
     setText("logisticsHandledBy", snap.logisticsHandledBy || "—");
+    setText("inputProvided",      "—");
+    setText("allowCropChange",    "—");
 
     // Escrow
     setText("totalEscrow",     fmtCurrency(total));

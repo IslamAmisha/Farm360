@@ -501,7 +501,7 @@ document.getElementById("sidebarToggle")?.addEventListener("click", () => {
 async function loadActiveAgreementBanner() {
   const { token } = getAuthInfo();
   try {
-    const res = await fetch("/api/agreements/active", {
+    const res = await fetch(API_BASE_URL + "/api/agreements/active", {
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
     });
     if (!res.ok) return;

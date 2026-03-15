@@ -191,12 +191,12 @@ document.getElementById("farmerAgreementsMenu")?.addEventListener("click", () =>
 
 // Input Supply — farmer CREATES supply requests here
 document.getElementById("farmerInputSupplyMenu")?.addEventListener("click", () => {
-  window.location.href = "../../Supply/supply-req/supply-request.html";
+  window.location.href = "../supply-req/supply-request.html";
 });
 
 // Supply Orders — farmer tracks orders, confirms/rejects delivery, dispatches harvest
 document.getElementById("farmerSupplyOrdersMenu")?.addEventListener("click", () => {
-  window.location.href = "../../Supply/supply-order/supply-orders.html";
+  window.location.href = "../supply-order/supply-orders.html";
 });
 
 // Cultivation / Harvest — dispatch step lives on supply orders page
@@ -511,7 +511,7 @@ document.getElementById("sidebarToggle")?.addEventListener("click", () => {
 async function loadActiveAgreementBanner() {
   const { token } = getAuthInfo();
   try {
-    const res = await fetch("/api/agreements/active", {
+    const res = await fetch(API_BASE_URL + "/api/agreements/active", {
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
     });
     if (!res.ok) return;
@@ -749,40 +749,26 @@ document.getElementById("confirmRequestBtn").onclick = async () => {
 };
 
 
+let farmerLands = [];
+
 async function loadFarmerLands() {
   const { token, userId } = getAuthInfo();
 
-  try {
-
-    console.log("Loading lands for user:", userId);
-
-    const resp = await fetch(
-      `${API_BASE_URL}/api/farmers/${userId}/lands`,
-      {
-        headers: {
-          Authorization: "Bearer " + token
-        }
+  const resp = await fetch(
+    `${API_BASE_URL}/api/farmers/${userId}/lands`,
+    {
+      headers: {
+        Authorization: "Bearer " + token
       }
-    );
-
-    console.log("Land API status:", resp.status);
-
-    if (!resp.ok) {
-      console.error("Failed to load lands", resp.status);
-      farmerLands = [];
-      return;
     }
+  );
 
-    const data = await resp.json();
-
-    console.log("Land API response:", data);
-
-    farmerLands = data;
-
-    console.log("Farmer lands loaded:", farmerLands);
-
-  } catch (err) {
-    console.error("Land API error:", err);
+  if (!resp.ok) {
+    console.error("Failed to load lands", resp.status);
     farmerLands = [];
+    return;
   }
+
+  farmerLands = await resp.json();
+  console.log("Farmer lands loaded:", farmerLands);
 }

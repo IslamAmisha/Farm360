@@ -31,18 +31,24 @@
   const supplierTypeEl    = document.getElementById('supplierType');
   const expectedDateEl    = document.getElementById('expectedDeliveryDate');
   const demandAmountEl    = document.getElementById('demandAmount');
+  const minBillEl         = document.getElementById('minBillAmount');
+  const maxBillEl         = document.getElementById('maxBillAmount');
+  const deliveryAddressEl = document.getElementById('deliveryAddress');
   const itemsTableBody    = document.querySelector('#itemsTable tbody');
   const addItemBtn        = document.getElementById('addItemBtn');
   const supplyForm        = document.getElementById('supplyForm');
 
   const ITEM_TYPES = ['SEED','FERTILIZER','PESTICIDE','MACHINERY','EQUIPMENT','LABOUR','SERVICE','OTHER'];
 
+  // Types where quantity, unit and brand are not applicable
+  const NO_QTY_TYPES = new Set(['SERVICE', 'LABOUR']);
+
   /* ── Load active agreements ── */
   async function loadAgreements() {
     try {
       const res = await fetch(API_BASE + '/api/agreements/active', { headers: authHeaders() });
       if (!res.ok) throw new Error('Failed');
-      const list = await res.json();  // List<AgreementListRS>
+      const list = await res.json();
 
       agreementIdEl.innerHTML = '<option value="">-- Select agreement --</option>';
       list.forEach(a => {
@@ -90,41 +96,44 @@
   async function addItemRow(prefill = {}) {
     const row = document.createElement('tr');
 
-    const tdType    = document.createElement('td');
+    const tdType     = document.createElement('td');
     const typeSelect = makeTypeSelect(prefill.type || 'SEED');
     tdType.appendChild(typeSelect);
 
-    const tdProduct = document.createElement('td');
+    const tdProduct  = document.createElement('td');
     const prodSelect = document.createElement('select');
     const prodText   = document.createElement('input');
     prodText.type = 'text';
-    prodText.placeholder = 'Enter product name';
+    prodText.placeholder = 'Enter service / product name';
     prodText.classList.add('hidden');
     tdProduct.append(prodSelect, prodText);
 
-    const tdBrand = document.createElement('td');
+    const tdBrand  = document.createElement('td');
     const brandInp = document.createElement('input');
     brandInp.type = 'text'; brandInp.value = prefill.brandName || '';
+    brandInp.placeholder = 'Optional';
     tdBrand.appendChild(brandInp);
 
-    const tdQty = document.createElement('td');
+    const tdQty  = document.createElement('td');
     const qtyInp = document.createElement('input');
     qtyInp.type = 'number'; qtyInp.min = '0'; qtyInp.step = '0.01';
     qtyInp.value = prefill.quantity ?? '';
+    qtyInp.placeholder = 'N/A for service';
     tdQty.appendChild(qtyInp);
 
-    const tdUnit = document.createElement('td');
+    const tdUnit  = document.createElement('td');
     const unitInp = document.createElement('input');
     unitInp.type = 'text'; unitInp.value = prefill.unit || '';
+    unitInp.placeholder = 'Optional';
     tdUnit.appendChild(unitInp);
 
-    const tdPrice = document.createElement('td');
+    const tdPrice  = document.createElement('td');
     const priceInp = document.createElement('input');
     priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01';
     priceInp.value = prefill.expectedPrice ?? '';
     tdPrice.appendChild(priceInp);
 
-    const tdRemove = document.createElement('td');
+    const tdRemove  = document.createElement('td');
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button'; removeBtn.className = 'btn-danger-outline';
     removeBtn.textContent = 'Remove';
@@ -133,8 +142,43 @@
 
     row.append(tdType, tdProduct, tdBrand, tdQty, tdUnit, tdPrice, tdRemove);
 
+    /* Update qty/unit/brand placeholder visibility based on item type */
+    function updateRowForType(typeVal) {
+      const isNoQty = NO_QTY_TYPES.has(typeVal);
+      qtyInp.placeholder  = isNoQty ? 'N/A' : 'Qty';
+      unitInp.placeholder = isNoQty ? 'N/A' : 'Unit';
+      brandInp.placeholder = isNoQty ? 'N/A' : 'Brand (optional)';
+      qtyInp.style.opacity  = isNoQty ? '0.5' : '1';
+      unitInp.style.opacity = isNoQty ? '0.5' : '1';
+    }
+
     /* Reload product options when supplierType or itemType changes */
     async function refreshProducts() {
+      const typeVal = typeSelect.value;
+      const isOther = typeVal === 'OTHER';
+      const isNoQty = NO_QTY_TYPES.has(typeVal);
+
+      updateRowForType(typeVal);
+
+      if (isNoQty) {
+        // SERVICE / LABOUR — free-text name only, no dropdown
+        prodSelect.classList.add('hidden');
+        prodText.classList.remove('hidden');
+        prodText.placeholder = typeVal === 'SERVICE' ? 'e.g. Transport to warehouse' : 'e.g. Loading / unloading';
+        return;
+      }
+
+      if (isOther) {
+        prodSelect.classList.add('hidden');
+        prodText.classList.remove('hidden');
+        prodText.placeholder = 'Enter product name';
+        return;
+      }
+
+      // Physical items — load from API
+      prodText.classList.add('hidden');
+      prodSelect.classList.remove('hidden');
+
       const names = await loadItemNames(supplierTypeEl.value);
       prodSelect.innerHTML = '<option value="">-- Select --</option>';
       names.forEach(n => {
@@ -158,12 +202,7 @@
       }
     }
 
-    typeSelect.addEventListener('change', () => {
-      const isOther = typeSelect.value === 'OTHER';
-      prodSelect.classList.toggle('hidden', isOther);
-      prodText.classList.toggle('hidden', !isOther);
-    });
-
+    typeSelect.addEventListener('change', refreshProducts);
     supplierTypeEl.addEventListener('change', refreshProducts);
 
     prodSelect.addEventListener('change', () => {
@@ -188,18 +227,34 @@
     if (!expectedDateEl.value) errs.push('Expected delivery date is required');
     if (!(parseFloat(demandAmountEl.value) > 0)) errs.push('Demand amount must be > 0');
 
+    const minBill = parseFloat(minBillEl?.value || '0');
+    const maxBill = parseFloat(maxBillEl?.value || '0');
+    const demand  = parseFloat(demandAmountEl.value || '0');
+    const delivAddr = deliveryAddressEl?.value?.trim() || '';
+
+    if (!(minBill >= 0))         errs.push('Min bill amount must be 0 or more');
+    if (!(maxBill > 0))          errs.push('Max bill amount must be greater than 0');
+    if (minBill > maxBill)       errs.push('Min bill amount cannot exceed max bill amount');
+    if (maxBill > demand)        errs.push('Max bill amount cannot exceed demand amount');
+    if (!delivAddr)              errs.push('Delivery address is required');
+
     const rows = Array.from(itemsTableBody.querySelectorAll('tr'));
     if (!rows.length) errs.push('Add at least one item');
     rows.forEach((r, i) => {
-      const sels = r.querySelectorAll('select');
+      const sels    = r.querySelectorAll('select');
+      const typeVal = sels[0]?.value || '';
       const prodSel = sels[1];
       const prodTxt = r.querySelector('input[type="text"]');
-      const prod = (prodSel && !prodSel.classList.contains('hidden'))
+      const prod    = (prodSel && !prodSel.classList.contains('hidden'))
         ? prodSel.value : (prodTxt?.value?.trim() || '');
-      const qty = parseFloat(r.querySelector('input[type="number"]')?.value || '0');
-      if (!sels[0]?.value)   errs.push(`Item ${i+1}: type required`);
-      if (!prod)             errs.push(`Item ${i+1}: product required`);
-      if (!(qty > 0))        errs.push(`Item ${i+1}: quantity must be > 0`);
+      const qty     = parseFloat(r.querySelector('input[type="number"]')?.value || '0');
+
+      if (!typeVal) errs.push(`Item ${i+1}: type required`);
+      if (!prod)    errs.push(`Item ${i+1}: product / service name required`);
+
+      // Quantity only required for physical items (not SERVICE or LABOUR)
+      if (!NO_QTY_TYPES.has(typeVal) && !(qty > 0))
+        errs.push(`Item ${i+1}: quantity must be > 0`);
     });
     return errs;
   }
@@ -213,18 +268,24 @@
       supplierType:         supplierTypeEl.value,
       demandAmount:         parseFloat(demandAmountEl.value),
       expectedDeliveryDate: expectedDateEl.value,
+      minBillAmount:        parseFloat(minBillEl?.value || '0'),
+      maxBillAmount:        parseFloat(maxBillEl?.value || '0'),
+      deliveryAddress:      deliveryAddressEl?.value?.trim() || '',
       items: Array.from(itemsTableBody.querySelectorAll('tr')).map(r => {
-        const sels = r.querySelectorAll('select');
-        const prodSel = sels[1];
-        const prodTxt = r.querySelector('input[type="text"]');
+        const sels      = r.querySelectorAll('select');
+        const typeVal   = sels[0]?.value || '';
+        const prodSel   = sels[1];
+        const prodTxt   = r.querySelector('input[type="text"]');
         const productName = (prodSel && !prodSel.classList.contains('hidden'))
           ? prodSel.value : (prodTxt?.value?.trim() || '');
+        const rawQty    = parseFloat(r.querySelector('td:nth-child(4) input')?.value || '0');
         return {
-          type:          sels[0]?.value,
+          type:          typeVal,
           brandName:     r.querySelector('td:nth-child(3) input')?.value || '',
           productName,
-          quantity:      parseFloat(r.querySelector('td:nth-child(4) input')?.value || '0'),
-          unit:          r.querySelector('td:nth-child(5) input')?.value || '',
+          // SERVICE / LABOUR have no physical qty — default to 1 so backend doesn't reject
+          quantity:      NO_QTY_TYPES.has(typeVal) ? (rawQty > 0 ? rawQty : 1) : rawQty,
+          unit:          r.querySelector('td:nth-child(5) input')?.value?.trim() || null,
           expectedPrice: parseFloat(r.querySelector('td:nth-child(6) input')?.value || '0')
         };
       })

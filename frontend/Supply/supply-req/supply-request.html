@@ -151,6 +151,48 @@
                   </select>
                 </div>
 
+                <!-- Bill Tolerance Range -->
+                <div class="form-row">
+                  <label for="minBillAmount"
+                    >Min Bill Amount (₹)
+                    <small>Minimum acceptable invoice</small></label
+                  >
+                  <input
+                    id="minBillAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 1500"
+                  />
+                </div>
+
+                <div class="form-row">
+                  <label for="maxBillAmount"
+                    >Max Bill Amount (₹)
+                    <small>Must be ≤ Demand Amount</small></label
+                  >
+                  <input
+                    id="maxBillAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 4000"
+                  />
+                </div>
+
+                <!-- Delivery Address -->
+                <div class="form-row">
+                  <label for="deliveryAddress"
+                    >Delivery Address <span class="req">*</span>
+                    <small>Where supplier must deliver</small></label
+                  >
+                  <textarea
+                    id="deliveryAddress"
+                    rows="2"
+                    placeholder="e.g. Ram Cold Storage, NH-31, Siliguri 734001"
+                  ></textarea>
+                </div>
+
                 <div class="form-row">
                   <label for="supplierType">Supplier Type</label>
                   <select id="supplierType" required>

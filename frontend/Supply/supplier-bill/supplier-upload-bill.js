@@ -86,6 +86,14 @@
     if (sumAllocated) sumAllocated.textContent = money(o.allocatedAmount);
     if (sumExpected)  sumExpected.textContent  = fmtDate(o.expectedDeliveryDate);
 
+    // Show agreed bill range so supplier knows what to charge
+    const sumBillRange = document.getElementById('sumBillRange');
+    if (sumBillRange && o.minBillAmount != null) {
+      sumBillRange.textContent = money(o.minBillAmount) + ' – ' + money(o.maxBillAmount);
+    }
+    const sumDeliveryAddr = document.getElementById('sumDeliveryAddress');
+    if (sumDeliveryAddr) sumDeliveryAddr.textContent = o.deliveryAddress || '—';
+
     // Pre-fill items from the order (supplier can edit quantities/rates)
     items = (o.items || []).map(it => ({
       description: it.productName || it.description || '',
